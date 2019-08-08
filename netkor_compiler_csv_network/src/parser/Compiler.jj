@@ -1,0 +1,56 @@
+/* Compiler: translate from CSV files to Network by map file
+   Default format: NET (accepted by R, Gephi and Pajek)
+*/
+
+options {
+	DEBUG_PARSER = false;
+	DEBUG_TOKEN_MANAGER = false;
+}
+
+PARSER_BEGIN(Compiler)
+
+package parser;
+import java.io.*;
+import error.*;
+
+public class Compiler {
+	public static void main(String args[])  throws ParseException  {
+		Compiler compiler = null;
+		try {
+			compiler = new Compiler(new FileInputStream("exemplo.csv"));
+
+			Compiler.start();
+		}
+		catch(FileNotFoundException e) {
+			System.err.println("\nFile not found: ");
+		}
+		catch (IOException e) {
+			System.out.println("File creation error: " + e.getMessage());
+		}
+		catch(TokenMgrError e) {
+			System.err.println("\nLexical error: " + e.getMessage());
+		}
+		catch(ParseException e) {
+			System.err.println("\nSintax error: " + e.getMessage());
+		}
+		catch(SemanticError e) {
+			System.err.println("\nSemantic error: " + e.getMessage());
+		}
+	}
+}
+PARSER_END(Compiler)
+ 
+SKIP : { " " | "\t" | "\r" | "\n" }
+
+TOKEN [IGNORE_CASE] : {
+	<SECTION: "section" >
+
+	
+}
+
+
+void start(): { }
+{
+	{  return; }
+}
+
