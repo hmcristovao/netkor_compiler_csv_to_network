@@ -17,7 +17,7 @@ public class Compiler {
 	public static void main(String args[])  throws ParseException  {
 		Compiler compiler = null;
 		try {
-			compiler = new Compiler(new FileInputStream("exemplo.csv"));
+			compiler = new Compiler(new FileInputStream("exemplo.map"));
 
 			Compiler.start();
 		}
@@ -25,7 +25,7 @@ public class Compiler {
 			System.err.println("\nFile not found: ");
 		}
 		catch (IOException e) {
-			System.out.println("File creation error: " + e.getMessage());
+			System.err.println("File creation error: " + e.getMessage());
 		}
 		catch(TokenMgrError e) {
 			System.err.println("\nLexical error: " + e.getMessage());

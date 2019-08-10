@@ -1,0 +1,12 @@
+start -> section1 section2 section3
+
+section1 -> <TARGET_FORMAT> <COLON> format
+            <DIRECTED_NETWORK> <COLON> logicValue
+            <BIPARTITE_PROJECTION> <COLON> logicValue
+            <LAYOUT> <COLON> (layoutName | <NO>)
+
+section1 -> <VARIABLES> <COLON> ( variableDefinition )+
+
+section3 -> <NETWORK> <COLON> ( vertexDefinition )+
+
+...
