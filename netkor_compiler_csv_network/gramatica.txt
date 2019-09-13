@@ -1,12 +1,27 @@
 start -> section1 section2 section3
 
-section1 -> <TARGET_FORMAT> <COLON> format
-            <DIRECTED_NETWORK> <COLON> logicValue
-            <BIPARTITE_PROJECTION> <COLON> logicValue
-            <LAYOUT> <COLON> (layoutName | <NO>)
+section1 -> <TARGET_FORMAT> <COLON> <NETWORK_FORMAT>
+<DIRECTED_NETWORK> <COLON> <LOGIC_VALUE>
+            <BIPARTITE_PROJECTION> <COLON> <LOGIC_VALUE>
+            <LAYOUT> <COLON> ( <LAYOUT_NAME> | <NO>)
 
-section1 -> <VARIABLES> <COLON> ( variableDefinition )+
+section2 -> <VARIABLE> <COLON> ( variableDefinition )+
 
 section3 -> <NETWORK> <COLON> ( vertexDefinition )+
 
-...
+variableDefinition -> <TYPE_VARIABLE> <HEAD_NAME_IN_CSV> (<COLON> <VARIABLE_NAME>)?
+									(<COLON> <DESCRIPTION>)?		
+
+vertexDefinition -> <VERTEX_NAME_WITH_QUOTE_MARK> <COLON>
+                    ( <VARIABLE_NAME> | <HEAD_NAME_IN_CSV> )
+                    <EQUAL> rangeExpression 
+                    ((<OR>|<AND>) <VARIABLE_NAME> <EQUAL> rangeExpression)*
+
+rangeExpression -> (<PARENTHESIS_OPEN>|<BRACKET_OPEN>) 
+                    range 
+                   (<PARENTHESIS_CLOSE>|<BRACKET_CLOSE>)
+			   | <OPTION>
+
+range -> <OPTION> (<SEMICOLON>|<ELLIPSIS>) <OPTION>
+	   | <ELLIPSIS> <OPTION>
+	   | <OPTION> <ELLIPSIS> 

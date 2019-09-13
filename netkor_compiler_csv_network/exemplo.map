@@ -8,23 +8,56 @@ Layout: NO
 # type ‘*’ represents primary key variable; type ‘>’ represents normal variable
 # sintaxe: type head_name_in_csv : variable_name (optional) : description (optional)
 Variables:
-* SAMPLEID : chave : código do paciente (chave primaria)
-> SC1: sc1.idade : idade do paciente (não sabe = 998; recusou = 999)
-> SC1_1 : sc1_1.sexo : sexo do paciente (homem = 1; mulhor = 2)
-> SC3: sc3.relacionamento : relacionamento atual (casado = 1; separado = 2; divorciado = 3; viuvo = 4; nunca se casou = 5; não sabe = 8; recusou responder = 9)
-> SC3A: sc3a.morando :relacionando e morando atualmente com alguém? (sim = 1; não = 5; não sabe = 8; recusou responder = 9)
-> SC7: sc7.fumante : fuma atualmente (atualmente = 1; ex-fumante = 2; nunca fumou = 3; não sabe = 8; recusou responder = 9)
-> SC8_1: sc8_1.saude.fisica : estado da saúde física (excelente = 1; muito boa = 2; boa = 3; razoável = 4; ruim = 5; não sabe = 8; recusou responder = 9)
-> SC8_2: sc8_2.saude.mental : estado da saúde mental (excelente = 1; muito boa = 2; boa = 3; razoável = 4; ruim = 5; não sabe = 8; recusou responder = 9)
-> SC20: sc20.medo.panico : já teve alguma vez na vida ataque de medo ou pânico, em que de repente se sentiu com medo intenso, muito ansioso(a) ou com muito mal-estar (sim = 1;  não = 5; não sabe = 8; recusou responder = 9)
-> SC20_2: sc20_2.ataque.raiva : já teve ataques de raiva em que de repente perdeu o controle e bateu ou tentou machucar alguém? (sim = 1;  não = 5; não sabe = 8; recusou responder = 9)
-> SC27A: sc27a.primeiro.medo : medo intenso de insetos, cobras, cachorros ou qualquer outro animal (sim = 1;  não = 5; não sabe = 8; recusou responder = 9) 
-> SC27B: sc27b.segundo.medo : medo de água parada, como piscina ou lago, ou tempestades, trovões, ou raios (sim = 1;  não = 5; não sabe = 8; recusou responder = 9) 
-> SC27C: sc27c.terceiro.medo : medo de ir ao dentista ou médico, tomar injeção, ver sangue ou ferimentos, ou estar em um hospital ou consultório médico (sim = 1;  não = 5; não sabe = 8; recusou responder = 9) 
-> SC27D: sc27d.quarto.medo : medo de espaços fechados, como cavernas, túneis, closets, ou elevadores (sim = 1;  não = 5; não sabe = 8; recusou responder = 9) 
-> SC27E: sc27e.quinto.medo : medo de lugares altos como telhados, sacadas, pontes, ou escadas (sim = 1;  não = 5; não sabe = 8; recusou responder = 9) 
-> SC27F: sc27f.sexto.medo : medo intenso de voar ou viajar de avião (sim = 1;  não = 5; não sabe = 8; recusou responder = 9) 
-> SC29: sc29.timidez : muito medo ou muita timidez em situações sociais, como conhecer novas pessoas, ir a festas, sair com um(a) pretendente, ou usar um banheiro público (sim = 1;  não = 5; não sabe = 8; recusou responder = 9) 
+
+#código do paciente (chave primaria)
+* SAMPLEID : chave
+#idade do paciente (não sabe = 998; recusou = 999)
+> SC1: sc1.idade
+ 
+#sexo do paciente (homem = 1; mulhor = 2)
+> SC1_1 : sc1_1.sexo
+
+#relacionamento atual (casado = 1; separado = 2; divorciado = 3; viuvo = 4; nunca se casou = 5; não sabe = 8; recusou responder = 9)
+> SC3: sc3.relacionamento
+
+# relacionando e morando atualmente com alguém? (sim = 1; não = 5; não sabe = 8; recusou responder = 9)
+> SC3A: sc3a.morando
+
+#fuma atualmente (atualmente = 1; ex-fumante = 2; nunca fumou = 3; não sabe = 8; recusou responder = 9) 
+> SC7: sc7.fumante
+
+#estado da saúde física (excelente = 1; muito boa = 2; boa = 3; razoável = 4; ruim = 5; não sabe = 8; recusou responder = 9)
+> SC8_1: sc8_1.saude.fisica
+
+#estado da saúde mental (excelente = 1; muito boa = 2; boa = 3; razoável = 4; ruim = 5; não sabe = 8; recusou responder = 9)
+> SC8_2: sc8_2.saude.mental
+ 
+# já teve alguma vez na vida ataque de medo ou pânico, em que de repente se sentiu com medo intenso, muito ansioso(a) ou com muito mal-estar (sim = 1;  não = 5; não sabe = 8; recusou responder = 9)
+> SC20: sc20.medo.panico
+
+#já teve ataques de raiva em que de repente perdeu o controle e bateu ou tentou machucar alguém? (sim = 1;  não = 5; não sabe = 8; recusou responder = 9)
+> SC20_2: sc20_2.ataque.raiva
+
+#medo intenso de insetos, cobras, cachorros ou qualquer outro animal (sim = 1;  não = 5; não sabe = 8; recusou responder = 9)  
+> SC27A: sc27a.primeiro.medo
+
+#medo de água parada, como piscina ou lago, ou tempestades, trovões, ou raios (sim = 1;  não = 5; não sabe = 8; recusou responder = 9) 
+> SC27B: sc27b.segundo.medo 
+
+#medo de ir ao dentista ou médico, tomar injeção, ver sangue ou ferimentos, ou estar em um hospital ou consultório médico (sim = 1;  não = 5; não sabe = 8; recusou responder = 9) 
+> SC27C: sc27c.terceiro.medo
+
+#medo de espaços fechados, como cavernas, túneis, closets, ou elevadores (sim = 1;  não = 5; não sabe = 8; recusou responder = 9) 
+> SC27D: sc27d.quarto.medo
+
+# medo de lugares altos como telhados, sacadas, pontes, ou escadas (sim = 1;  não = 5; não sabe = 8; recusou responder = 9)  
+> SC27E: sc27e.quinto.medo 
+
+#medo intenso de voar ou viajar de avião (sim = 1;  não = 5; não sabe = 8; recusou responder = 9) 
+> SC27F: sc27f.sexto.medo
+
+#muito medo ou muita timidez em situações sociais, como conhecer novas pessoas, ir a festas, sair com um(a) pretendente, ou usar um banheiro público (sim = 1;  não = 5; não sabe = 8; recusou responder = 9) 
+> SC29: sc29.timidez
 
 # Section 3: network nodes and links (edges or arcs)
 # determines how the normal variables will be linked with the primary key variable

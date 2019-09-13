@@ -42,15 +42,104 @@ PARSER_END(Compiler)
  
 SKIP : { " " | "\t" | "\r" | "\n" }
 
-TOKEN [IGNORE_CASE] : {
-	<SECTION: "section" >
+SKIP : { "#" : comentarioGeral }
+<comentarioGeral> SKIP: { "\n" | "\n\r" | "\r\n" : DEFAULT | <~[]> }
 
-	
+TOKEN [IGNORE_CASE] : {
+         
+          < PARENTHESIS_OPEN: "(" > |
+          < PARENTHESIS_CLOSE: ")" > |
+          < BRACKET_OPEN: "[" > |
+          < BRACKET_CLOSE: "]" > |
+          < ELLIPSIS: "..." > |
+          < SEMICOLON: ";" > |
+          < COLON: ":" > |
+          < EQUAL: "=" > |
+          < TYPE_VARIABLE: "*" | ">" > |
+          < NETWORK_FORMAT: "NET" | "PAJ" > |
+          < LOGIC_VALUE: "TRUE" | "FALSE" > |
+          < TARGET_FORMAT: "Target format" > |
+          < DIRECTED_NETWORK: "Directed network" > |
+          < BIPARTITE_PROJECTION: "Bipartite projection" > |
+          < LAYOUT: "Layout" > |            
+          < LAYOUT_NAME: "" > |
+          < NO: "NO" > |
+          < OR: "OR" > |
+          < AND: "AND" > |
+          < VARIABLES: "Variables" > |
+          < NETWORK: "Network" > |
+          < #LETTERCHARACTER: ["a" - "z"] | ["A" - "Z"] > |
+          < #NUMBERCHARACTER: (["0"-"9"])* ((".")? ["0"-"9"])+ > |
+          < #VARIABLECHARACTER: ["a" - "z", "A" - "Z" ,"0" - "9", "_"] > |
+          < OPTION: < NUMBERCHARACTER > | < LETTERCHARACTER  > > |
+ 	      < VERTEX_NAME_WITH_QUOTE_MARK: "\"" (~["#"])* "\"" > |
+ 	      < HEAD_NAME_IN_CSV_OR_VARIABLE_NAME: (< LETTERCHARACTER >) (< VARIABLECHARACTER > | "." )* >
+
+
 }
 
 
 void start(): { }
 {
+  	section1()
+  	section2()
+  	section3()
 	{  return; }
 }
 
+void section1(): { Token t; }
+{
+  	<TARGET_FORMAT> <COLON> <NETWORK_FORMAT> <DIRECTED_NETWORK>
+  	<COLON> <LOGIC_VALUE> <BIPARTITE_PROJECTION> <COLON> <LOGIC_VALUE>
+  	<LAYOUT> <COLON> ( <LAYOUT_NAME> | <NO>)
+	{  return; }
+}
+
+void section2(): { }
+{
+	<VARIABLES> <COLON> ( variableDefinition() )+
+	{  return; }
+}
+
+void section3(): { }
+{
+  	<NETWORK> <COLON> ( vertexDefinition() )+
+	{  return; }
+}
+
+void variableDefinition(): { }
+{
+	<TYPE_VARIABLE> <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME> (<COLON> <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>)?
+				
+	{  return; }
+}
+
+void vertexDefinition(): { }
+{
+	<VERTEX_NAME_WITH_QUOTE_MARK> <COLON>
+                    ( <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME> )
+                    <EQUAL> rangeExpression()
+                    ((<OR>|<AND>) <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME> <EQUAL> rangeExpression())*
+
+     {  return; }
+	
+}
+
+void rangeExpression(): { }
+{	  (<PARENTHESIS_OPEN> | <BRACKET_OPEN>) 
+                    range() 
+                   (<PARENTHESIS_CLOSE> | <BRACKET_CLOSE>)
+
+			   | <OPTION>
+		{  return; }
+
+}
+
+void range(): { }
+{
+	   (	     <OPTION> ( (<SEMICOLON> <OPTION>) | ( <ELLIPSIS> (<OPTION>)?) ) )
+	   | (<ELLIPSIS> <OPTION>)
+
+
+	   {  return; }
+}
