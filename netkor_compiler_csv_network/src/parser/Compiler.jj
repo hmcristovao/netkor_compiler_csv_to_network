@@ -1,5 +1,5 @@
 /* Compiler: translate from CSV files to Network by map file
-���Default format: NET (accepted by R, Gephi and Pajek)
+���Default format: NET (accepted by R, Gephi and Pajek)
 */
 
 options {
@@ -12,14 +12,35 @@ PARSER_BEGIN(Compiler)
 package parser;
 import java.io.*;
 import error.*;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
 
 public class Compiler {
 	public static void main(String args[])  throws ParseException  {
 		Compiler compiler = null;
+		HashMap<String,String> hashSection1 =  new HashMap<String,String>();
+		HashMap<String,String> hashSection2 =  new HashMap<String,String>();
+		HashMap<String,String> hashSection3 =  new HashMap<String,String>();
 		try {
 			compiler = new Compiler(new FileInputStream("exemplo.map"));
 
-			Compiler.start();
+			Compiler.start(hashSection1,hashSection2,hashSection3);
+
+			//Criar método para 
+
+
+			//Exibir as configurações na seção 1:
+			for (String key : hashSection1.keySet()) {
+                     
+                   //Capturamos o valor a partir da chave
+                   String value = hashSection1.get(key);
+                   System.out.println(key + " = " + value);
+         	}
+
+         	//Impressão do arquivo .net (1% completo)
+         	System.out.println("\n*Vertices " + (hashSection3.size()));
+			
 		}
 		catch(FileNotFoundException e) {
 			System.err.println("\nFile not found: ");
@@ -38,6 +59,7 @@ public class Compiler {
 		}
 	}
 }
+
 PARSER_END(Compiler)
  
 SKIP : { " " | "\t" | "\r" | "\n" }
@@ -47,7 +69,7 @@ SKIP : { "#" : comentarioGeral }
 
 TOKEN [IGNORE_CASE] : {
          
-          < PARENTHESIS_OPEN: "(" > |
+         < PARENTHESIS_OPEN: "(" > |
           < PARENTHESIS_CLOSE: ")" > |
           < BRACKET_OPEN: "[" > |
           < BRACKET_CLOSE: "]" > |
@@ -72,38 +94,61 @@ TOKEN [IGNORE_CASE] : {
           < #NUMBERCHARACTER: (["0"-"9"])* ((".")? ["0"-"9"])+ > |
           < #VARIABLECHARACTER: ["a" - "z", "A" - "Z" ,"0" - "9", "_"] > |
           < OPTION: < NUMBERCHARACTER > | < LETTERCHARACTER  > > |
- 	      < VERTEX_NAME_WITH_QUOTE_MARK: "\"" (~["#"])* "\"" > |
- 	      < HEAD_NAME_IN_CSV_OR_VARIABLE_NAME: (< LETTERCHARACTER >) (< VARIABLECHARACTER > | "." )* >
+ 	     < VERTEX_NAME_WITH_QUOTE_MARK: "\"" (~["#"])* "\"" > |
+ 	     < HEAD_NAME_IN_CSV_OR_VARIABLE_NAME: (< LETTERCHARACTER >) 
+   (< VARIABLECHARACTER > | "." )* >
+
 
 
 }
 
 
-void start(): { }
+void start(HashMap<String,String> hash1, HashMap<String,String> hash2,HashMap<String,String> hash3): { }
 {
-  	section1()
-  	section2()
-  	section3()
+  	section1(hash1)
+  	section2(hash2)
+  	section3(hash3)
 	{  return; }
 }
 
-void section1(): { Token t; }
+void section1(HashMap<String,String>  lista):
 {
-  	<TARGET_FORMAT> <COLON> <NETWORK_FORMAT> <DIRECTED_NETWORK>
-  	<COLON> <LOGIC_VALUE> <BIPARTITE_PROJECTION> <COLON> <LOGIC_VALUE>
-  	<LAYOUT> <COLON> ( <LAYOUT_NAME> | <NO>)
+  		Token t;
+  		String hue = "";
+}
+{
+  	<TARGET_FORMAT> <COLON> (t = <NETWORK_FORMAT>)
+	{
+	  hue = t + "";
+  	  lista.put("Network Format",hue);
+  	}
+  	 <DIRECTED_NETWORK>
+  		
+  	<COLON> <LOGIC_VALUE> <BIPARTITE_PROJECTION> <COLON> (t =<LOGIC_VALUE>
+  	{
+	  hue = t + "";
+  	  lista.put("Bipartite Projection",hue);
+  	}
+ 	)
+  	<LAYOUT> <COLON> ( t = <LAYOUT_NAME> | t =  <NO>
+  	{
+	  hue = t + "";
+  	  lista.put("Layout Name",hue);
+  	}
+  	)
+  	
 	{  return; }
 }
 
-void section2(): { }
+void section2(HashMap<String,String> hash): { }
 {
 	<VARIABLES> <COLON> ( variableDefinition() )+
 	{  return; }
 }
 
-void section3(): { }
+void section3(HashMap<String,String>  lista): { }
 {
-  	<NETWORK> <COLON> ( vertexDefinition() )+
+  	<NETWORK> <COLON> ( vertexDefinition(lista) )+
 	{  return; }
 }
 
@@ -114,7 +159,7 @@ void variableDefinition(): { }
 	{  return; }
 }
 
-void vertexDefinition(): { }
+void vertexDefinition(HashMap<String,String> lista): { Token t; }
 {
 	<VERTEX_NAME_WITH_QUOTE_MARK> <COLON>
                     ( <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME> )
@@ -135,7 +180,7 @@ void rangeExpression(): { }
 
 }
 
-void range(): { }
+void range(): {Token t; String hue = "";}
 {
 	   (	     <OPTION> ( (<SEMICOLON> <OPTION>) | ( <ELLIPSIS> (<OPTION>)?) ) )
 	   | (<ELLIPSIS> <OPTION>)
