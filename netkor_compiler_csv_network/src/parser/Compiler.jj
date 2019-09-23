@@ -24,18 +24,34 @@ public class Compiler {
 		HashMap<String,String> hashSection3 =  new HashMap<String,String>();
 		try {
 			compiler = new Compiler(new FileInputStream("exemplo.map"));
+			String csvFile = "exemplo.csv";
 
 			Compiler.start(hashSection1,hashSection2,hashSection3);
 
-			//Criar método para 
+			//Criar método para
+			String line = "";
+			BufferedReader br = new BufferedReader(new FileReader(csvFile));
+ 			/*while ((line = br.readLine(hashSection2)) != null) {
+
+                // use comma as separator
+                String[] country = line.split(cvsSplitBy);
+
+                System.out.println("Country [code= " + country[4] + " , name=" + country[5] + "]");
+
+            }
+			*/
 
 
 			//Exibir as configurações na seção 1:
-			for (String key : hashSection1.keySet()) {
-                     
-                   //Capturamos o valor a partir da chave
-                   String value = hashSection1.get(key);
-                   System.out.println(key + " = " + value);
+			for (String key : hashSection2.keySet()) {
+					if((line = br.readLine()) != null)
+					{ 
+	                    String[] country = line.split("-");
+	                    System.out.println(country[0]);
+	                   //Capturamos o valor a partir da chave
+	                 //  String value = hashSection2.get(key);
+	                  // System.out.println(key + " = " + value);
+					}
          	}
 
          	//Impressão do arquivo .net (1% completo)
@@ -142,7 +158,7 @@ void section1(HashMap<String,String>  lista):
 
 void section2(HashMap<String,String> hash): { }
 {
-	<VARIABLES> <COLON> ( variableDefinition() )+
+	<VARIABLES> <COLON> ( variableDefinition(hash) )+
 	{  return; }
 }
 
@@ -152,10 +168,31 @@ void section3(HashMap<String,String>  lista): { }
 	{  return; }
 }
 
-void variableDefinition(): { }
+void variableDefinition(HashMap<String,String> hash):
 {
-	<TYPE_VARIABLE> <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME> (<COLON> <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>)?
-				
+  String typeS ="", hue = "",  hue2 = ""; Token type, name, variable;
+}
+{
+	type = <TYPE_VARIABLE> name = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
+	(<COLON> variable = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
+	{
+		hue2 = variable + "";
+	}
+	)?
+	{
+	   typeS = type + "";
+	   hue = name + "";
+	   if(typeS.equals("*"))
+	   {
+	     	hue ="#" + hue; 
+			hash.put(hue,hue2);
+	   }
+	   else
+	   {
+	      hash.put(hue,hue2);
+	   }
+	
+	}			
 	{  return; }
 }
 
