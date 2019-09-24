@@ -14,6 +14,7 @@ import java.io.*;
 import error.*;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 import java.util.ArrayList;
 
 public class Compiler {
@@ -28,9 +29,7 @@ public class Compiler {
 
 			Compiler.start(hashSection1,hashSection2,hashSection3);
 
-			//Criar método para
-			String line = "";
-			BufferedReader br = new BufferedReader(new FileReader(csvFile));
+			
  			/*while ((line = br.readLine(hashSection2)) != null) {
 
                 // use comma as separator
@@ -41,19 +40,45 @@ public class Compiler {
             }
 			*/
 
+			String line = "";
+			BufferedReader br = new BufferedReader(new FileReader(csvFile));
+			while((line = br.readLine()) != null)
+			{ 
+	                    String[] country = line.split(",");
+						ArrayList x = new ArrayList();
+						for(int i = 0; i < country.length; i++)
+						{
+						  	for(String key : hashSection2.keySet())
+	                   		{
+								if(key.equals(country[i]))
+								{
+									x.add(i);
+								}
+								
+   	                    	}
+						}
+						for (Object i : x) {
+						  int a = (Integer) i;
+					      System.out.printf(country[a]);
+					    }
 
-			//Exibir as configurações na seção 1:
+						System.out.print("\n");
+	                   	/*for (Map.Entry<String,String> e: map.entrySet()) {
+   						 // you can use e.getKey() and e.getValue() here
+						}	
+	                     */ 
+	                    //System.out.println(country[0]);
+						//System.out.println(line);
+	        }
+		/*	//Exibir as configurações na seção 1:
 			for (String key : hashSection2.keySet()) {
-					if((line = br.readLine()) != null)
-					{ 
-	                    String[] country = line.split("-");
-	                    System.out.println(country[0]);
+					
 	                   //Capturamos o valor a partir da chave
 	                 //  String value = hashSection2.get(key);
 	                  // System.out.println(key + " = " + value);
-					}
+					
          	}
-
+*/
          	//Impressão do arquivo .net (1% completo)
          	System.out.println("\n*Vertices " + (hashSection3.size()));
 			
