@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class Compiler {
 	public static void main(String args[])  throws ParseException  {
@@ -29,48 +30,60 @@ public class Compiler {
 
 			Compiler.start(hashSection1,hashSection2,hashSection3);
 
+			//Para impressão do arquivo .net 
+         	FileWriter arq = new FileWriter("exemplo.net");
+			PrintWriter gravarArq = new PrintWriter(arq);
 			
- 			/*while ((line = br.readLine(hashSection2)) != null) {
-
-                // use comma as separator
-                String[] country = line.split(cvsSplitBy);
-
-                System.out.println("Country [code= " + country[4] + " , name=" + country[5] + "]");
-
-            }
-			*/
-
 			String line = "";
+			int counter = 0;
 			BufferedReader br = new BufferedReader(new FileReader(csvFile));
-			while((line = br.readLine()) != null)
-			{ 
-	                    String[] country = line.split(",");
-						ArrayList x = new ArrayList();
-						for(int i = 0; i < country.length; i++)
+			//Lendo a primeira linha para pegar as posições das colunas que serão impressas pelo resto do csv
+			//Então um loop para leiturar de todas as linhas e impressão apenas dos valores das colunas respectivas
+			if((line = br.readLine()) != null)
+			{
+			     gravarArq.printf("*Vertices " + "--Agora complica para saber a quantidade de vértices no início do processamento :L--\n");
+			  	 counter++;
+			  	 
+			  	 //dividindo cada coluna da linha em um vetor String
+				 String[] csvFirstLine = line.split(",");
+				 
+				 ArrayList<Integer> posicoes = new ArrayList();
+				 int primaryColumn = 0;
+				 //Pegar cada elemento especificado na hash2(definido na section2)
+				 for(String key : hashSection2.keySet())
+			     {
+					 for(int i = 0; i < csvFirstLine.length; i++)
+					 {
+					    //Condição para armazenando no ArrayList os valores das
+					    //posições das colunas definidas na hash2
+						if(key.equals(csvFirstLine[i])) posicoes.add(i);
+						
+						//Encontrando qual coluna está a chave primária
+						else if((key.charAt(0) == '#') && csvFirstLine[i].equals(key.substring(1)))
 						{
-						  	for(String key : hashSection2.keySet())
-	                   		{
-								if(key.equals(country[i]))
-								{
-									x.add(i);
-								}
-								
-   	                    	}
+							primaryColumn = i;
 						}
-						for (Object i : x) {
-						  int a = (Integer) i;
-					      System.out.printf(country[a]);
-					    }
-
-						System.out.print("\n");
-	                   	/*for (Map.Entry<String,String> e: map.entrySet()) {
-   						 // you can use e.getKey() and e.getValue() here
-						}	
-	                     */ 
-	                    //System.out.println(country[0]);
-						//System.out.println(line);
-	        }
-		/*	//Exibir as configurações na seção 1:
+		   	     	}
+				 }
+				 //Leitura de cada linha e impressão do seu mapeamento
+			 	 while((line = br.readLine()) != null)
+			  	 {
+			  	   			String[] csvLinesRemaining = line.split(",");
+							/*
+							//Aqui é para imprimir no console os valores das colunas correspondentes						
+							for (Integer integer : posicoes) {
+					            System.out.print (csvLinesRemaining[integer] + " ");
+					        }
+					        System.out.print("\n");
+					        */
+					        counter++;
+					        gravarArq.printf("\""+ csvLinesRemaining[primaryColumn] + "\"" + "\n");
+				  }
+							
+		     }
+			 arq.close();
+		/*
+		//Exibir as configurações na seção 1:
 			for (String key : hashSection2.keySet()) {
 					
 	                   //Capturamos o valor a partir da chave
@@ -78,10 +91,7 @@ public class Compiler {
 	                  // System.out.println(key + " = " + value);
 					
          	}
-*/
-         	//Impressão do arquivo .net (1% completo)
-         	System.out.println("\n*Vertices " + (hashSection3.size()));
-			
+		*/		
 		}
 		catch(FileNotFoundException e) {
 			System.err.println("\nFile not found: ");
