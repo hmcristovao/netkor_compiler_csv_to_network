@@ -30,19 +30,28 @@ public class Compiler {
 
 			Compiler.start(hashSection1,hashSection2,hashSection3);
 
-			//Para impressão do arquivo .net 
-         	FileWriter arq = new FileWriter("exemplo.net");
-			PrintWriter gravarArq = new PrintWriter(arq);
+		    BufferedReader readToCount = new BufferedReader(new FileReader(csvFile));
+
+			//Para impressão do arquivo .net
+			int counter = 0;
+			String line1 = "";
+			while((line1 = readToCount.readLine()) != null)
+			{
+			  counter++;
+			}
 			
 			String line = "";
-			int counter = 0;
-			BufferedReader br = new BufferedReader(new FileReader(csvFile));
+			String count =  Integer.toString(counter-1);
+			
+
+			FileWriter arq = new FileWriter("exemplo.net");
+			PrintWriter gravarArq = new PrintWriter(arq);
+			BufferedReader br = new BufferedReader(new FileReader(csvFile));	
 			//Lendo a primeira linha para pegar as posições das colunas que serão impressas pelo resto do csv
 			//Então um loop para leiturar de todas as linhas e impressão apenas dos valores das colunas respectivas
 			if((line = br.readLine()) != null)
 			{
-			     gravarArq.printf("*Vertices " + "--Agora complica para saber a quantidade de vértices no início do processamento :L--\n");
-			  	 counter++;
+			     gravarArq.printf("*Vertices " + count + "\n");
 			  	 
 			  	 //dividindo cada coluna da linha em um vetor String
 				 String[] csvFirstLine = line.split(",");
@@ -76,7 +85,6 @@ public class Compiler {
 					        }
 					        System.out.print("\n");
 					        */
-					        counter++;
 					        gravarArq.printf("\""+ csvLinesRemaining[primaryColumn] + "\"" + "\n");
 				  }
 							
