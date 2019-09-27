@@ -23,7 +23,7 @@ public class Compiler {
 		Compiler compiler = null;
 		HashMap<String,String> hashSection1 =  new HashMap<String,String>();
 		HashMap<String,String> hashSection2 =  new HashMap<String,String>();
-		HashMap<String,String> hashSection3 =  new HashMap<String,String>();
+		HashMap<String,String[]> hashSection3 =  new HashMap<String,String[]>();
 		try {
 			compiler = new Compiler(new FileInputStream("exemplo.map"));
 			String csvFile = "exemplo.csv";
@@ -33,22 +33,28 @@ public class Compiler {
 		    BufferedReader readToCount = new BufferedReader(new FileReader(csvFile));
 
 			//Para impressão do arquivo .net
-			int counter = 0;
+			int counterTotal = 0, counterVertex = 1;
 			String line1 = "";
 			while((line1 = readToCount.readLine()) != null)
 			{
-			  counter++;
+			  counterTotal++;
 			}
+			for(String key : hashSection3.keySet())
+			{
+			  System.out.println(key);
+			}
+			//Somando todos os vertices a serem gerados pela secao 3
+			counterTotal += hashSection3.size();
 			
 			String line = "";
-			String count =  Integer.toString(counter-1);
+			String count =  Integer.toString(counterTotal-1);
 			
 
 			FileWriter arq = new FileWriter("exemplo.net");
 			PrintWriter gravarArq = new PrintWriter(arq);
 			BufferedReader br = new BufferedReader(new FileReader(csvFile));	
-			//Lendo a primeira linha para pegar as posições das colunas que serão impressas pelo resto do csv
-			//Então um loop para leiturar de todas as linhas e impressão apenas dos valores das colunas respectivas
+			//Lendo a primeira linha para pegar as posicoes das colunas que serão impressas pelo resto do csv
+			//Entao um loop para leiturar de todas as linhas e impressao apenas dos valores das colunas respectivas
 			if((line = br.readLine()) != null)
 			{
 			     gravarArq.printf("*Vertices " + count + "\n");
@@ -61,37 +67,39 @@ public class Compiler {
 				 //Pegar cada elemento especificado na hash2(definido na section2)
 				 for(String key : hashSection2.keySet())
 			     {
+			       //	System.out.println(key);
 					 for(int i = 0; i < csvFirstLine.length; i++)
 					 {
-					    //Condição para armazenando no ArrayList os valores das
-					    //posições das colunas definidas na hash2
+					    //Condicao para armazenando no ArrayList os valores das
+					    //posicoes das colunas definidas na hash2
 						if(key.equals(csvFirstLine[i])) posicoes.add(i);
 						
-						//Encontrando qual coluna está a chave primária
+						//Encontrando qual coluna esta a chave primária
 						else if((key.charAt(0) == '#') && csvFirstLine[i].equals(key.substring(1)))
 						{
 							primaryColumn = i;
 						}
 		   	     	}
 				 }
-				 //Leitura de cada linha e impressão do seu mapeamento
+				 //Leitura de cada linha e impressao do seu mapeamento
 			 	 while((line = br.readLine()) != null)
 			  	 {
 			  	   			String[] csvLinesRemaining = line.split(",");
 							/*
-							//Aqui é para imprimir no console os valores das colunas correspondentes						
+							//Aqui e para imprimir no console os valores das colunas correspondentes						
 							for (Integer integer : posicoes) {
 					            System.out.print (csvLinesRemaining[integer] + " ");
 					        }
 					        System.out.print("\n");
 					        */
-					        gravarArq.printf("\""+ csvLinesRemaining[primaryColumn] + "\"" + "\n");
+					        gravarArq.printf(counterVertex + " \""+ csvLinesRemaining[primaryColumn] + "\"" + "\n");
+					        counterVertex++;
 				  }
 							
 		     }
 			 arq.close();
 		/*
-		//Exibir as configurações na seção 1:
+		//Exibir as configurações na secao 1:
 			for (String key : hashSection2.keySet()) {
 					
 	                   //Capturamos o valor a partir da chave
@@ -143,7 +151,7 @@ TOKEN [IGNORE_CASE] : {
           < DIRECTED_NETWORK: "Directed network" > |
           < BIPARTITE_PROJECTION: "Bipartite projection" > |
           < LAYOUT: "Layout" > |            
-          < LAYOUT_NAME: "" > |
+          < LAYOUT_NAME: "NOPE" > |
           < NO: "NO" > |
           < OR: "OR" > |
           < AND: "AND" > |
@@ -162,7 +170,7 @@ TOKEN [IGNORE_CASE] : {
 }
 
 
-void start(HashMap<String,String> hash1, HashMap<String,String> hash2,HashMap<String,String> hash3): { }
+void start(HashMap<String,String> hash1, HashMap<String,String> hash2,HashMap<String,String[]> hash3): { }
 {
   	section1(hash1)
   	section2(hash2)
@@ -173,26 +181,22 @@ void start(HashMap<String,String> hash1, HashMap<String,String> hash2,HashMap<St
 void section1(HashMap<String,String>  lista):
 {
   		Token t;
-  		String hue = "";
 }
 {
   	<TARGET_FORMAT> <COLON> (t = <NETWORK_FORMAT>)
 	{
-	  hue = t + "";
-  	  lista.put("Network Format",hue);
+  	  lista.put("Network Format",t.image);
   	}
   	 <DIRECTED_NETWORK>
   		
   	<COLON> <LOGIC_VALUE> <BIPARTITE_PROJECTION> <COLON> (t =<LOGIC_VALUE>
   	{
-	  hue = t + "";
-  	  lista.put("Bipartite Projection",hue);
+  	  lista.put("Bipartite Projection",t.image);
   	}
  	)
   	<LAYOUT> <COLON> ( t = <LAYOUT_NAME> | t =  <NO>
   	{
-	  hue = t + "";
-  	  lista.put("Layout Name",hue);
+  	  lista.put("Layout Name",t.image);
   	}
   	)
   	
@@ -205,49 +209,43 @@ void section2(HashMap<String,String> hash): { }
 	{  return; }
 }
 
-void section3(HashMap<String,String>  lista): { }
+void variableDefinition(HashMap<String,String> hash):
+{
+  Token type, name, variable = null; String primary = "#";
+}
+{
+	type = <TYPE_VARIABLE> name = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
+	(<COLON> variable = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>)?
+	{
+	   if(type.image.equals("*"))
+	   {
+	     	primary += name.image; 
+			hash.put(primary, variable.image);
+	   }
+	   else
+	   {
+	      hash.put(name.image,variable.image);
+	   }
+	}			
+	{  return; }
+}
+
+void section3(HashMap<String,String[]>  lista): { }
 {
   	<NETWORK> <COLON> ( vertexDefinition(lista) )+
 	{  return; }
 }
 
-void variableDefinition(HashMap<String,String> hash):
-{
-  String typeS ="", hue = "",  hue2 = ""; Token type, name, variable;
-}
-{
-	type = <TYPE_VARIABLE> name = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
-	(<COLON> variable = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
-	{
-		hue2 = variable + "";
-	}
-	)?
-	{
-	   typeS = type + "";
-	   hue = name + "";
-	   if(typeS.equals("*"))
-	   {
-	     	hue ="#" + hue; 
-			hash.put(hue,hue2);
-	   }
-	   else
-	   {
-	      hash.put(hue,hue2);
-	   }
-	
-	}			
-	{  return; }
-}
 
-void vertexDefinition(HashMap<String,String> lista): { Token t; }
+void vertexDefinition(HashMap<String,String[]> hash): { Token t, expression; String congregate = ""; }
 {
-	<VERTEX_NAME_WITH_QUOTE_MARK> <COLON>
-                    ( <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME> )
-                    <EQUAL> rangeExpression()
-                    ((<OR>|<AND>) <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME> <EQUAL> rangeExpression())*
-
+	t = <VERTEX_NAME_WITH_QUOTE_MARK> <COLON> expression = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
+    <EQUAL> rangeExpression()
+    ((<OR>|<AND>) <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME> <EQUAL> rangeExpression())*
+    {
+      hash.put(t.image,expression.image.split(" "));
+    }
      {  return; }
-	
 }
 
 void rangeExpression(): { }
