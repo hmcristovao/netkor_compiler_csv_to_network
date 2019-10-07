@@ -14,21 +14,19 @@ import java.io.*;
 import error.*;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 public class Compiler {
 	public static void main(String args[])  throws ParseException  {
 		Compiler compiler = null;
-		HashMap<String,String> hashSection1 =  new HashMap<String,String>();
+		ArrayList<String> arraySection1 =  new ArrayList<String>();
 		HashMap<String,String> hashSection2 =  new HashMap<String,String>();
 		HashMap<String,String> hashSection3 =  new HashMap<String,String>();
 		try {
 			compiler = new Compiler(new FileInputStream("exemplo.map"));
 			String csvFile = "exemplo.csv";
 
-			Compiler.start(hashSection1,hashSection2,hashSection3);
+			Compiler.start(arraySection1,hashSection2,hashSection3);
 
 			/*
 			CounterTotal serve para contar todos os vertices, tanto do section 2
@@ -130,8 +128,7 @@ SKIP : { "#" : comentarioGeral }
 <comentarioGeral> SKIP: { "\n" | "\n\r" | "\r\n" : DEFAULT | <~[]> }
 
 TOKEN [IGNORE_CASE] : {
-         
-         < PARENTHESIS_OPEN: "(" > |
+          < PARENTHESIS_OPEN: "(" > |
           < PARENTHESIS_CLOSE: ")" > |
           < BRACKET_OPEN: "[" > |
           < BRACKET_CLOSE: "]" > |
@@ -162,33 +159,33 @@ TOKEN [IGNORE_CASE] : {
 }
 
 
-void start(HashMap<String,String> hash1, HashMap<String,String> hash2,HashMap<String,String> hash3): { }
+void start(ArrayList<String> array, HashMap<String,String> hash2,HashMap<String,String> hash3): { }
 {
-  	section1(hash1)
+  	section1(array)
   	section2(hash2)
   	section3(hash3)
 	{  return; }
 }
 
-void section1(HashMap<String,String>  lista):
+void section1(ArrayList<String>  array):
 {
   		Token t;
 }
 {
   	<TARGET_FORMAT> <COLON> (t = <NETWORK_FORMAT>)
 	{
-  	  lista.put("Network Format",t.image);
+  	  array.add(t.image);
   	}
   	 <DIRECTED_NETWORK>
   		
   	<COLON> <LOGIC_VALUE> <BIPARTITE_PROJECTION> <COLON> (t =<LOGIC_VALUE>
   	{
-  	  lista.put("Bipartite Projection",t.image);
+  	  array.add(t.image);
   	}
  	)
   	<LAYOUT> <COLON> ( t = <LAYOUT_NAME> | t =  <NO>
   	{
-  	  lista.put("Layout Name",t.image);
+  	  array.add(t.image);
   	}
   	)
   	
