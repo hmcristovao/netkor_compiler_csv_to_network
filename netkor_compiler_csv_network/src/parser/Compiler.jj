@@ -17,92 +17,88 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
+import semantico.*;
 
 public class Compiler {
 	public static void main(String args[])  throws ParseException  {
+
 		Compiler compiler = null;
 		HashMap<String,String> hashSection1 =  new HashMap<String,String>();
-		HashMap<String,String> hashSection2 =  new HashMap<String,String>();
-		HashMap<String,String> hashSection3 =  new HashMap<String,String>();
+		LinkedList<Vertex> vertices = new LinkedList<Vertex>();
+		VariableDefinition variaveis = new VariableDefinition();
+
 		try {
 			compiler = new Compiler(new FileInputStream("exemplo.map"));
 			String csvFile = "exemplo.csv";
 
-			Compiler.start(hashSection1,hashSection2,hashSection3);
+			Compiler.start(hashSection1,variaveis,vertices);
 
-			/*
-			CounterTotal serve para contar todos os vertices, tanto do section 2
-			como os vertices definidos na section 3;
-
-			Ja counterVertex e utilizado para fazer a contagem dos vertices na section 2
-			para ser impresso antecipadamente no arquivo de saida .net
-			*/ 
-			int counterTotal = 0, counterVertex = 1;
-			String line1 = "";
-
-			//Leitura do csv para saber quantos vertices possuem ao incrementar no counterTotal
-		    BufferedReader readToCount = new BufferedReader(new FileReader(csvFile));
-			while((line1 = readToCount.readLine()) != null) counterTotal++;
-
-			//Somando todos os vertices a serem gerados pela secao 3
-			counterTotal += hashSection3.size();
-			
-			//Para impressão do arquivo .net
-			FileWriter arq = new FileWriter("exemplo.net");
-			PrintWriter gravarArq = new PrintWriter(arq);
-			BufferedReader br = new BufferedReader(new FileReader(csvFile));
-			String line = "";
-			String count =  Integer.toString(counterTotal-1);
-			//Lendo a primeira linha para pegar as posicoes das colunas que serão impressas pelo resto do csv
-			//Entao um loop para leiturar de todas as linhas e impressao apenas dos valores das colunas respectivas
-			if((line = br.readLine()) != null)
-			{
-			     gravarArq.printf("*Vertices " + count + "\n");
-			  	 
-			  	 //dividindo cada coluna da linha em um vetor String
-				 String[] csvFirstLine = line.split(",");
-				 
-				 ArrayList<Integer> posicoes = new ArrayList();
-				 int primaryColumn = 0;
-				 
-				 //Pegar cada elemento especificado na hash2(definido na section2)
-				 for(String key : hashSection2.keySet())
-			     {
-					 for(int i = 0; i < csvFirstLine.length; i++)
-					 {
-					    //Condicao para armazenando no ArrayList os valores das
-					    //posicoes das colunas definidas na hash2
-						if(key.equals(csvFirstLine[i])) posicoes.add(i);
-						
-						//Encontrando qual coluna esta a chave primária
-						else if((key.charAt(0) == '#') && csvFirstLine[i].equals(key.substring(1))) primaryColumn = i;
-		   	     	}
-				 }
-				 //Leitura de cada linha e impressao do seu mapeamento
-			 	 while((line = br.readLine()) != null)
-			  	 {
-			  	   	String[] csvLinesRemaining = line.split(",");
-					gravarArq.printf(counterVertex++ + " \"" + csvLinesRemaining[primaryColumn] + "\"" + "\n");
-				 }
-				 //Impressao dos vertices da section 3 
-				 for(String key : hashSection3.keySet()) gravarArq.printf(counterVertex + " " + key + "\n");
-			 	 
-				 //Parte para impressao dos Edges e Arcs
-			 	 //for() { }
-			 	 gravarArq.printf("*Arcs");
-			 	 gravarArq.printf("\n*Edges");			
-		     }
-			 arq.close();
-		/*
-		//Exibir as configurações na secao 1:
-			for (String key : hashSection2.keySet()) {
-					
-	                   //Capturamos o valor a partir da chave
-	                 //  String value = hashSection2.get(key);
-	                  // System.out.println(key + " = " + value);
-					
-         	}
-		*/		
+// INICIO_COMENTARIO
+//			/*
+//			CounterTotal serve para contar todos os vertices, tanto do section 2
+//			como os vertices definidos na section 3;
+//
+//			Ja counterVertex e utilizado para fazer a contagem dos vertices na section 2
+//			para ser impresso antecipadamente no arquivo de saida .net
+//			*/ 
+//			int counterTotal = 0, counterVertex = 1;
+//			String line1 = "";
+//
+//			//Leitura do csv para saber quantos vertices possuem ao incrementar no counterTotal
+//		    BufferedReader readToCount = new BufferedReader(new FileReader(csvFile));
+//			while((line1 = readToCount.readLine()) != null) counterTotal++;
+//
+//			//Somando todos os vertices a serem gerados pela secao 3
+//			counterTotal += hashSection3.size();
+//			
+//			//Para impressão do arquivo .net
+//			FileWriter arq = new FileWriter("exemplo.net");
+//			PrintWriter gravarArq = new PrintWriter(arq);
+//			BufferedReader br = new BufferedReader(new FileReader(csvFile));
+//			String line = "";
+//			String count =  Integer.toString(counterTotal-1);
+//			//Lendo a primeira linha para pegar as posicoes das colunas que serão impressas pelo resto do csv
+//			//Entao um loop para leiturar de todas as linhas e impressao apenas dos valores das colunas respectivas
+//			if((line = br.readLine()) != null)
+//			{
+//			     gravarArq.printf("*Vertices " + count + "\n");
+//			  	 
+//			  	 //dividindo cada coluna da linha em um vetor String
+//				 String[] csvFirstLine = line.split(",");
+//				 
+//				 ArrayList<Integer> posicoes = new ArrayList();
+//				 int primaryColumn = 0;
+//				 
+//				 //Pegar cada elemento especificado na hash2(definido na section2)
+//				 for(String key : hashSection2.keySet())
+//			     {
+//					 for(int i = 0; i < csvFirstLine.length; i++)
+//					 {
+//					    //Condicao para armazenando no ArrayList os valores das
+//					    //posicoes das colunas definidas na hash2
+//						if(key.equals(csvFirstLine[i])) posicoes.add(i);
+//						
+//						//Encontrando qual coluna esta a chave primária
+//						else if((key.charAt(0) == '#') && csvFirstLine[i].equals(key.substring(1))) primaryColumn = i;
+//		   	     	}
+//				 }
+//				 //Leitura de cada linha e impressao do seu mapeamento
+//			 	 while((line = br.readLine()) != null)
+//			  	 {
+//			  	   	String[] csvLinesRemaining = line.split(",");
+//					gravarArq.printf(counterVertex++ + " \"" + csvLinesRemaining[primaryColumn] + "\"" + "\n");
+//				 }
+//				 //Impressao dos vertices da section 3 
+//				 for(String key : hashSection3.keySet()) gravarArq.printf(counterVertex + " " + key + "\n");
+//			 	 
+//				 //Parte para impressao dos Edges e Arcs
+//			 	 //for() { }
+//			 	 gravarArq.printf("*Arcs");
+//			 	 gravarArq.printf("\n*Edges");			
+//		     }
+//			 arq.close();
+// FIM_COMENTARIO	
 		}
 		catch(FileNotFoundException e) {
 			System.err.println("\nFile not found: ");
@@ -162,11 +158,11 @@ TOKEN [IGNORE_CASE] : {
 }
 
 
-void start(HashMap<String,String> hash1, HashMap<String,String> hash2,HashMap<String,String> hash3): { }
+void start(HashMap<String,String> hash1, VariableDefinition variaveis, LinkedList<Vertex> vertices): { }
 {
   	section1(hash1)
-  	section2(hash2)
-  	section3(hash3)
+  	section2(variaveis)
+  	section3(vertices)
 	{  return; }
 }
 
@@ -195,63 +191,77 @@ void section1(HashMap<String,String>  lista):
 	{  return; }
 }
 
-void section2(HashMap<String,String> hash): { }
+void section2(VariableDefinition variaveis):
 {
-	<VARIABLES> <COLON> ( variableDefinition(hash) )+
+	Token t;
+}
+{
+	<VARIABLES> <COLON> ( variableDefinition(variaveis) )+
 	{  return; }
 }
 
-void variableDefinition(HashMap<String,String> hash):
+void variableDefinition(VariableDefinition variaveis):
 {
-  Token type, name, variable = null; String primary = "#";
+  Token t, head_name_in_csv, variable_name;
 }
 {
-	type = <TYPE_VARIABLE> name = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
-	(<COLON> variable = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>)?
+	t = <TYPE_VARIABLE> head_name_in_csv = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
+	(<COLON> variable_name = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>)?
 	{
-	   if(type.image.equals("*"))
-	   {
-	     	primary += name.image; 
-			hash.put(primary, variable.image);
-	   }
-	   else
-	   {
-	      hash.put(name.image,variable.image);
-	   }
+	  	// TODO: FALTA TRATAR O CASO QUANDO HA VARIABLE_NAME
+		variaveis.addTabela(new Variable(t, head_name_in_csv));
 	}			
 	{  return; }
 }
 
-void section3(HashMap<String,String>  lista): { }
+void section3(LinkedList<Vertex> vertices): { }
 {
-  	<NETWORK> <COLON> ( vertexDefinition(lista) )+
+  	<NETWORK> <COLON> ( vertexDefinition(vertices) )+
 	{  return; }
 }
 
 
-void vertexDefinition(HashMap<String,String> hash): { Token t, expression; String congregate = ""; }
+void vertexDefinition(LinkedList<Vertex> vertices): { Token v, variable, operador; Vertex vertex; }
 {
-	t = <VERTEX_NAME_WITH_QUOTE_MARK> <COLON> expression = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
-    <EQUAL> rangeExpression()
-    ((<OR>|<AND>) <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME> <EQUAL> rangeExpression())*
-    {
-      hash.put(t.image,expression.image);
-    }
+    { vertex = new Vertex(); }
+	v = <VERTEX_NAME_WITH_QUOTE_MARK> <COLON> variable = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
+    <EQUAL> rangeExpression(vertex)
+
+    ((operador = <OR> | operador = <AND>) variable = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME> <EQUAL> rangeExpression(vertex)
+	 { 
+       vertex.addListaExpPosFixa(operador.image);
+       vertex.addListaExpPosFixa(variable.image);
+     }
+    )*
+
+     {
+       vertex.addListaExpPosFixa(v.image);
+       vertex.addListaExpPosFixa(variable.image);
+       vertices.add(vertex);
+     }
      {  return; }
 }
 
-void rangeExpression(): { }
-{	  (<PARENTHESIS_OPEN> | <BRACKET_OPEN>) range() (<PARENTHESIS_CLOSE> | <BRACKET_CLOSE>)
-	  | <OPTION>
+void rangeExpression(Vertex vertex): {Token a, b;}
+{	  (	    (a = <PARENTHESIS_OPEN> | a = <BRACKET_OPEN>) range(vertex) (b = <PARENTHESIS_CLOSE> | b = <BRACKET_CLOSE>)
+	  	{ vertex.addListaExpPosFixa(a.image);
+	  	  vertex.addListaExpPosFixa(b.image);
+	  	}
+	  )
+	  | a = <OPTION> { vertex.addListaExpPosFixa(a.image);	}
+
 		{  return; }
 
 }
 
-void range(): {Token t; String hue = "";}
+void range(Vertex vertex): {Token op, t;}
 {
-	   ( <OPTION> ( (<SEMICOLON> <OPTION>) | ( <ELLIPSIS> (<OPTION>)?) ) )
-	   | (<ELLIPSIS> <OPTION>)
-
-
+	   ( op = <OPTION> ( (t = <SEMICOLON> op = <OPTION>) | ( t = <ELLIPSIS> (op = <OPTION>)?) ) )
+	   | (t = <ELLIPSIS> op = <OPTION>)
+	   
+		{
+		  vertex.addListaExpPosFixa(op.image);
+	  	  vertex.addListaExpPosFixa(t.image);
+	  	}	
 	   {  return; }
 }
