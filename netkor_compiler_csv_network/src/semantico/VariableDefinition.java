@@ -17,6 +17,9 @@ public class VariableDefinition {
 		this.tabela.add(var);
 	}
 
+	public LinkedList<Variable> getTabela() {
+		return tabela;
+	}
 	public void imprimeExpressao() {
 		System.out.println(this.tabela);
 	}

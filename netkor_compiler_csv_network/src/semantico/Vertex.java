@@ -7,9 +7,20 @@ import parser.Token;
 public class Vertex {
 
 	LinkedList<String> listaExpPosFixa;
+	String vertice_name;
 
 	public Vertex(){
 		this.listaExpPosFixa = new LinkedList<String>();
+	}
+	
+	public void setVertice_name(String vertice_name)
+	{
+		this.vertice_name = vertice_name;
+	}
+	
+	public String getVertice_name()
+	{
+		return this.vertice_name;
 	}
 	
 	public void addListaExpPosFixa(String var) {

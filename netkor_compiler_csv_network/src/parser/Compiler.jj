@@ -1,7 +1,3 @@
-/* Compiler: translate from CSV files to Network by map file
-���Default format: NET (accepted by R, Gephi and Pajek)
-*/
-
 options {
 	DEBUG_PARSER = false;
 	DEBUG_TOKEN_MANAGER = false;
@@ -15,105 +11,86 @@ import error.*;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
-<<<<<<< HEAD
 import java.util.Iterator;
 import java.util.LinkedList;
 import semantico.*;
-=======
->>>>>>> 88225f4e2ef808731d3a9e87bd0e7485f4091907
 
 public class Compiler {
 	public static void main(String args[])  throws ParseException  {
 
 		Compiler compiler = null;
-<<<<<<< HEAD
-		HashMap<String,String> hashSection1 =  new HashMap<String,String>();
+		ArrayList<String> array =  new ArrayList<String>();
 		LinkedList<Vertex> vertices = new LinkedList<Vertex>();
 		VariableDefinition variaveis = new VariableDefinition();
-
-=======
-		ArrayList<String> arraySection1 =  new ArrayList<String>();
-		HashMap<String,String> hashSection2 =  new HashMap<String,String>();
-		HashMap<String,String> hashSection3 =  new HashMap<String,String>();
->>>>>>> 88225f4e2ef808731d3a9e87bd0e7485f4091907
 		try {
 			compiler = new Compiler(new FileInputStream("exemplo.map"));
 			String csvFile = "exemplo.csv";
-
-<<<<<<< HEAD
-			Compiler.start(hashSection1,variaveis,vertices);
-=======
-			Compiler.start(arraySection1,hashSection2,hashSection3);
-
+			Compiler.start(array,variaveis,vertices);
+			
+// INICIO_COMENTARIO
 			/*
 			CounterTotal serve para contar todos os vertices, tanto do section 2
 			como os vertices definidos na section 3;
->>>>>>> 88225f4e2ef808731d3a9e87bd0e7485f4091907
 
-// INICIO_COMENTARIO
-//			/*
-//			CounterTotal serve para contar todos os vertices, tanto do section 2
-//			como os vertices definidos na section 3;
-//
-//			Ja counterVertex e utilizado para fazer a contagem dos vertices na section 2
-//			para ser impresso antecipadamente no arquivo de saida .net
-//			*/ 
-//			int counterTotal = 0, counterVertex = 1;
-//			String line1 = "";
-//
-//			//Leitura do csv para saber quantos vertices possuem ao incrementar no counterTotal
-//		    BufferedReader readToCount = new BufferedReader(new FileReader(csvFile));
-//			while((line1 = readToCount.readLine()) != null) counterTotal++;
-//
-//			//Somando todos os vertices a serem gerados pela secao 3
-//			counterTotal += hashSection3.size();
-//			
-//			//Para impressão do arquivo .net
-//			FileWriter arq = new FileWriter("exemplo.net");
-//			PrintWriter gravarArq = new PrintWriter(arq);
-//			BufferedReader br = new BufferedReader(new FileReader(csvFile));
-//			String line = "";
-//			String count =  Integer.toString(counterTotal-1);
-//			//Lendo a primeira linha para pegar as posicoes das colunas que serão impressas pelo resto do csv
-//			//Entao um loop para leiturar de todas as linhas e impressao apenas dos valores das colunas respectivas
-//			if((line = br.readLine()) != null)
-//			{
-//			     gravarArq.printf("*Vertices " + count + "\n");
-//			  	 
-//			  	 //dividindo cada coluna da linha em um vetor String
-//				 String[] csvFirstLine = line.split(",");
-//				 
-//				 ArrayList<Integer> posicoes = new ArrayList();
-//				 int primaryColumn = 0;
-//				 
-//				 //Pegar cada elemento especificado na hash2(definido na section2)
-//				 for(String key : hashSection2.keySet())
-//			     {
-//					 for(int i = 0; i < csvFirstLine.length; i++)
-//					 {
-//					    //Condicao para armazenando no ArrayList os valores das
-//					    //posicoes das colunas definidas na hash2
-//						if(key.equals(csvFirstLine[i])) posicoes.add(i);
-//						
-//						//Encontrando qual coluna esta a chave primária
-//						else if((key.charAt(0) == '#') && csvFirstLine[i].equals(key.substring(1))) primaryColumn = i;
-//		   	     	}
-//				 }
-//				 //Leitura de cada linha e impressao do seu mapeamento
-//			 	 while((line = br.readLine()) != null)
-//			  	 {
-//			  	   	String[] csvLinesRemaining = line.split(",");
-//					gravarArq.printf(counterVertex++ + " \"" + csvLinesRemaining[primaryColumn] + "\"" + "\n");
-//				 }
-//				 //Impressao dos vertices da section 3 
-//				 for(String key : hashSection3.keySet()) gravarArq.printf(counterVertex + " " + key + "\n");
-//			 	 
-//				 //Parte para impressao dos Edges e Arcs
-//			 	 //for() { }
-//			 	 gravarArq.printf("*Arcs");
-//			 	 gravarArq.printf("\n*Edges");			
-//		     }
-//			 arq.close();
+			Ja counterVertex e utilizado para fazer a contagem dos vertices na section 2
+			para ser impresso antecipadamente no arquivo de saida .net
+			*/ 
+			int counterTotal = 0, counterVertex = 1;
+			String line1 = "";
+
+			//Leitura do csv para saber quantos vertices possuem ao incrementar no counterTotal
+		    BufferedReader readToCount = new BufferedReader(new FileReader(csvFile));
+			while((line1 = readToCount.readLine()) != null) counterTotal++;
+
+			//Somando todos os vertices a serem gerados pela secao 3
+			counterTotal += vertices.size();
+			
+			//Para impressão do arquivo .net
+			FileWriter arq = new FileWriter("exemplo.net");
+			PrintWriter gravarArq = new PrintWriter(arq);
+			BufferedReader br = new BufferedReader(new FileReader(csvFile));
+			String line = "";
+			String count =  Integer.toString(counterTotal-1);
+			//Lendo a primeira linha para pegar as posicoes das colunas que serão impressas pelo resto do csv
+			//Entao um loop para leiturar de todas as linhas e impressao apenas dos valores das colunas respectivas
+			if((line = br.readLine()) != null)
+			{
+			     gravarArq.printf("*Vertices " + count + "\n");
+			  	 
+			  	 //dividindo cada coluna da linha em um vetor String
+				 String[] csvFirstLine = line.split(",");
+				 
+				 ArrayList<Integer> posicoes = new ArrayList();
+				 int primaryColumn = 0;
+				 
+				 //Pegar cada elemento especificado na hash2(definido na section2)
+				 for(Variable key : variaveis.getTabela())
+			     {
+					 for(int i = 0; i < csvFirstLine.length; i++)
+					 {
+					    //Condicao para armazenando no ArrayList os valores das
+					    //posicoes das colunas definidas na hash2
+						if(key.getLexema().equals(csvFirstLine[i])) posicoes.add(i);
+						
+						//Encontrando qual coluna esta a chave primária
+						else if((key.getLexema().charAt(0) == '#') && csvFirstLine[i].equals(key.getLexema().substring(1))) primaryColumn = i;
+		   	     	}
+				 }
+				 //Leitura de cada linha e impressao do seu mapeamento
+			 	 while((line = br.readLine()) != null)
+			  	 {
+			  	   	String[] csvLinesRemaining = line.split(",");
+					gravarArq.printf(counterVertex++ + " \"" + csvLinesRemaining[primaryColumn] + "\"" + "\n");
+				 }
+				 //Impressao dos vertices da section 3 
+				 for(Vertex key : vertices) gravarArq.printf(counterVertex + " " + key.getVertice_name() + "\n");
+			 	 
+				 //Parte para impressao dos Edges e Arcs
+			 	 //for() { }
+			 	 gravarArq.printf("*Arcs");
+			 	 gravarArq.printf("\n*Edges");			
+		     }
+			 arq.close();
 // FIM_COMENTARIO	
 		}
 		catch(FileNotFoundException e) {
@@ -172,23 +149,12 @@ TOKEN [IGNORE_CASE] : {
    (< VARIABLECHARACTER > | "." )* >
 }
 
-
-<<<<<<< HEAD
-void start(HashMap<String,String> hash1, VariableDefinition variaveis, LinkedList<Vertex> vertices): { }
-{
-  	section1(hash1)
-  	section2(variaveis)
-  	section3(vertices)
-=======
-void start(ArrayList<String> array, HashMap<String,String> hash2,HashMap<String,String> hash3): { }
+void start(ArrayList<String> array, VariableDefinition variaveis, LinkedList<Vertex> vertices): { }
 {
   	section1(array)
-  	section2(hash2)
-  	section3(hash3)
->>>>>>> 88225f4e2ef808731d3a9e87bd0e7485f4091907
-	{  return; }
+  	section2(variaveis)
+  	section3(vertices)
 }
-
 void section1(ArrayList<String>  array):
 {
   		Token t;
@@ -260,6 +226,7 @@ void vertexDefinition(LinkedList<Vertex> vertices): { Token v, variable, operado
      {
        vertex.addListaExpPosFixa(v.image);
        vertex.addListaExpPosFixa(variable.image);
+       vertex.setVertice_name(v.image);
        vertices.add(vertex);
      }
      {  return; }
