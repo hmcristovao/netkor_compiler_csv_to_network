@@ -14,25 +14,41 @@ import java.io.*;
 import error.*;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.List;
 import java.util.ArrayList;
+<<<<<<< HEAD
 import java.util.Iterator;
 import java.util.LinkedList;
 import semantico.*;
+=======
+>>>>>>> 88225f4e2ef808731d3a9e87bd0e7485f4091907
 
 public class Compiler {
 	public static void main(String args[])  throws ParseException  {
 
 		Compiler compiler = null;
+<<<<<<< HEAD
 		HashMap<String,String> hashSection1 =  new HashMap<String,String>();
 		LinkedList<Vertex> vertices = new LinkedList<Vertex>();
 		VariableDefinition variaveis = new VariableDefinition();
 
+=======
+		ArrayList<String> arraySection1 =  new ArrayList<String>();
+		HashMap<String,String> hashSection2 =  new HashMap<String,String>();
+		HashMap<String,String> hashSection3 =  new HashMap<String,String>();
+>>>>>>> 88225f4e2ef808731d3a9e87bd0e7485f4091907
 		try {
 			compiler = new Compiler(new FileInputStream("exemplo.map"));
 			String csvFile = "exemplo.csv";
 
+<<<<<<< HEAD
 			Compiler.start(hashSection1,variaveis,vertices);
+=======
+			Compiler.start(arraySection1,hashSection2,hashSection3);
+
+			/*
+			CounterTotal serve para contar todos os vertices, tanto do section 2
+			como os vertices definidos na section 3;
+>>>>>>> 88225f4e2ef808731d3a9e87bd0e7485f4091907
 
 // INICIO_COMENTARIO
 //			/*
@@ -126,8 +142,7 @@ SKIP : { "#" : comentarioGeral }
 <comentarioGeral> SKIP: { "\n" | "\n\r" | "\r\n" : DEFAULT | <~[]> }
 
 TOKEN [IGNORE_CASE] : {
-         
-         < PARENTHESIS_OPEN: "(" > |
+          < PARENTHESIS_OPEN: "(" > |
           < PARENTHESIS_CLOSE: ")" > |
           < BRACKET_OPEN: "[" > |
           < BRACKET_CLOSE: "]" > |
@@ -158,33 +173,41 @@ TOKEN [IGNORE_CASE] : {
 }
 
 
+<<<<<<< HEAD
 void start(HashMap<String,String> hash1, VariableDefinition variaveis, LinkedList<Vertex> vertices): { }
 {
   	section1(hash1)
   	section2(variaveis)
   	section3(vertices)
+=======
+void start(ArrayList<String> array, HashMap<String,String> hash2,HashMap<String,String> hash3): { }
+{
+  	section1(array)
+  	section2(hash2)
+  	section3(hash3)
+>>>>>>> 88225f4e2ef808731d3a9e87bd0e7485f4091907
 	{  return; }
 }
 
-void section1(HashMap<String,String>  lista):
+void section1(ArrayList<String>  array):
 {
   		Token t;
 }
 {
   	<TARGET_FORMAT> <COLON> (t = <NETWORK_FORMAT>)
 	{
-  	  lista.put("Network Format",t.image);
+  	  array.add(t.image);
   	}
   	 <DIRECTED_NETWORK>
   		
   	<COLON> <LOGIC_VALUE> <BIPARTITE_PROJECTION> <COLON> (t =<LOGIC_VALUE>
   	{
-  	  lista.put("Bipartite Projection",t.image);
+  	  array.add(t.image);
   	}
  	)
   	<LAYOUT> <COLON> ( t = <LAYOUT_NAME> | t =  <NO>
   	{
-  	  lista.put("Layout Name",t.image);
+  	  array.add(t.image);
   	}
   	)
   	
