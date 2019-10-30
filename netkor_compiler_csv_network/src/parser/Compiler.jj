@@ -205,24 +205,59 @@ void variableDefinition(VariableDefinition variaveis):
 
 void section3(LinkedList<Vertex> vertices): { }
 {
-  	<NETWORK> <COLON> ( vertexDefinition(vertices) )+
+  	<NETWORK> <COLON> (vertexDefinition(vertices))+
 }
+
 
 void vertexDefinition(LinkedList<Vertex> vertices):
 {
-  Token v, variable;
+  Token vertexName;
   Vertex vertex = new Vertex();
 }
 {
-	v = <VERTEX_NAME_WITH_QUOTE_MARK> <COLON> variable = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
-	<EQUAL>	vertexExpressionDefinition(vertex,variable) (vertexExpressionOr(vertex,variable))*
-    {
-    	vertex.setVertice_name(v.image);
+  vertexName = <VERTEX_NAME_WITH_QUOTE_MARK> <COLON> ( operationOR(vertex))+
+  {
+    	vertex.setVertice_name(vertexName.image);
     	vertices.add(vertex);
-    }
+  }
 }
 
-void vertexExpressionDefinition(Vertex vertex, Token variable):
+
+void operationOR(Vertex vertex):
+{
+  Token operator;
+}
+{
+	operationAnd(vertex) ( operator = < OR > operationAnd(vertex)
+	{
+		vertex.addListaExpPosFixa(operator.image);
+	}
+	)*   
+}
+
+
+void operationAnd(Vertex vertex):
+{
+  Token operator;
+}
+{
+	vertexExpression(vertex) ( operator = < AND > vertexExpression(vertex)
+	{
+		vertex.addListaExpPosFixa(operator.image);
+	}
+	)*
+}
+
+
+void vertexExpression(Vertex vertex):
+{
+  Token variable;
+}
+{
+	variable = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME> <EQUAL> vertexRangeDefinition(vertex,variable)
+}
+
+void vertexRangeDefinition(Vertex vertex, Token variable):
 {
   Token expression;
 }
@@ -240,33 +275,6 @@ void vertexExpressionDefinition(Vertex vertex, Token variable):
 		}
 	   	|	rangeExpression(vertex, variable)
   	)
-}
-
-void vertexExpressionOr(Vertex vertex, Token variable):
-{
-  Token operador = null;
-}
-{
-	( operador = < OR > )? vertexExpressionAnd(vertex,variable)
-	{
-	  	if(operador!=null)	vertex.addListaExpPosFixa(operador.image);
-	}
-}
-
-
-void vertexExpressionAnd(Vertex vertex, Token variable):
-{
-  Token operador = null;
-}
-{	( operador = < AND >)?	vertexNextExpression(vertex,variable)  
-	{
-		if(operador!=null)	vertex.addListaExpPosFixa(operador.image);
-	}
-}
-
-void vertexNextExpression(Vertex vertex, Token variable): { }
-{
-	variable = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME> <EQUAL> vertexExpressionDefinition(vertex,variable)
 }
 
 void rangeExpression(Vertex vertex, Token variable):
