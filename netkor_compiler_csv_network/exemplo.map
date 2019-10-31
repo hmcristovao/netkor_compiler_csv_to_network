@@ -64,6 +64,16 @@ Variables:
 # links occur only on the same line in the CSV file 
 # sintaxe: vertice_name : range_expression_with_variable_name  
 Network:
+"Teste com Token 1" : a.a =   (  100... )
+"Teste com Token 2" : b.b = [200...)
+"Teste com Token 3" : c.c = (...100)
+"Teste com Token 4" : d.d = (...200]
+
+"Teste com Token 5" : e.e = (30...40) OR x.x = (1...2)
+"Teste com Token 6" : f.f = [50...80)
+"Teste com Token 7" : g.g = (41...123]
+"Teste com Token 8" : h.h = [999...9999]
+
 "Teste apenas com ;" : Teste1.x = [1;2]
 "Teste2 apenas com ;" : Teste2.x = [3;5;6]
 

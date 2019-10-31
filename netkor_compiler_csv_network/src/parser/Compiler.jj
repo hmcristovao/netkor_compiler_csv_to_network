@@ -16,42 +16,92 @@ import java.nio.charset.StandardCharsets;
 public class Compiler {
 	public static void main(String args[])  throws ParseException  {
 		Compiler compiler = null;
+		
+		//Structure Section 1
 		HashMap<String,String> hashDefinition =  new HashMap<String,String>();
-		LinkedList<Vertex> vertices = new LinkedList<Vertex>();
-		VariableDefinition variaveis = new VariableDefinition();
+
+		//Structure Section 2
+		String varPrimaryKeyColumn = "";
+		HashMap<String,String> hashColumns = new HashMap<String,String>();
+
+		//Structure Section 3
+		LinkedList<String> listVertex = new LinkedList<String>();
+		LinkedList<ArrayList<String>> listExpression = new LinkedList<ArrayList<String>>();
+		LinkedList<LinkedList<String>> listExpressionCorrect = new LinkedList<LinkedList<String>>();
+		
+		//Variaveis auxiliares para leitura do CSV e impressao do arquivo .NET
+		int position = 0, counter = 0;						
+
+		//Criar outra classe para comportar esse tipo de opcao
+		String csvFile = "exemplo.csv";
+
+		//Structure .Net
+		LinkedList<String> listPrimaryKeyVertices = new LinkedList<String>();
+		LinkedHashMap<String,Integer> hashVertex = new LinkedHashMap<String,Integer>();
+
+		Vertex quebraGalho = new Vertex();
+		
 		try {
 			compiler = new Compiler(new FileInputStream("exemplo.map"));
-			String csvFile = "exemplo.csv";
-			Compiler.start(hashDefinition,variaveis,vertices);
-			for(Vertex vertice: vertices) {
-				System.out.println(vertice.getLista());
+			varPrimaryKeyColumn = Compiler.start(hashDefinition, varPrimaryKeyColumn, hashColumns, listExpression, listVertex);	   			
+
+			for(ArrayList<String> list : listExpression) {
+				quebraGalho.ajust(list);
+				System.out.println(list);
 			}
-			/*
-			variaveis.setVarPrimaryKeyColumn();			
-   			variaveis.setlistVariable(vertices);
-   			variaveis.setListExpressions(vertices);
-   			
-									//Ajustar o código colocando as leitursa do csv fora do jj
-			BufferedReader brTest = new BufferedReader(new FileReader("exemplo.csv"));		//
-			String text = brTest.readLine();												//
-			String[] strArray = text.split(",");											//
-																							//
-			Integer position = 0, counter = 0;												//
-			ArrayList<String> columnNames = new ArrayList<String>();
+
 			
-			for(String column : strArray) {													//
-			  if(column.equals(variaveis.getVarPrimaryKeyColumn())) position = counter;		//
-				columnNames.add(strArray[counter++]);  																	//
-			  }																				//
+			//------Leitura da primeira linha do CSV para definir qual a posicao da coluna da PrimaryKey------
+			//
+			//------------------------Ajustar o código colocando as leitursa do csv fora do jj
+			BufferedReader csvRead = new BufferedReader(new FileReader("exemplo.csv"));		//
+			String line = csvRead.readLine();												//
+			String[] columnsCsv = line.split(",");											//
+																							//
+			for(String column : columnsCsv) {													//
+				if(column.equals(varPrimaryKeyColumn)) position = counter;	
+				counter++;  																	//
+			}
+
+			//------Leitura do CSV para alimentar listPrimaryKeyVertices, ou seja, pegar todos-------
+			//--------------------os valores do PrimaryKey contidos no CSV--------------------------
 			counter = 0;																	//
 			File file = new File("exemplo.csv"); 											//
-			List<String> lines = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8); //
-			for (String line : lines) {														//
-				strArray = line.split(",");													//
-				variaveis.addPrimaryKeyVertices(strArray[position]);						//
+			List<String> linesCsv = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8); //
+			for (String lineReadCsv : linesCsv) {														//
+				columnsCsv = lineReadCsv.split(",");													//
+				listPrimaryKeyVertices.add(columnsCsv[position]);						//
 				counter++;																	//
    			}
-   									 
+
+			//Preenchimento do hashVertex com todos os vertices e sua respectiva linha
+			counter = 0;																	//
+			int sizeNET = listPrimaryKeyVertices.size() + listVertex.size();
+			// ----------------------------Gerando o .net-------------------------------
+			FileWriter resultFile = new FileWriter("exemplo.net");									//
+			PrintWriter resultFileWriter = new PrintWriter(resultFile);									//
+			resultFileWriter.printf("*Vertices " + (sizeNET-2) + "\n");		//
+
+			for(String vertex : listPrimaryKeyVertices) {
+				if (counter != 0) {
+					hashVertex.put(vertex,counter);
+					resultFileWriter.printf(counter +  " \"" + vertex + "\"\n");							//
+				}
+				counter++;
+			}
+
+			for(String vertex : listVertex) {
+				vertex = vertex.replaceAll("\"","");
+				resultFileWriter.printf(counter +  " \"" + vertex + "\"\n");
+   				hashVertex.put(vertex,counter++);							//
+			}
+			
+			resultFileWriter.printf("*Arcs " + "\n");		//
+			
+	   																						//
+			resultFile.close();
+   			
+   			/*						 
 			//Otimizar esse processo de ordenacao
 			//variaveis.sortByValue();
  
@@ -60,7 +110,7 @@ public class Compiler {
 			PrintWriter gravarArq = new PrintWriter(arq);									//
 			gravarArq.printf("*Vertices " + (variaveis.setHashVertices()-1) + "\n");		//
 			int count = 1;																	//
-	        for (String teste : variaveis.getHashVertices().keySet()) {						//
+	    	for (String teste : variaveis.getHashVertices().keySet()) {						//
 	          	gravarArq.printf(count +  " \"" + teste + "\"\n");							//
 	          	count++;																	//
 	   		}
@@ -139,22 +189,23 @@ TOKEN [IGNORE_CASE] : {
 		  < FORMATELLIPSIS5: ((" ")* < PARENTHESIS_OPEN > (" ")* < ELLIPSIS > (" ")*  < OPTION > (" ")* <PARENTHESIS_CLOSE >) > |
 		  < FORMATELLIPSIS6: ((" ")* < PARENTHESIS_OPEN > (" ")* < ELLIPSIS > (" ")*  < OPTION > (" ")* <BRACKET_CLOSE >) > |
 		  < FORMATELLIPSIS7: ((" ")* < BRACKET_OPEN > (" ")* < OPTION >  (" ")* < ELLIPSIS > (" ")*   <PARENTHESIS_CLOSE >) > |
-          < FORMATELLIPSIS8: ((" ")* < PARENTHESIS_OPEN > (" ")* < OPTION > < ELLIPSIS > (" ")* <PARENTHESIS_CLOSE >) > |
+          < FORMATELLIPSIS8: ((" ")* < PARENTHESIS_OPEN > (" ")* < OPTION > (" ")* < ELLIPSIS > (" ")* <PARENTHESIS_CLOSE >) > |
  	     < OPTION: < NUMBERCHARACTER > | < LETTERCHARACTER  > > |
           < #LETTERCHARACTER: ["a" - "z"] | ["A" - "Z"] > |
           < #NUMBERCHARACTER: (["0"-"9"])* ((".")? ["0"-"9"])+ > |
           < #VARIABLECHARACTER: ["a" - "z", "A" - "Z" ,"0" - "9", "_"] > |
            
  	     < VERTEX_NAME_WITH_QUOTE_MARK: "\"" (~["\""])* "\"" > |
- 	     < HEAD_NAME_IN_CSV_OR_VARIABLE_NAME: (< LETTERCHARACTER >) 
-   (< VARIABLECHARACTER > | "." )* >
+ 	     < HEAD_NAME_IN_CSV_OR_VARIABLE_NAME: (< LETTERCHARACTER >) (< VARIABLECHARACTER > | "." )* >
 }
 
-void start(HashMap<String,String> hashDefinition, VariableDefinition variaveis, LinkedList<Vertex> vertices): { }
+String start(HashMap<String,String> hashDefinition, String primaryKey, HashMap<String,String> hashColumns,
+			LinkedList<ArrayList<String>> listExpression, LinkedList<String> listVertex ): {  }
 {
   	section1(hashDefinition)
-  	section2(variaveis)
-  	section3(vertices)
+  	primaryKey = section2(hashColumns, primaryKey)
+  	section3(listExpression, listVertex)
+  	{ return primaryKey; }
 }
 void section1(HashMap<String,String> hashDefinition):
 {
@@ -179,85 +230,90 @@ void section1(HashMap<String,String> hashDefinition):
  	}
 }
 
-void section2(VariableDefinition variaveis): { }
+String section2(HashMap<String,String> hashColumns, String varPrimaryKeyColumn): { }
 {
-	<VARIABLES> <COLON> ( variableDefinition(variaveis) )+
+	<VARIABLES> <COLON> (varPrimaryKeyColumn = variableDefinition(hashColumns, varPrimaryKeyColumn))+
+	{	return varPrimaryKeyColumn; }
 }
 
-void variableDefinition(VariableDefinition variaveis):
+String variableDefinition(HashMap<String,String> hashColumns, String varPrimaryKeyColumn):
 {
-  Token type, headNameInCsv, variableName; Variable variable = null;
+  Token type, headNameInCsv, variableName;
 }
 {
 	type = <TYPE_VARIABLE> headNameInCsv = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
-	{
-		variable = new Variable(headNameInCsv, type);
+	{	  	
+		if(type.image.equals("*")) {
+		  varPrimaryKeyColumn = headNameInCsv.image;
+		}
 	}
 	(<COLON> variableName = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
 	{
-		variable.setVariableName(variableName);
+		hashColumns.put(headNameInCsv.image,variableName.image);
 	}
 	)?
 	{
-		variaveis.addTabela(variable);
-	}			
+	  return varPrimaryKeyColumn;
+	}
 }
 
-void section3(LinkedList<Vertex> vertices): { }
+void section3(LinkedList<ArrayList<String>> listExpression, LinkedList<String> listVertex): { }
 {
-  	<NETWORK> <COLON> (vertexDefinition(vertices))+
+  	<NETWORK> <COLON> (vertexDefinition(listExpression, listVertex))+
 }
 
-
-void vertexDefinition(LinkedList<Vertex> vertices):
+void vertexDefinition(LinkedList<ArrayList<String>> listExpression, LinkedList<String> listVertex):
 {
   Token vertexName;
-  Vertex vertex = new Vertex();
+  ArrayList<String> vertexExpression = new ArrayList<String>();
 }
 {
-  vertexName = <VERTEX_NAME_WITH_QUOTE_MARK> <COLON> ( operationOR(vertex))+
-  {
-    	vertex.setVertice_name(vertexName.image);
-    	vertices.add(vertex);
-  }
+	vertexName = <VERTEX_NAME_WITH_QUOTE_MARK> <COLON> ( operationOR(vertexExpression)
+	{
+	 	listExpression.add(vertexExpression); 
+	}
+	)+
+	{
+	  	listVertex.add(vertexName.image);
+	}
 }
 
 
-void operationOR(Vertex vertex):
+void operationOR(ArrayList<String> listExpression):
 {
   Token operator;
 }
 {
-	operationAnd(vertex) ( operator = < OR > operationAnd(vertex)
+	operationAnd(listExpression) ( operator = < OR > operationAnd(listExpression)
 	{
-		vertex.addListaExpPosFixa(operator.image);
+		listExpression.add(operator.image);
 	}
 	)*   
 }
 
 
-void operationAnd(Vertex vertex):
+void operationAnd(ArrayList<String> listExpression):
 {
   Token operator;
 }
 {
-	vertexExpression(vertex) ( operator = < AND > vertexExpression(vertex)
+	vertexExpression(listExpression) ( operator = < AND > vertexExpression(listExpression)
 	{
-		vertex.addListaExpPosFixa(operator.image);
+		listExpression.add(operator.image);
 	}
 	)*
 }
 
 
-void vertexExpression(Vertex vertex):
+void vertexExpression(ArrayList<String> listExpression):
 {
   Token variable;
 }
 {
-	variable = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME> <EQUAL> vertexRangeDefinition(vertex,variable)
+	variable = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME> <EQUAL> vertexRangeDefinition(listExpression,variable)
 }
 
-void vertexRangeDefinition(Vertex vertex, Token variable):
+void vertexRangeDefinition(ArrayList<String> listExpression, Token variable):
 {
   Token expression;
 }
@@ -270,46 +326,46 @@ void vertexRangeDefinition(Vertex vertex, Token variable):
 	   		expression = < FORMATELLIPSIS7 > | expression = < FORMATELLIPSIS8 > 
 	   	)
 		{
-	  		vertex.addListaExpPosFixa(variable.image);
-	  		vertex.addListaExpPosFixa(expression.image);
+	  		listExpression.add(variable.image);
+	  		listExpression.add(expression.image);
 		}
-	   	|	rangeExpression(vertex, variable)
+	   	|	rangeExpression(listExpression, variable)
   	)
 }
 
-void rangeExpression(Vertex vertex, Token variable):
+void rangeExpression(ArrayList<String> listExpression, Token variable):
 {
   Token a, b;
 }
 {
 	(
 		(a = <PARENTHESIS_OPEN> | a = <BRACKET_OPEN>)
-		optionList(vertex, variable)
+		optionList(listExpression, variable)
 		(b = <PARENTHESIS_CLOSE> | b = <BRACKET_CLOSE>)
 	)
 	|	a = < OPTION >
 	{
-		vertex.addListaExpPosFixa(variable.image);
-		vertex.addListaExpPosFixa(a.image);
-		vertex.addListaExpPosFixa("=");
+		listExpression.add(variable.image);
+		listExpression.add(a.image);
+		listExpression.add("=");
 	}
 }
 
-void optionList(Vertex vertex, Token variable):
+void optionList(ArrayList<String> listExpression, Token variable):
 {
   Token option;
 }
 {
 	option = <OPTION>
    	{
-   	  	vertex.addListaExpPosFixa(variable.image);
-   	  	vertex.addListaExpPosFixa(option.image);
-	    vertex.addListaExpPosFixa("="); 
+   	  	listExpression.add(variable.image);
+   	  	listExpression.add(option.image);
+	    listExpression.add("="); 
   	}
   	(
-  		<SEMICOLON> optionList(vertex,variable)
+  		<SEMICOLON> optionList(listExpression,variable)
   	  	{
-  	    	vertex.addListaExpPosFixa("OR");
+  	    	listExpression.add("OR");
   	  	}
 	)?
 }

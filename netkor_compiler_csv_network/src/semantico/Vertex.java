@@ -1,6 +1,10 @@
 package semantico;
 
 import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Spliterator;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.text.html.HTMLEditorKit.Parser;
 
@@ -22,6 +26,169 @@ public class Vertex {
 	
 	public void setVertice_name(String vertice_name) {
 		this.vertice_name = vertice_name;
+	}
+	
+	public LinkedList<LinkedList<String>> ajust1(LinkedList<LinkedList<String>> list) {
+		ArrayList<String> operator = new ArrayList<String>();
+		for(LinkedList<String> internList : list) {
+			operator.add(internList.getFirst());
+			//System.out.println(internList);
+			//if(internList.charAt(list.size()) == ')') {
+				
+			//}
+		}
+		return list;
+	}
+	
+	public void ajust(ArrayList<String> list) {
+		//Variaveis correspondentes para pegar os valores dos intervalos (x e y de [x...y])
+		String operatorA = ""; 
+		String operatorB = "";
+		
+		//Ao adicionar ou remover elementos diretamente de estruturas como ArrayList ou LinkedList
+		//dentro de um for como o caso a seguir, acusa o erro de java.util.ConcurrentModificationException
+		//Portanto deve ser utilizado um ListIterator para fazer esse tratamente de forma segura
+		ListIterator<String> iter = list.listIterator();
+		while(iter.hasNext()){
+		    String internList = iter.next();
+		    internList = internList.replaceAll(" ", "");
+			operatorA = internList;
+		    //Caso (x...)
+		    if(internList.startsWith("(") && internList.endsWith("...)")) {	
+				//Ajustando para ter apenas a componente x (retirando os "(" e "...)" do intervalo )	
+				iter.remove();
+				operatorA = operatorA.replace("...)", "");
+				operatorA = operatorA.replace("(", "");
+				//Primeiro eh adicionado o operando e depois o operador na lista de expressao
+				iter.add(operatorA);
+				iter.add(">");
+			}
+			//Caso [x...)
+			else if(internList.startsWith("[") && internList.endsWith("...)")) {
+				//Ajustando para ter apenas a componente x (tirando "[" e "...)" do intervalo )	
+				iter.remove();
+				operatorA = operatorA.replace("...)", "");
+				operatorA = operatorA.replace("[", "");
+				iter.add(operatorA);
+				iter.add(">=");
+			}
+			//Case (...x)
+			else if(internList.startsWith("(...") && internList.endsWith(")")) {
+				//Ajustando para ter apenas a componente x (tirando "(..." e ")" do intervalo )	
+				iter.remove();
+				operatorA = operatorA.replace("(...", "");
+				operatorA = operatorA.replace(")", "");
+				//Adicionando x na lista de expressao e ">"
+				iter.add(operatorA);
+				iter.add("<");
+			}
+			//Case (...x]
+			else if(internList.startsWith("(...") && internList.endsWith("]")) {
+				//Ajustando para ter apenas a componente x (tirando "(..." e "]" do intervalo )	
+				iter.remove();
+				operatorA = operatorA.replace("(...", "");
+				operatorA = operatorA.replace("]", "");
+				//Adicionando x na lista de expressao e ">"
+				iter.add(operatorA);
+				iter.add("<=");
+			}
+			//Case (x...y) or [x...y] or (x...y] or [x...y) 
+			else if(internList.contains("...")) {
+				
+				//Separando x e y em range[0] e range[1] respectivamente
+				String[] range = operatorA.split("\\.{3}");;
+				
+				//String destinada a armazenar a variavel do .map (SC2.idade, por exemplo)
+				//correspondente a expressao tratada no caso (variavel = [x...y])
+				String variable = "";
+				
+				if(internList.startsWith("(") && internList.endsWith(")")) {	
+					iter.remove();
+					//Ajustando para ter apenas a componente x e y (tirando "(", ")" e "..." do intervalo )	
+					operatorA = range[0];
+					operatorA = operatorA.replace("(", "");
+					operatorB = range[1];
+					operatorB = operatorB.replace(")", "");
+					
+					variable = list.get(iter.previousIndex());
+					//Adicionando x na lista de expressao e ">"
+					iter.add(operatorA);
+					iter.add(">");
+					
+					iter.add(variable);
+					iter.add(operatorB);
+					iter.add("<");
+					iter.add("AND");
+				}
+				//Case [x...)
+				else if(internList.startsWith("[") && internList.endsWith(")")) {
+					//Ajustando para ter apenas a componente x (tirando "[" e "...)" do intervalo )	
+					iter.remove();
+					//Ajustando para ter apenas a componente x e y (tirando "[", ")" e "..." do intervalo )	
+					operatorA = range[0];
+					operatorA = operatorA.replace("[", "");
+					operatorB = range[1];
+					operatorB = operatorB.replace(")", "");
+						
+					variable = list.get(iter.previousIndex());
+					//Adicionando x na lista de expressao e ">"
+					iter.add(operatorA);
+					iter.add(">=");
+					
+					iter.add(variable);
+					iter.add(operatorB);
+					iter.add("<");
+					iter.add("AND");
+				}
+				//Case (...x)
+				else if(internList.startsWith("(") && internList.endsWith("]")) {
+					iter.remove();
+					//Ajustando para ter apenas a componente x e y (tirando "(", ")" e "..." do intervalo )	
+					operatorA = range[0];
+					operatorA = operatorA.replace("(", "");
+					operatorB = range[1];
+					operatorB = operatorB.replace("]", "");
+						
+					variable = list.get(iter.previousIndex());
+					//Adicionando x na lista de expressao e ">"
+					iter.add(operatorA);
+					iter.add(">");
+					
+					iter.add(variable);
+					iter.add(operatorB);
+					iter.add("<=");
+					iter.add("AND");
+				}
+				//Case (...x]
+				else if(internList.startsWith("[") && internList.endsWith("]")) {
+					//Ajustando para ter apenas a componente x (tirando "(" e "...)" do intervalo )	
+					iter.remove();
+					//Ajustando para ter apenas a componente x e y (tirando "(", ")" e "..." do intervalo )	
+					operatorA = range[0];
+					operatorA = operatorA.replace("[", "");
+					operatorB = range[1];
+					operatorB = operatorB.replace("]", "");
+						
+					variable = list.get(iter.previousIndex());
+					//Adicionando x na lista de expressao e ">"
+					iter.add(operatorA);
+					iter.add(">=");
+					
+					iter.add(variable);
+					iter.add(operatorB);
+					iter.add("<=");
+					iter.add("AND");
+				}
+			}
+	}
+				
+				
+			//operator.add(internList.getLast());
+			
+			//System.out.println(operator);
+			//if(internList.charAt(list.size()) == ')') {
+				
+			//}
 	}
 	
 	public String getVertice_name() {
