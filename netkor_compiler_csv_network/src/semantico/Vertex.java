@@ -3,6 +3,8 @@ package semantico;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -11,7 +13,9 @@ import javax.swing.text.html.HTMLEditorKit.Parser;
 import parser.Token;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 public class Vertex {
 
@@ -28,115 +32,202 @@ public class Vertex {
 		this.vertice_name = vertice_name;
 	}
 	
-	public LinkedList<LinkedList<String>> ajust1(LinkedList<LinkedList<String>> list) {
-		ArrayList<String> operator = new ArrayList<String>();
-		for(LinkedList<String> internList : list) {
-			operator.add(internList.getFirst());
-			//System.out.println(internList);
-			//if(internList.charAt(list.size()) == ')') {
-				
-			//}
+	public boolean operation(int valueExpression, int valueCsv, String operation) {
+		if(operation == ">=") {
+			if(valueCsv >= valueExpression){
+				return true;
+			}
 		}
-		return list;
+		else if(operation == ">") {
+			if(valueCsv > valueExpression){
+				return true;
+			}	}
+		else if(operation == "<=") {
+			if(valueCsv <= valueExpression){
+				return true;
+			}}
+		else if(operation == "<") {
+			if(valueCsv < valueExpression) {
+				return true;
+			}}
+		else if(operation == "=") {
+			if(valueCsv == valueExpression) {
+				return true;
+			}
+		}	
+		return false;
 	}
 	
+	public boolean ajust1(ArrayList<String> expression, String[] columnsCSV, LinkedHashMap<String,Integer> columnPosition, HashMap<String,String> hashPosition  ) {
+		String operation = "";
+		Integer operand; 
+		Integer counter = 0;
+		ArrayList<String> pilha = new ArrayList<String>();
+		//System.out.println(columnsCSV);
+		for(String internList : expression) {
+			if(internList == "OR") {
+				if((pilha.get(counter-1) == "false") && (pilha.get(counter-2) == "false")) {
+					return false;
+				}
+				else {
+					pilha.remove(counter-1);
+					pilha.remove(counter-2);
+					pilha.add("true");
+					counter = counter-2;
+				}
+			}
+			else if(internList == "AND") {
+				if((pilha.get(counter-1) == "false") ||  (pilha.get(counter-2) == "false")) {
+					return false;
+				}
+				else {
+					pilha.remove(counter-1);
+					pilha.remove(counter-2);
+					pilha.add("true");
+					counter = counter-2;
+				}
+			}
+			else if(((((internList == "=" ) || (internList == ">" )) || (internList == ">=" )) || (internList == "<" )) || (internList == "<=" )) {
+				Integer valueCsv; 
+				operation = internList;
+				operand = Integer.valueOf(pilha.get(counter-1));
+				if(columnsCSV[(columnPosition.get(pilha.get(counter-2)))].isBlank()) valueCsv = 0;
+				else {
+					valueCsv = Integer.valueOf(columnsCSV[(columnPosition.get(pilha.get(counter-2)))]);
+				}
+				//Integer valueCsv = Integer.valueOf(columnsCSV[(columnPosition.get(pilha.get(counter-2)))]);
+				//System.out.println(columnPosition.get(pilha.get(counter-2)) + " --- " +pilha.get(counter-2) + "  "+ valueCsv);
+				if(operation(operand,valueCsv, operation)) {
+					pilha.remove(counter-1);
+					pilha.remove(counter-2);
+					counter = counter -2;
+					pilha.add("true");
+				}
+				else {
+					//System.out.println(pilha +"\n" +operand + " " + operation + " " + valueCsv);
+					pilha.remove(counter-1);
+					pilha.remove(counter-2);
+					pilha.add("false");
+					counter = counter -2;
+				}	
+			}
+			else {
+				pilha.add(internList);
+			}
+			counter++;
+		}
+		if(pilha.contains("false")) return false;
+		return true;	
+	}
+	
+	//Metodo responsavel em tratar as expressoes com range de um token unico com "..." 
+	//					Exemplos: ("(...x)", "[x...)","[x...y]", etc.)
+	
+	//-==O metodo consiste de receber cada expressao da lista de vertices e percorrer por meio de um listIterator
+	//-==para encontrar se ha um intervalo de "...", portanto caracteriza uma expressao de token unico como "(...x)" 
+	//-==Se for o caso, entao ha um processamento para cada tipo de token ajustando 
+	
+	//-====Exemplo de entrada: [variavel1, (x...y)], o listInterator percorre ate a posicao (x...y) e faz o processamento   
 	public void ajust(ArrayList<String> list) {
 		//Variaveis correspondentes para pegar os valores dos intervalos (x e y de [x...y])
-		String operatorA = ""; 
-		String operatorB = "";
+		String operandA = ""; 
+		String operandB = "";
 		
 		//Ao adicionar ou remover elementos diretamente de estruturas como ArrayList ou LinkedList
-		//dentro de um for como o caso a seguir, acusa o erro de java.util.ConcurrentModificationException
+		//internamente em um loop como o ocorre abaixo, eh acusado erro de java.util.ConcurrentModificationException
 		//Portanto deve ser utilizado um ListIterator para fazer esse tratamente de forma segura
 		ListIterator<String> iter = list.listIterator();
 		while(iter.hasNext()){
 		    String internList = iter.next();
 		    internList = internList.replaceAll(" ", "");
-			operatorA = internList;
-		    //Caso (x...)
+			operandA = internList;
+		    //=========================Case (x...)======================
 		    if(internList.startsWith("(") && internList.endsWith("...)")) {	
 				//Ajustando para ter apenas a componente x (retirando os "(" e "...)" do intervalo )	
 				iter.remove();
-				operatorA = operatorA.replace("...)", "");
-				operatorA = operatorA.replace("(", "");
+				operandA = operandA.replace("...)", "");
+				operandA = operandA.replace("(", "");
 				//Primeiro eh adicionado o operando e depois o operador na lista de expressao
-				iter.add(operatorA);
+				iter.add(operandA);
 				iter.add(">");
 			}
-			//Caso [x...)
-			else if(internList.startsWith("[") && internList.endsWith("...)")) {
+		    //=========================Case [x...)======================
+		    else if(internList.startsWith("[") && internList.endsWith("...)")) {
 				//Ajustando para ter apenas a componente x (tirando "[" e "...)" do intervalo )	
 				iter.remove();
-				operatorA = operatorA.replace("...)", "");
-				operatorA = operatorA.replace("[", "");
-				iter.add(operatorA);
+				operandA = operandA.replace("...)", "");
+				operandA = operandA.replace("[", "");
+				iter.add(operandA);
 				iter.add(">=");
 			}
-			//Case (...x)
-			else if(internList.startsWith("(...") && internList.endsWith(")")) {
+		    //=========================Case (...x)======================
+    		else if(internList.startsWith("(...") && internList.endsWith(")")) {
 				//Ajustando para ter apenas a componente x (tirando "(..." e ")" do intervalo )	
 				iter.remove();
-				operatorA = operatorA.replace("(...", "");
-				operatorA = operatorA.replace(")", "");
+				operandA = operandA.replace("(...", "");
+				operandA = operandA.replace(")", "");
 				//Adicionando x na lista de expressao e ">"
-				iter.add(operatorA);
+				iter.add(operandA);
 				iter.add("<");
 			}
-			//Case (...x]
+		    //=========================Case (...x]======================
 			else if(internList.startsWith("(...") && internList.endsWith("]")) {
 				//Ajustando para ter apenas a componente x (tirando "(..." e "]" do intervalo )	
 				iter.remove();
-				operatorA = operatorA.replace("(...", "");
-				operatorA = operatorA.replace("]", "");
+				operandA = operandA.replace("(...", "");
+				operandA = operandA.replace("]", "");
 				//Adicionando x na lista de expressao e ">"
-				iter.add(operatorA);
+				iter.add(operandA);
 				iter.add("<=");
 			}
-			//Case (x...y) or [x...y] or (x...y] or [x...y) 
+		    //==============Case (x...y) or [x...y] or (x...y] or [x...y)================
 			else if(internList.contains("...")) {
-				
-				//Separando x e y em range[0] e range[1] respectivamente
-				String[] range = operatorA.split("\\.{3}");;
+				//Separando x e y em range[0] e range[1] respectivamente a partir da substring "..."
+				//teremos entao:	range[0] = "(x"	 e	range[1] = "y)" 	
+				String[] range = operandA.split("\\.{3}");;
 				
 				//String destinada a armazenar a variavel do .map (SC2.idade, por exemplo)
 				//correspondente a expressao tratada no caso (variavel = [x...y])
 				String variable = "";
-				
+				//============================Case (x...y)=========================
 				if(internList.startsWith("(") && internList.endsWith(")")) {	
 					iter.remove();
-					//Ajustando para ter apenas a componente x e y (tirando "(", ")" e "..." do intervalo )	
-					operatorA = range[0];
-					operatorA = operatorA.replace("(", "");
-					operatorB = range[1];
-					operatorB = operatorB.replace(")", "");
+					//Ajustando para ter apenas a componente x e y (tirando "(" e ")" do intervalo )	
+					operandA = range[0];
+					operandA = operandA.replace("(", "");
+					operandB = range[1];
+					operandB = operandB.replace(")", "");
 					
 					variable = list.get(iter.previousIndex());
 					//Adicionando x na lista de expressao e ">"
-					iter.add(operatorA);
+					iter.add(operandA);
 					iter.add(">");
-					
+					//Como o intervalo eh composto de dois operandos (x e y), portanto a expressao final 	
+					//precisa ter um formato tipo [variavel, operandoA, >, variavel, operandoB, <]
+					//Ou seja, a variavel precisa ser inserida novamente na lista 
+					//Assim como operandoB, a operacao ("<") e finalmente o AND ja que se trata de um intervalo
 					iter.add(variable);
-					iter.add(operatorB);
+					iter.add(operandB);
 					iter.add("<");
 					iter.add("AND");
 				}
-				//Case [x...)
+				//============================Case [x...y)=========================
 				else if(internList.startsWith("[") && internList.endsWith(")")) {
 					//Ajustando para ter apenas a componente x (tirando "[" e "...)" do intervalo )	
 					iter.remove();
 					//Ajustando para ter apenas a componente x e y (tirando "[", ")" e "..." do intervalo )	
-					operatorA = range[0];
-					operatorA = operatorA.replace("[", "");
-					operatorB = range[1];
-					operatorB = operatorB.replace(")", "");
+					operandA = range[0];
+					operandA = operandA.replace("[", "");
+					operandB = range[1];
+					operandB = operandB.replace(")", "");
 						
 					variable = list.get(iter.previousIndex());
 					//Adicionando x na lista de expressao e ">"
-					iter.add(operatorA);
+					iter.add(operandA);
 					iter.add(">=");
 					
 					iter.add(variable);
-					iter.add(operatorB);
+					iter.add(operandB);
 					iter.add("<");
 					iter.add("AND");
 				}
@@ -144,18 +235,18 @@ public class Vertex {
 				else if(internList.startsWith("(") && internList.endsWith("]")) {
 					iter.remove();
 					//Ajustando para ter apenas a componente x e y (tirando "(", ")" e "..." do intervalo )	
-					operatorA = range[0];
-					operatorA = operatorA.replace("(", "");
-					operatorB = range[1];
-					operatorB = operatorB.replace("]", "");
+					operandA = range[0];
+					operandA = operandA.replace("(", "");
+					operandB = range[1];
+					operandB = operandB.replace("]", "");
 						
 					variable = list.get(iter.previousIndex());
 					//Adicionando x na lista de expressao e ">"
-					iter.add(operatorA);
+					iter.add(operandA);
 					iter.add(">");
 					
 					iter.add(variable);
-					iter.add(operatorB);
+					iter.add(operandB);
 					iter.add("<=");
 					iter.add("AND");
 				}
@@ -164,31 +255,23 @@ public class Vertex {
 					//Ajustando para ter apenas a componente x (tirando "(" e "...)" do intervalo )	
 					iter.remove();
 					//Ajustando para ter apenas a componente x e y (tirando "(", ")" e "..." do intervalo )	
-					operatorA = range[0];
-					operatorA = operatorA.replace("[", "");
-					operatorB = range[1];
-					operatorB = operatorB.replace("]", "");
+					operandA = range[0];
+					operandA = operandA.replace("[", "");
+					operandB = range[1];
+					operandB = operandB.replace("]", "");
 						
 					variable = list.get(iter.previousIndex());
 					//Adicionando x na lista de expressao e ">"
-					iter.add(operatorA);
+					iter.add(operandA);
 					iter.add(">=");
 					
 					iter.add(variable);
-					iter.add(operatorB);
+					iter.add(operandB);
 					iter.add("<=");
 					iter.add("AND");
 				}
 			}
-	}
-				
-				
-			//operator.add(internList.getLast());
-			
-			//System.out.println(operator);
-			//if(internList.charAt(list.size()) == ')') {
-				
-			//}
+		}
 	}
 	
 	public String getVertice_name() {

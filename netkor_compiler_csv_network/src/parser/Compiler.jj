@@ -18,119 +18,150 @@ public class Compiler {
 		Compiler compiler = null;
 		
 		//Structure Section 1
+		//Contem as opcoes definidas no map a partir da section 1 e armazenadas no hashDefinition
 		HashMap<String,String> hashDefinition =  new HashMap<String,String>();
 
 		//Structure Section 2
+		//==varPrimaryKeyColumn	   - Variavel que armazena o nome da coluna da primary Key
+		//==hashColumns			   - Hash que contem a definicoes das variaveis na section 2 e os nomes das colunas correspondentes
 		String varPrimaryKeyColumn = "";
 		HashMap<String,String> hashColumns = new HashMap<String,String>();
 
 		//Structure Section 3
+		//==listVertex			   - Lista que armazena cada vertice definido na section 3
+		//==listExpression		   - Lista que armazena cada expressao dos vertices da section 3
 		LinkedList<String> listVertex = new LinkedList<String>();
 		LinkedList<ArrayList<String>> listExpression = new LinkedList<ArrayList<String>>();
-		LinkedList<LinkedList<String>> listExpressionCorrect = new LinkedList<LinkedList<String>>();
 		
 		//Variaveis auxiliares para leitura do CSV e impressao do arquivo .NET
-		int position = 0, counter = 0;						
-
+		//==position 		  	  - variavel responsavel em armazenar a posicao da coluna da PrimaryKey
+		//==counterColumnsCsv 	  - contador utilizado para identificar as posicoes das colunas da Section 2 no csv
+		//==counterLineCsv 	  	  - contador utilizado para percorrer cada linha do Csv
+ 		//==counterLineExpression - contador utilizado para percorrer cada expressao
+ 		//==counterLineNet 		  - contador utilizado para imprimir cada linha dos vertices no arquivo net resultante
+ 		//==totalLines 			  - total de vertices, eh a soma das linhas do Csv mais os vertices da section 3
+		Integer position = 0;
+		Integer counterColumnCsv = 0;
+		Integer counterLineCsv = 1;
+		Integer counterLineExpression = 1;
+		Integer counterLineNet = 1;					
+		int totalLines = 0;
+		
 		//Criar outra classe para comportar esse tipo de opcao
-		String csvFile = "exemplo.csv";
+		String csvFileInput = "exemplo.csv";			//Para testar o teste do registro netKor, basta modificar			
+		String mapFile = "exemplo.map";					//Basta modificar o .csv e o .map como exemplo2
+		String csvFileOutput = "exemplo.net";
 
 		//Structure .Net
+		//listPrimaryKeyVertices - Lista contendo todos os valores da coluna de primaryKey
+		//hashVertex			 - Hash que contem o nome do vertice e a sua linha (arquivo Net)
+		//hashColumnPosition	 - Hash que contem os valores das coluna das variaveis definidas na section 2 apos leitura do Csv
+		//hashArc				 - Hash que armazena todos as expressoes validas para cada vertice do Csv 
 		LinkedList<String> listPrimaryKeyVertices = new LinkedList<String>();
 		LinkedHashMap<String,Integer> hashVertex = new LinkedHashMap<String,Integer>();
+		LinkedHashMap<String,Integer> hashColumnPosition = new LinkedHashMap<String,Integer>();
+		LinkedHashMap<Integer,ArrayList<Integer>> hashArcs = new LinkedHashMap<Integer,ArrayList<Integer>>();
 
+		//Classe e nome devem ser alterados!
+		//Por enquanto eh a classe  que poussui o metodo de preparacao da expressao ao formato apropriado
+		//apos leitura da section 3 e tambem o metodo de calculo de ligacao dos vertices utilizado para
+		//para produzir os arcs do .net
 		Vertex quebraGalho = new Vertex();
 		
 		try {
-			compiler = new Compiler(new FileInputStream("exemplo.map"));
+			compiler = new Compiler(new FileInputStream(mapFile));
 			varPrimaryKeyColumn = Compiler.start(hashDefinition, varPrimaryKeyColumn, hashColumns, listExpression, listVertex);	   			
 
+			//Tratamento das expressoes do formato token unico ao formato adequado
+			//===========Tanto o nome da classe quanto o nome do metodo devem ser alterados============//
 			for(ArrayList<String> list : listExpression) {
 				quebraGalho.ajust(list);
-				System.out.println(list);
 			}
 
+			//Forma rapida de conseguir a quantidade de linhas o CSV possui (tambem eh leitura do csv, mas desconsiderei)
+			Integer totalLinesCsv;
+			LineNumberReader  lnr = new LineNumberReader(new FileReader(new File(csvFileInput)));
+			lnr.skip(Long.MAX_VALUE);
+			totalLinesCsv = lnr.getLineNumber();
+			lnr.close();
+
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//========================================PRIMEIRA LEITURA DO CSV=========================================//
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			
-			//------Leitura da primeira linha do CSV para definir qual a posicao da coluna da PrimaryKey------
-			//
-			//------------------------Ajustar o código colocando as leitursa do csv fora do jj
-			BufferedReader csvRead = new BufferedReader(new FileReader("exemplo.csv"));		//
-			String line = csvRead.readLine();												//
-			String[] columnsCsv = line.split(",");											//
-																							//
-			for(String column : columnsCsv) {													//
-				if(column.equals(varPrimaryKeyColumn)) position = counter;	
-				counter++;  																	//
-			}
+			//-----------------------------------------------------Ajustar o código colocando as leitursa do csv fora do jj	//
+			BufferedReader csvReader = new BufferedReader(new FileReader(csvFileInput));										//
+			String line = csvReader.readLine();																				//
+			String[] columnsCsv = line.split(",");																			//
+			//Loop de leitura que percorre cada coluna da primeira linha do CSV para definir 								//
+			//qual a posicao da coluna da PrimaryKey Assim como as posicao das variaveis definidas na section 2				//																//
+			for(String column : columnsCsv) {																				//
+				if(column.equals(varPrimaryKeyColumn)) position = counterColumnCsv;											//
+				else if(hashColumns.containsKey(column)) hashColumnPosition.put(hashColumns.get(column),counterColumnCsv);	//
+				counterColumnCsv++;																							//
+			}																												//
+			csvReader.close();																								//
+		
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//========================================SEGUNDA LEITURA DO CSV==========================================//
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			
+			//Pulando a leitura das primeiras linhas ja que as colunas ja foram lidas anteriormente
+			BufferedReader csvReader2 = new BufferedReader(new FileReader(csvFileInput));		
+			String lineCsv = null;
+			csvReader2.readLine();												
+			//Leitura do CSV, para cada linha do Csv:
+			//	1 ==== Preenchimento do listPrimaryKeyVertices com os valores da coluna Primary Key no Csv
+			//	2 ==== Loop que avalia todas expressoes definidas na section 3 para cada linha do Csv
+			//	 	   se a expressao for valida o arraylist expressions recebe a linha da expressao.
+			//		   Ao final armazenando todas as expressoes validas para cada linha no hashArcs
+ 			while ((lineCsv = csvReader2.readLine()) != null) {
+ 			  	columnsCsv = lineCsv.split(",");													
+	/* 1 */		listPrimaryKeyVertices.add(columnsCsv[position]);						
 
-			//------Leitura do CSV para alimentar listPrimaryKeyVertices, ou seja, pegar todos-------
-			//--------------------os valores do PrimaryKey contidos no CSV--------------------------
-			counter = 0;																	//
-			File file = new File("exemplo.csv"); 											//
-			List<String> linesCsv = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8); //
-			for (String lineReadCsv : linesCsv) {														//
-				columnsCsv = lineReadCsv.split(",");													//
-				listPrimaryKeyVertices.add(columnsCsv[position]);						//
-				counter++;																	//
-   			}
-
-			//Preenchimento do hashVertex com todos os vertices e sua respectiva linha
-			counter = 0;																	//
-			int sizeNET = listPrimaryKeyVertices.size() + listVertex.size();
-			// ----------------------------Gerando o .net-------------------------------
-			FileWriter resultFile = new FileWriter("exemplo.net");									//
-			PrintWriter resultFileWriter = new PrintWriter(resultFile);									//
-			resultFileWriter.printf("*Vertices " + (sizeNET-2) + "\n");		//
-
-			for(String vertex : listPrimaryKeyVertices) {
-				if (counter != 0) {
-					hashVertex.put(vertex,counter);
-					resultFileWriter.printf(counter +  " \"" + vertex + "\"\n");							//
+	/* 2 */		ArrayList<Integer> expressions = new ArrayList<Integer>();															
+				counterLineExpression = 1;																	
+				for(ArrayList<String> expression : listExpression) {
+					if(quebraGalho.ajust1(expression, columnsCsv, hashColumnPosition, hashColumns)) {
+						expressions.add(totalLinesCsv + counterLineExpression);
+					}
+					counterLineExpression++;	
 				}
-				counter++;
+				hashArcs.put(counterLineCsv++,expressions);														
 			}
+			csvReader2.close();
 
-			for(String vertex : listVertex) {
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//=======================================IMPRESSAO DO ARQUIVO NET=========================================//
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+			//A impressao do arquivo net consiste de tres loops de impressao
+			//	1 ==== Impressao dos vertices lidos no CSV a partir da coluna primaria definida e armazenada no listPrimaryKeyVertices
+			//  2 ==== Impressao dos vertices definidos na section 3 
+			totalLines = listPrimaryKeyVertices.size() + listVertex.size();
+
+			FileWriter resultFile = new FileWriter(csvFileOutput);									
+			PrintWriter resultFileWriter = new PrintWriter(resultFile);									
+  /* 1 */	resultFileWriter.printf("*Vertices " + totalLines + "\n");		
+			//Impressao no arquvio net dos vertices do Csv a partir da coluna primaria:
+  		 	for(String vertex : listPrimaryKeyVertices) {
+				resultFileWriter.printf(counterLineNet++ +  " \"" + vertex + "\"\n");							
+			}
+			//Impressao no arquivo net os vertices da section 3 a partir do nome do vertice:
+  /* 2 */	for(String vertex : listVertex) {
 				vertex = vertex.replaceAll("\"","");
-				resultFileWriter.printf(counter +  " \"" + vertex + "\"\n");
-   				hashVertex.put(vertex,counter++);							//
+				resultFileWriter.printf(counterLineNet +  " \"" + vertex + "\"\n");
+   				hashVertex.put(vertex,counterLineNet++);							
 			}
-			
-			resultFileWriter.printf("*Arcs " + "\n");		//
-			
-	   																						//
+  /* 3 */	resultFileWriter.printf("*Arcs " + "\n");
+			//Impressao no arquivo net os arcs passando por cada Key do hashArcs e imprimindo todos seus values
+			Set<Map.Entry<Integer,ArrayList<Integer>>> entries = hashArcs.entrySet();
+			for (Map.Entry<Integer,ArrayList<Integer>> entry : entries) {	
+				for(Integer valueExpression : entry.getValue()) {
+					resultFileWriter.printf(entry.getKey() + " " + valueExpression + "\n");
+				}							
+			}																						
 			resultFile.close();
-   			
-   			/*						 
-			//Otimizar esse processo de ordenacao
-			//variaveis.sortByValue();
- 
-									 //Ajustar o código colocando a geracao do .net fora do jj
-        	FileWriter arq = new FileWriter("exemplo.net");									//
-			PrintWriter gravarArq = new PrintWriter(arq);									//
-			gravarArq.printf("*Vertices " + (variaveis.setHashVertices()-1) + "\n");		//
-			int count = 1;																	//
-	    	for (String teste : variaveis.getHashVertices().keySet()) {						//
-	          	gravarArq.printf(count +  " \"" + teste + "\"\n");							//
-	          	count++;																	//
-	   		}
-
-	   		BufferedReader csvReader = new BufferedReader(new FileReader("exemplo.csv"));
-			String row;
-			while ((row = csvReader.readLine()) != null) {
-    		strArray = row.split(",");
-			for(int i = 0; i < strArray.length; i++) {
-					variaveis.setHashListCSV(columnNames.get(i), strArray[i]);						// 
-				}    
-// do something with the data
-			}
-			Set<Map.Entry<String,String>> entries = variaveis.getHashListCSV().entrySet();
-   			for (Map.Entry<String, String> teste : entries) {						//	          
-				gravarArq.printf(teste.getKey() +  " \"" + teste.getValue() + "\"\n");							//
-			}
-	   																						//
-			 arq.close();																	//
-		*/
 		}
 		catch(FileNotFoundException e) {
 			System.err.println("\nFile not found: ");
@@ -190,7 +221,7 @@ TOKEN [IGNORE_CASE] : {
 		  < FORMATELLIPSIS6: ((" ")* < PARENTHESIS_OPEN > (" ")* < ELLIPSIS > (" ")*  < OPTION > (" ")* <BRACKET_CLOSE >) > |
 		  < FORMATELLIPSIS7: ((" ")* < BRACKET_OPEN > (" ")* < OPTION >  (" ")* < ELLIPSIS > (" ")*   <PARENTHESIS_CLOSE >) > |
           < FORMATELLIPSIS8: ((" ")* < PARENTHESIS_OPEN > (" ")* < OPTION > (" ")* < ELLIPSIS > (" ")* <PARENTHESIS_CLOSE >) > |
- 	     < OPTION: < NUMBERCHARACTER > | < LETTERCHARACTER  > > |
+ 	      < OPTION: < NUMBERCHARACTER > | < LETTERCHARACTER  > > |
           < #LETTERCHARACTER: ["a" - "z"] | ["A" - "Z"] > |
           < #NUMBERCHARACTER: (["0"-"9"])* ((".")? ["0"-"9"])+ > |
           < #VARIABLECHARACTER: ["a" - "z", "A" - "Z" ,"0" - "9", "_"] > |
@@ -284,7 +315,7 @@ void operationOR(ArrayList<String> listExpression):
   Token operator;
 }
 {
-	operationAnd(listExpression) ( operator = < OR > operationAnd(listExpression)
+	operationAND(listExpression) ( operator = < OR > operationAND(listExpression)
 	{
 		listExpression.add(operator.image);
 	}
@@ -292,7 +323,7 @@ void operationOR(ArrayList<String> listExpression):
 }
 
 
-void operationAnd(ArrayList<String> listExpression):
+void operationAND(ArrayList<String> listExpression):
 {
   Token operator;
 }
