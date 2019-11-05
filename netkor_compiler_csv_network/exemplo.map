@@ -64,28 +64,24 @@ Variables:
 # links occur only on the same line in the CSV file 
 # sintaxe: vertice_name : range_expression_with_variable_name  
 Network:
-"Teste com Token 1" : a.a =   (  100... )
-"Teste com Token 2" : b.b = [200...)
-"Teste com Token 3" : c.c = (...100)
-"Teste com Token 4" : d.d = (...200]
+"menor de idade" : sc1.idade = (...17] 
+"idade 18-34": sc1.idade =  [18...35)
+"idade 35-64": sc1.idade = [35...65) 
+"idade 65-": sc1.idade = [65...)
+"masculino": sc1_1.sexo = 1
+"feminino": sc1_1.sexo = 2
+"casado/junto": sc3.relacionamento = 1 OR sc3a.morando = 1 OR sc3a.morando = (3...4) 
+"separado/viuvo/solteiro": sc3.relacionamento = [2;3] OR sc3a.morando = 2  
+"fumante" : sc7.fumante = 1
+"ex-fumante": sc7.fumante = 2
+"nunca fumou": sc7.fumante = 3
+"saúde física boa": sc8_1.saude.fisica = [1...3]
+"saúde física ruim": sc8_1.saude.fisica = [4;5]
+"saúde mental boa": sc8_2.saude.mental = [1...3]
+"saúde mental ruim": sc8_2.saude.mental = [4;5]
+"medo pânico": sc20.medo.panico = 1
+"ataque raiva": sc20_2.ataque.raiva = 1
+"fobias específicas": sc27a.primeiro.medo =  1 OR sc27b.segundo.medo = 1 OR sc27c.terceiro.medo = 1 OR sc27d.quarto.medo = 1 OR sc27e.quinto.medo = 1 OR sc27f.sexto.medo = 1
+"timidez": sc29.timidez  = 1 
+"recusou responder": sc1.idade = 999 OR sc3.relacionamento = 9 OR sc3a.morando = 9 OR sc7.fumante = 9 OR sc8_1.saude.fisica = 9 OR sc8_2.saude.mental = 9 OR sc20.medo.panico = 9 OR sc20_2.ataque.raiva = 9 OR sc27a.primeiro.medo = 9 OR sc27b.segundo.medo = 9 OR sc27c.terceiro.medo = 9 OR  sc27d.quarto.medo = 9 OR sc27e.quinto.medo = 9 OR sc27f.sexto.medo = 9 OR sc29.timidez = 9
 
-"Teste com Token 5" : e.e = (30...40) OR x.x = (1...2)
-"Teste com Token 6" : f.f = [50...80)
-"Teste com Token 7" : g.g = (41...123]
-"Teste com Token 8" : h.h = [999...9999]
-
-"Teste apenas com ;" : Teste1.x = [1;2]
-"Teste2 apenas com ;" : Teste2.x = [3;5;6]
-
-"Teste com OR" : Teste3.x = 7 OR Teste3.y = 10
-"Teste com OR" : Teste4.x = 8 OR Teste4.y = 11 OR Teste4.z = 100
-
-"Teste com OR e AND" : Teste5.x = 9 AND Teste5.y = 12 OR Teste5.z = 101
-"Teste com OR e AND" : Teste6.x = 10 OR Teste6.y = 13 AND Teste6.z = 102
-"Teste com OR e AND" : Teste7.x = 11 OR Teste7.y = 14 AND Teste7.z = 103
-"Teste com OR e AND" : Teste8.x = 12 OR Teste8.y = 15 AND Teste8.z = 104
-
-"Teste com OR, AND e ;" : Teste9.x = 5 OR Teste9.y = [10;50] AND Teste9.z = 100
-"Teste com OR, AND e ;" : Teste10.x = 5 AND Teste10.y = [10;50] OR Teste10.z = 100
-"Teste com OR, AND e ;" : Teste11.x = 5 AND Teste11.y = [10;50;100] OR Teste11.z = 1000
-"Teste com OR, AND e ;" : Teste12.x = [5;10;15] AND Teste12.y = [10;50;100] OR Teste12.z = 1000
