@@ -1,7 +1,5 @@
 package semantic;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
 public class Vertex {
@@ -168,10 +166,11 @@ public class Vertex {
 	
 	//-=========a lista expression sempre tera um formato do tipo:		[variavel, operando, operacao, ...]
 	
-	public boolean verifierCsvExpression(String[] columnsCSV, LinkedHashMap<String,Integer> columnPosition, HashMap<String,String> hashPosition) {
-		Integer operand;
+	public boolean verifierCsvExpression(String[] columnsCSV, VariableList variableList) {
 		Item item;
+		Item operandExpression, operandCsv = null;
 		Integer counter = 0;
+		String valueCsv;
 		//Pilha que empilhara cada token contido 
 		LinkedList<Item> stack = new LinkedList<Item>();
 		for(Item token : this.expression) {
@@ -179,84 +178,70 @@ public class Vertex {
 			//Se alguma das posicoes nao for falsa, portanto remove-se os dois valores booleanos anteriores
 			//e eh empilhada true, se nao, a expressao esta incorreta para esta linha do csv e sai do metodo
 			if(token instanceof Operator) {
-				Operator operator = (Operator) token;
-				if(operator.getOperatorType() == OperatorType.OR) {
-					if((stack.get(counter-1).getLexema() == "false") && (stack.get(counter-2).getLexema() == "false")) {
-						return false;
+				Operator operator = (Operator) token;			
+				operandExpression = (stack.get(counter-1));
+				//Se o operador lido for um operador logico
+				//Portanto as duas ultimas posicoes da pilha serao operandos booleanos
+				if(operator.getOperatorType() == OperatorType.OR || operator.getOperatorType() == OperatorType.AND ) {
+					operandCsv = new Operand(OperandType.BOOLEAN,(stack.get(counter-2)).getLexema());
+				}
+				//Se nao deve ser pego o valor correspondente ao operando da coluna no csv
+				else {
+					valueCsv = columnsCSV[variableList.getVariableColumnPosition(stack.get(counter-2).getLexema())];
+					if(valueCsv.isBlank()) {
+						operandCsv = new Operand(OperandType.NUMBER,("0"));
 					}
 					else {
-						stack.remove(counter-1);
-						stack.remove(counter-2);
-						item = new Operand(OperandType.BOOLEAN,"true");
-						stack.add(item);
-						counter = counter-2;
-						
+						operandCsv = new Operand(OperandType.NUMBER,(valueCsv));
 					}
 				}
-				else if(operator.getOperatorType() == OperatorType.AND) {
-					if((stack.get(counter-1).getLexema() == "false") ||  (stack.get(counter-2).getLexema() == "false")) {
-						return false;	
-					}
-					else {
-						stack.remove(counter-1);
-						stack.remove(counter-2);
-						item = new Operand(OperandType.BOOLEAN,"true");
-						stack.add(item);
-						counter = counter-2;
-					}
+				if(operation(operandExpression, operandCsv, operator)) {
+					stack.remove(counter-1);
+					stack.remove(counter-2);
+					counter = counter -2;
+					item = new Operand(OperandType.BOOLEAN,"true");
+					stack.add(item);
 				}
 				else {
-					Integer valueCsv; 	
-					operand = Integer.valueOf(stack.get(counter-1).getLexema());
-					if(columnsCSV[(columnPosition.get(stack.get(counter-2).getLexema()))].isBlank()) valueCsv = 0;
-					else {
-						valueCsv = Integer.valueOf(columnsCSV[(columnPosition.get(stack.get(counter-2).getLexema()))]);
-					}
-				
-					if(operation(operand, valueCsv, operator)) {
-						stack.remove(counter-1);
-						stack.remove(counter-2);
-						counter = counter -2;
-						item = new Operand(OperandType.BOOLEAN,"true");
-						stack.add(item);
-					}
-					else {
-						stack.remove(counter-1);
-						stack.remove(counter-2);
-						item = new Operand(OperandType.BOOLEAN,"false");
-						stack.add(item);
-						counter = counter -2;
-					}	
-				}
+					stack.remove(counter-1);
+					stack.remove(counter-2);
+					item = new Operand(OperandType.BOOLEAN,"false");
+					stack.add(item);
+					counter = counter -2;
+				}	
 			}
 			else {
 				stack.add(token);
 			}
 			counter++;
 		}
-		for(Item verification : stack) {
-			if(verification.getLexema() == "false")return false;
-		}
+		if(stack.element().getLexema() == "false")return false;
 		return true;
 	}
 	
 	//Metodo que realiza a comparacao do valor do CSV, o valor da expressao e a operacao correspondente
-	public static boolean operation(int valueExpression, int valueCsv, Operator operation) {
+	public static boolean operation(Item valueExpression, Item valueCsv, Operator operation) {
 		if(operation.getOperatorType() == OperatorType.GREATER_EQUAL) {
-			if(valueCsv >= valueExpression) return true;
+			if(Integer.valueOf(valueCsv.getLexema()) >= Integer.valueOf(valueExpression.getLexema())) return true;
 		}
 		else if(operation.getOperatorType() == OperatorType.GREATER) {
-			if(valueCsv > valueExpression)	return true;
-		}
+			if(Integer.valueOf(valueCsv.getLexema()) > Integer.valueOf(valueExpression.getLexema())) return true;
+			}
 		else if(operation.getOperatorType() == OperatorType.LESSER_EQUAL) {
-			if(valueCsv <= valueExpression)	return true;
-		}
+			if(Integer.valueOf(valueCsv.getLexema()) <= Integer.valueOf(valueExpression.getLexema())) return true;
+				}
 		else if(operation.getOperatorType() == OperatorType.LESSER) {
-			if(valueCsv < valueExpression)	return true;
+			if(Integer.valueOf(valueCsv.getLexema()) < Integer.valueOf(valueExpression.getLexema())) return true;
 		}
 		else if(operation.getOperatorType() == OperatorType.EQUAL) {
-			if(valueCsv == valueExpression)	return true;
-		}	
+			if(Integer.valueOf(valueCsv.getLexema()) == Integer.valueOf(valueExpression.getLexema())) return true;
+		}
+		else if(operation.getOperatorType() == OperatorType.OR) {
+			if(String.valueOf(valueCsv) == "true" || String.valueOf(valueExpression) == "true")	return true;
+		}
+		else if(operation.getOperatorType() == OperatorType.AND) {
+			if(String.valueOf(valueCsv) == "true" && String.valueOf(valueExpression) == "true")	return true;
+		}
 		return false;
 	}
 }

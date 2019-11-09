@@ -2,5 +2,5 @@ package semantic;
 
 public enum VariableType {
 	PRIMARY,
-	NONPRIMARY;
+	NON_PRIMARY;
 }

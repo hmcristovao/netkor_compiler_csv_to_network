@@ -1,3 +1,15 @@
+/////////////////////////////////////////////////////////////////////////////////////
+//==Este compilador foi idealizado para preparar bases de dados em formato CSV====///
+//===a formatos de entrada para softwares de redes complexas como pajek e gephi===///
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+//Motivacao: Iniciacao cientifica/Trabalho de concluso de curso//////////////////////
+//Curso: Ciencia da computacao///////////////////////////////////////////////////////
+//Campus: Sao Mateus/////////////////////////////////////////////////////////////////
+//Desenvolvedores: Klaus Kly Cuzzuol Wolff e Luis Henrique Gundes Valim//////////////
+//Orientador: Henrique Monteiro Cristovao////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+
 options {
 	DEBUG_PARSER = false;
 	DEBUG_TOKEN_MANAGER = false;
@@ -6,9 +18,10 @@ options {
 PARSER_BEGIN(Compiler)
 
 package parser;
-import setting.Configuration;
+import setting.*;
 import error.*;
 import semantic.*;
+import inOut.*;
 
 import java.util.*;
 import java.io.*;
@@ -18,131 +31,52 @@ import java.nio.charset.StandardCharsets;
 public class Compiler {
 	public static void main(String args[])  throws ParseException  {
 		Compiler compiler = null;
-		
-		//Structure Section 1
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//========================================Estruturas de dados=============================================//
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//====Estrutura - Secao 1
 		//Contem as opcoes definidas no map a partir da section 1 e armazenadas no hashDefinition
-		HashMap<String,String> hashDefinition =  new HashMap<String,String>();
+		NetDefinition definition = new NetDefinition();
 
-		//Structure Section 2
-		//==varPrimaryKeyColumn	   - Variavel que armazena o nome da coluna da primary Key
-		//==hashColumns			   - Hash que contem a definicoes das variaveis na section 2 e os nomes das colunas correspondentes
-		String varPrimaryKeyColumn = "";
-		HashMap<String,String> hashColumns = new HashMap<String,String>();
+		//====Estrutura - Secao 2
+		//==VariableList - Lista que contem a definicoes das variaveis na section 2 e os nomes das colunas correspondentes
+		VariableList variableList = new VariableList();
+		
+		//====Estrutura - Secao 3
+		//==vertexList		 - Lista que armazena cada vertice definido na section 3
+		LinkedList<Vertex> vertexList = new LinkedList<Vertex>();
 
-		//Structure Section 3
-		//==listVertex			   - Lista que armazena cada vertice definido na section 3
-		LinkedList<Vertex> listVertex = new LinkedList<Vertex>();
-		
-		//Variaveis auxiliares para leitura do CSV e impressao do arquivo .NET
-		//==position 		  	  - variavel responsavel em armazenar a posicao da coluna da PrimaryKey
-		//==counterColumnsCsv 	  - contador utilizado para identificar as posicoes das colunas da Section 2 no csv
-		//==counterLineCsv 	  	  - contador utilizado para percorrer cada linha do Csv
- 		//==counterLineExpression - contador utilizado para percorrer cada expressao
- 		//==counterLineNet 		  - contador utilizado para imprimir cada linha dos vertices no arquivo net resultante
- 		//==totalLines 			  - total de vertices, eh a soma das linhas do Csv mais os vertices da section 3
-		Integer position = 0;
-		Integer counterColumnCsv = 0;
-		Integer counterLineCsv = 1;
-		Integer counterLineExpression = 1;
-		Integer counterLineNet = 1;					
-		int totalLines = 0;
-		
-		//Structure .Net
+		//====Estruturas auxiliares
 		//listPrimaryKeyVertices - Lista contendo todos os valores da coluna de primaryKey
 		//hashVertex			 - Hash que contem o nome do vertice e a sua linha (arquivo Net)
-		//hashColumnPosition	 - Hash que contem os valores das coluna das variaveis definidas na section 2 apos leitura do Csv
 		//hashArc				 - Hash que armazena todos as expressoes validas para cada vertice do Csv 
 		LinkedList<String> listPrimaryKeyVertices = new LinkedList<String>();
 		LinkedHashMap<String,Integer> hashVertex = new LinkedHashMap<String,Integer>();
-		LinkedHashMap<String,Integer> hashColumnPosition = new LinkedHashMap<String,Integer>();
 		LinkedHashMap<Integer,ArrayList<Integer>> hashArcs = new LinkedHashMap<Integer,ArrayList<Integer>>();
-
 		try {
 			compiler = new Compiler(new FileInputStream(Configuration.mapFile));
-			varPrimaryKeyColumn = Compiler.start(hashDefinition, varPrimaryKeyColumn, hashColumns, listVertex);	   			
-
-			//Forma rapida de conseguir a quantidade de linhas o CSV possui (tambem eh leitura do csv, mas desconsiderei)
-			Integer totalLinesCsv;
-			LineNumberReader  lnr = new LineNumberReader(new FileReader(new File(Configuration.csvFileInput)));
-			lnr.skip(Long.MAX_VALUE);
-			totalLinesCsv = lnr.getLineNumber();
-			lnr.close();
+			Compiler.start(definition, variableList, vertexList);
+			
+			//Leitura rapida do Csv para contar todas as linhas contindas no arquivo
+			Integer totalLinesCsv = ReaderCsv.countLines();	
 			
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			//========================================PRIMEIRA LEITURA DO CSV=========================================//
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+			ReaderCsv.readColumns(variableList);
 			
-			//-----------------------------------------------------Ajustar o código colocando as leitursa do csv fora do jj	//
-			BufferedReader csvReader = new BufferedReader(new FileReader(Configuration.csvFileInput));										//
-			String line = csvReader.readLine();																				//
-			String[] columnsCsv = line.split(",");																			//
-			//Loop de leitura que percorre cada coluna da primeira linha do CSV para definir 								//
-			//qual a posicao da coluna da PrimaryKey Assim como as posicao das variaveis definidas na section 2				//																//
-			for(String column : columnsCsv) {																				//
-				if(column.equals(varPrimaryKeyColumn)) position = counterColumnCsv;											//
-				else if(hashColumns.containsKey(column)) hashColumnPosition.put(hashColumns.get(column),counterColumnCsv);	//
-				counterColumnCsv++;																							//
-			}																												//
-			csvReader.close();																								//
-		
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			//========================================SEGUNDA LEITURA DO CSV==========================================//
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+			ReaderCsv.readAllLines(listPrimaryKeyVertices, variableList, vertexList, totalLinesCsv, hashArcs);
 			
-			//Pulando a leitura das primeiras linhas ja que as colunas ja foram lidas anteriormente
-			BufferedReader csvReader2 = new BufferedReader(new FileReader(Configuration.csvFileInput));		
-			String lineCsv = null;
-			csvReader2.readLine();												
-			//Leitura do CSV, para cada linha do Csv:
-			//	1 ==== Preenchimento do listPrimaryKeyVertices com os valores da coluna Primary Key no Csv
-			//	2 ==== Loop que avalia todas expressoes definidas na section 3 para cada linha do Csv
-			//	 	   se a expressao for valida o arraylist expressions recebe a linha da expressao.
-			//		   Ao final armazenando todas as expressoes validas para cada linha no hashArcs
- 			while ((lineCsv = csvReader2.readLine()) != null) {
- 			  	columnsCsv = lineCsv.split(",");												
-	/* 1 */		listPrimaryKeyVertices.add(columnsCsv[position]);					
-	/* 2 */		ArrayList<Integer> expressions = new ArrayList<Integer>();															
-				counterLineExpression = 0;																	
-				for(Vertex expression : listVertex) {
-					if(expression.verifierCsvExpression(columnsCsv, hashColumnPosition, hashColumns)) {
-						expressions.add(totalLinesCsv + counterLineExpression);
-					}
-					counterLineExpression++;	
-				}
-				hashArcs.put(counterLineCsv++,expressions);														
-			}
-			csvReader2.close();
-
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			//=======================================IMPRESSAO DO ARQUIVO NET=========================================//
+			//=======================================ESCRITA DO ARQUIVO NET=========================================//
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-			//A impressao do arquivo net consiste de tres loops de impressao
-			//	1 ==== Impressao dos vertices lidos no CSV a partir da coluna primaria definida e armazenada no listPrimaryKeyVertices
-			//  2 ==== Impressao dos vertices definidos na section 3 
-			totalLines = listPrimaryKeyVertices.size() + listVertex.size();
-
-			FileWriter resultFile = new FileWriter(Configuration.csvFileOutput);									
-			PrintWriter resultFileWriter = new PrintWriter(resultFile);									
-  /* 1 */	resultFileWriter.printf("*Vertices " + totalLines + "\n");		
-			//Impressao no arquvio net dos vertices do Csv a partir da coluna primaria:
-  		 	for(String vertex : listPrimaryKeyVertices) {
-				resultFileWriter.printf(counterLineNet++ +  " \"" + vertex + "\"\n");							
-			}
-			//Impressao no arquivo net os vertices da section 3 a partir do nome do vertice:
-  /* 2 */	for(Vertex vertex : listVertex) {
-				resultFileWriter.printf(counterLineNet +  " " + vertex.getVertexName() + "\n");
-   				hashVertex.put(vertex.getVertexName(),counterLineNet++);							
-			}
-  /* 3 */	resultFileWriter.printf("*Arcs " + "\n");
-			//Impressao no arquivo net os arcs passando por cada Key do hashArcs e imprimindo todos seus values
-			Set<Map.Entry<Integer,ArrayList<Integer>>> entries = hashArcs.entrySet();
-			for (Map.Entry<Integer,ArrayList<Integer>> entry : entries) {	
-				for(Integer valueExpression : entry.getValue()) {
-					resultFileWriter.println(entry.getKey() + " " + valueExpression + " ");
-				}							
-			}																						
-			resultFile.close();
+			WriterNet.writeAll(listPrimaryKeyVertices, vertexList, hashArcs);	
 		}
 		catch(FileNotFoundException e) {
 			System.err.println("\nFile not found: ");
@@ -191,7 +125,6 @@ TOKEN [IGNORE_CASE] : {
           < AND: "AND" > |
           < VARIABLES: "Variables" > |
           < NETWORK: "Network" > |
-          
 			//[X...Y] / [X...Y) / (X...Y] / (X...Y)
 		  < FORMATELLIPSIS1: ((" ")* < BRACKET_OPEN > (" ")* < OPTION > (" ")* < ELLIPSIS > (" ")* < OPTION > (" ")* <BRACKET_CLOSE >) > |	
           < FORMATELLIPSIS2: ((" ")* < BRACKET_OPEN > (" ")* < OPTION > (" ")*  < ELLIPSIS > (" ")* < OPTION > (" ")* <PARENTHESIS_CLOSE >) > |		//[x ... y)
@@ -206,75 +139,67 @@ TOKEN [IGNORE_CASE] : {
           < #LETTERCHARACTER: ["a" - "z"] | ["A" - "Z"] > |
           < #NUMBERCHARACTER: (["0"-"9"])* ((".")? ["0"-"9"])+ > |
           < #VARIABLECHARACTER: ["a" - "z", "A" - "Z" ,"0" - "9", "_"] > |
-           
- 	     < VERTEX_NAME_WITH_QUOTE_MARK: "\"" (~["\""])* "\"" > |
- 	     < HEAD_NAME_IN_CSV_OR_VARIABLE_NAME: (< LETTERCHARACTER >) (< VARIABLECHARACTER > | "." )* >
+ 	      < VERTEX_NAME_WITH_QUOTE_MARK: "\"" (~["\""])* "\"" > |
+ 	      < HEAD_NAME_IN_CSV_OR_VARIABLE_NAME: (< LETTERCHARACTER >) (< VARIABLECHARACTER > | "." )* >
 }
 
-String start(HashMap<String,String> hashDefinition, String primaryKey, HashMap<String,String> hashColumns,
-			LinkedList<Vertex> listVertex ): {  }
+void start(NetDefinition definition, VariableList variableList, LinkedList<Vertex> vertexList ): { }
 {
-  	section1(hashDefinition)
-  	primaryKey = section2(hashColumns, primaryKey)
-  	section3(listVertex)
-  	{ return primaryKey; }
+  	section1(definition)
+  	section2(variableList)
+  	section3(vertexList)
 }
-void section1(HashMap<String,String> hashDefinition):
+void section1(NetDefinition definition):
 {
-  Token identification, value;
+  Token networkFormat, directedNetwork, bipartiteProjection, networkLayout;
 }
 {
-  	identification = <TARGET_FORMAT> <COLON> (value = <NETWORK_FORMAT>)
-	{
-  		hashDefinition.put(identification.image,value.image);
-  	}	
-  	identification = <DIRECTED_NETWORK> <COLON> value = <LOGIC_VALUE> 
+ 	<TARGET_FORMAT> <COLON> networkFormat = <NETWORK_FORMAT>
+  	<DIRECTED_NETWORK> <COLON> directedNetwork = <LOGIC_VALUE> 
+  	<BIPARTITE_PROJECTION> <COLON> bipartiteProjection = <LOGIC_VALUE>
+ 	<LAYOUT> <COLON> ( networkLayout = <LAYOUT_NAME> | networkLayout = <NO> )
   	{
-  		hashDefinition.put(identification.image,value.image);
- 	}
- 	identification = <BIPARTITE_PROJECTION> <COLON> value = <LOGIC_VALUE>
- 	{
-  		hashDefinition.put(identification.image,value.image);
- 	}
-  	identification = <LAYOUT> <COLON> ( value = <LAYOUT_NAME> | value = <NO> )
-  	{
-  		hashDefinition.put(identification.image,value.image);
- 	}
+  	  	definition.setTargetFormat(networkFormat.image);
+  	  	definition.setNetworkLayout(networkLayout.image);
+  	  	definition.setDirectedNetwork(directedNetwork.image);
+  	  	definition.setBipartiteProjection(bipartiteProjection.image);
+  	}
 }
 
-String section2(HashMap<String,String> hashColumns, String varPrimaryKeyColumn): { }
+void section2(VariableList variableList): { }
 {
-	<VARIABLES> <COLON> (varPrimaryKeyColumn = variableDefinition(hashColumns, varPrimaryKeyColumn))+
-	{	return varPrimaryKeyColumn; }
+	<VARIABLES> <COLON> (variableDefinition(variableList))+
 }
 
-String variableDefinition(HashMap<String,String> hashColumns, String varPrimaryKeyColumn):
+void variableDefinition(VariableList variableList):
 {
-  Token type, headNameInCsv, variableName;
+  Token type, headNameInCsv, variableName = null;
+  Variable variable;
 }
 {
 	type = <TYPE_VARIABLE> headNameInCsv = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
-	{	  	
-		if(type.image.equals("*")) {
-			varPrimaryKeyColumn = headNameInCsv.image;
-		}
-	}
 	(<COLON> variableName = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
 	{
-		hashColumns.put(headNameInCsv.image,variableName.image);
+	  	if(variableName.image.isBlank()) variableName = headNameInCsv;
 	}
 	)?
 	{
-	  return varPrimaryKeyColumn;
+	 	if(type.image.equals("*")) {
+			variable = new Variable(headNameInCsv.image,variableName.image,VariableType.PRIMARY);
+		}
+		else {
+			variable = new Variable(headNameInCsv.image,variableName.image,VariableType.NON_PRIMARY);
+		}	
+	  	variableList.add(variable);	
 	}
 }
 
-void section3(LinkedList<Vertex> listVertex): { }
+void section3(LinkedList<Vertex> vertexList): { }
 {
-  	<NETWORK> <COLON> (vertexDefinition(listVertex))+
+  	<NETWORK> <COLON> (vertexDefinition(vertexList))+
 }
 
-void vertexDefinition(LinkedList<Vertex> listVertex):
+void vertexDefinition(LinkedList<Vertex> vertexList):
 {
   Token vertexName;
 }
@@ -285,13 +210,11 @@ void vertexDefinition(LinkedList<Vertex> listVertex):
 	}
 	<COLON> ( operationOR(vertex)
 	{
-	  	listVertex.add(vertex);
+	  	vertexList.add(vertex);
 	}
 	)+
 }
 	
-
-
 void operationOR(Vertex expression):
 {
   Token operator;
@@ -306,7 +229,6 @@ void operationOR(Vertex expression):
 	)*   
 }
 
-
 void operationAND(Vertex expression):
 {
   Token operator;
@@ -320,7 +242,6 @@ void operationAND(Vertex expression):
 	}
 	)*
 }
-
 
 void vertexExpression(Vertex expression):
 {
@@ -344,7 +265,7 @@ void vertexRangeDefinition(Vertex expression, Token variable):
 	   		expressionToken = < FORMATELLIPSIS7 > | expressionToken = < FORMATELLIPSIS8 > 
 	   	)
 		{
-			item = new Variable(VariableType.NONPRIMARY,variable.image);
+			item = new Variable(VariableType.NON_PRIMARY,variable.image);
 			expression.add(item);
 			expression.addInterval(expressionToken.image, item);
 	 	}
@@ -365,7 +286,7 @@ void rangeExpression(Vertex expression, Token variable):
 	)
 	|	option = < OPTION >
 	{	
-		item = new Variable(VariableType.NONPRIMARY,variable.image);
+		item = new Variable(VariableType.NON_PRIMARY,variable.image);
 		expression.add(item);
 
 		item = new Operand(OperandType.NUMBER,option.image);
@@ -384,7 +305,7 @@ void optionList(Vertex expression, Token variable):
 {
 	option = <OPTION>
    	{
-   	  	item = new Variable(VariableType.NONPRIMARY,variable.image);
+   	  	item = new Variable(VariableType.NON_PRIMARY,variable.image);
 		expression.add(item);
 
 		item = new Operand(OperandType.NUMBER,option.image);

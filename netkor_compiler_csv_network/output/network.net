@@ -1,0 +1,37 @@
+*Vertices 11
+1 "91"
+2 "92"
+3 "93"
+4 "94"
+5 "95"
+6 "96"
+7 "menor de idade"
+8 "maior de idade"
+9 "masculino"
+10 "feminino"
+11 "outro sexo"
+*Arcs
+1 7 
+
+1 9 
+
+2 8 
+
+2 10 
+
+3 8 
+
+3 9 
+
+4 7 
+
+4 10 
+
+5 7 
+
+5 10 
+
+6 8 
+
+6 11 
+

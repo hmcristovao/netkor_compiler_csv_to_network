@@ -5,6 +5,7 @@ public class Variable extends Item {
 	public VariableType type;
 	public String headNameInCsv;
 	public String variableName;
+	public Integer column = 0;
 
 	public Variable(VariableType type, String headNameInCsv) {
 		super(headNameInCsv);
@@ -26,7 +27,6 @@ public class Variable extends Item {
 
 	public String getLexema()
 	{
-		// retorna apenas o nome no csv, jah que eh opcional o variable_name
 		return this.headNameInCsv;
 	}
 	
@@ -39,7 +39,15 @@ public class Variable extends Item {
 	{
 		this.variableName = name;
 	}
+	public void setColumn(Integer position)
+	{
+		this.column = position;
+	}
 	
+	public Integer getColumn()
+	{
+		return this.column;
+	}
 	
 	public String getType()
 	{
@@ -48,5 +56,14 @@ public class Variable extends Item {
 	
 	public String toString() {
 		return this.variableName;
+	}
+	
+	public boolean isVariablePrimaryKey() {
+		if(this.type == VariableType.PRIMARY) {
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 }
