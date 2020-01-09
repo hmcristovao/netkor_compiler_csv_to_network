@@ -1,5 +1,7 @@
 # Section 1: general configurations
+Source format: CSV
 Target format: NET
+Header: TRUE
 Directed network: TRUE
 Bipartite projection: FALSE
 Layout: NO  
@@ -17,6 +19,9 @@ Variables:
 Network:
 "menor de idade" : v1.idade = (...17] 
 "maior de idade": v1.idade =  [18...)
-"masculino": v3.sexo = 1 
-"feminino": v3.sexo = 2
+"teste": v1.idade =  [20...25]
+"masculino": v3.sexo >= 1 
+"feminino": v3.sexo <= 2 
+"feminino": v3.sexo < 2 
+"feminino": v3.sexo > 2
 "outro sexo": v3.sexo = 3 

@@ -90,6 +90,7 @@ public class Vertex {
 				this.expression.add(item);
 				item = new Operator(OperatorType.AND,"AND");
 				this.expression.add(item);
+				SemanticActions.isWrongInterval(this.vertexName, range, Integer.valueOf(operandA), Integer.valueOf(operandB));
 			}
 			//============================Case [x...y)=========================
 			else if(range.startsWith("[") && range.endsWith(")")) {
@@ -111,6 +112,7 @@ public class Vertex {
 				this.expression.add(item);
 				item = new Operator(OperatorType.AND,"AND");
 				this.expression.add(item);
+				SemanticActions.isWrongInterval(this.vertexName, range, Integer.valueOf(operandA), Integer.valueOf(operandB));
 			}
 			//============================Case (x...y]=========================
 			else if(range.startsWith("(") && range.endsWith("]")) {
@@ -132,6 +134,7 @@ public class Vertex {
 				this.expression.add(item);
 				item = new Operator(OperatorType.AND,"AND");
 				this.expression.add(item);
+				SemanticActions.isWrongInterval(this.vertexName, range, Integer.valueOf(operandA), Integer.valueOf(operandB));
 			}
 			//============================Case [x...y]=========================
 			else if(range.startsWith("[") && range.endsWith("]")) {
@@ -153,6 +156,7 @@ public class Vertex {
 				this.expression.add(item);
 				item = new Operator(OperatorType.AND,"AND");
 				this.expression.add(item);
+				SemanticActions.isWrongInterval(this.vertexName, range, Integer.valueOf(operandA), Integer.valueOf(operandB));
 			}
 		}
 	}

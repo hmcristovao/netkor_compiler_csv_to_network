@@ -25,9 +25,9 @@ public class ReaderCsv {
 		return totalLines;
 	}
 	
-	public static Integer readColumns(VariableList variableList) throws IOException  {
+	public static void readColumns(VariableList variableList) throws IOException  {
 		BufferedReader csvReader = new BufferedReader(new FileReader(Configuration.csvFileInput));										//
-		Integer counterColumnCsv = 0, positionPrimaryKey = 0;
+		Integer counterColumnCsv = 0;
 		String line = csvReader.readLine();																				//
 		String[] columnsCsv = line.split(",");																			//
 		Iterator<Variable> iterator = variableList.iterator();
@@ -42,7 +42,6 @@ public class ReaderCsv {
 			counterColumnCsv++;
 		}
 		csvReader.close();
-		return positionPrimaryKey;
 	}
 	
 	public static void readAllLines(LinkedList<String> listPrimaryKeyVertices, 

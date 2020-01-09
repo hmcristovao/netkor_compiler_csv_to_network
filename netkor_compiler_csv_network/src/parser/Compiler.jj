@@ -51,7 +51,6 @@ public class Compiler {
 		//hashVertex			 - Hash que contem o nome do vertice e a sua linha (arquivo Net)
 		//hashArc				 - Hash que armazena todos as expressoes validas para cada vertice do Csv 
 		LinkedList<String> listPrimaryKeyVertices = new LinkedList<String>();
-		LinkedHashMap<String,Integer> hashVertex = new LinkedHashMap<String,Integer>();
 		LinkedHashMap<Integer,ArrayList<Integer>> hashArcs = new LinkedHashMap<Integer,ArrayList<Integer>>();
 		try {
 			compiler = new Compiler(new FileInputStream(Configuration.mapFile));
@@ -73,10 +72,16 @@ public class Compiler {
 			ReaderCsv.readAllLines(listPrimaryKeyVertices, variableList, vertexList, totalLinesCsv, hashArcs);
 			
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			//=======================================ESCRITA DO ARQUIVO NET=========================================//
+			//=======================================ESCRITA DO ARQUIVO NET===========================================//
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-			WriterNet.writeAll(listPrimaryKeyVertices, vertexList, hashArcs);	
+			WriterNet.writeAll(listPrimaryKeyVertices, vertexList, hashArcs, definition);
+			/*
+			if(SemanticActions.qtdWarnings > 0 ) {
+			  System.out.println("\n\n***** Compilacao bem sucedida com "+SemanticActions.qtdWarnings+" warnings! *****");
+			}else {
+				System.out.println("\n\n***** Compilacao bem sucedida! *****");
+			}*/
 		}
 		catch(FileNotFoundException e) {
 			System.err.println("\nFile not found: ");
@@ -103,6 +108,7 @@ SKIP : { " " | "\t" | "\r" | "\n" }
 SKIP : { "#" : comentarioGeral }
 <comentarioGeral> SKIP: { "\n" | "\n\r" | "\r\n" : DEFAULT | <~[]> }
 
+//TOKENS DE SIMBOLOS
 TOKEN [IGNORE_CASE] : {
           < PARENTHESIS_OPEN: "(" > |
           < PARENTHESIS_CLOSE: ")" > |
@@ -112,19 +118,36 @@ TOKEN [IGNORE_CASE] : {
           < SEMICOLON: ";" > |
           < COLON: ":" > |
           < EQUAL: "=" > |
-          < TYPE_VARIABLE: "*" | ">" > |
-          < NETWORK_FORMAT: "NET" | "PAJ" > |
-          < LOGIC_VALUE: "TRUE" | "FALSE" > |
+          < TYPE_VARIABLE_PRIMARY: "*" > |
+          < TYPE_VARIABLE_SECONDARY: ">" > |
+          < LESSER: "<" > 
+}
+
+//PALAVRAS RESERVADAS
+TOKEN [IGNORE_CASE] : {
+ 		  < SOURCE_FORMAT: "Source format" > |
           < TARGET_FORMAT: "Target format" > |
+          < HEADER: "Header" > |
           < DIRECTED_NETWORK: "Directed network" > |
           < BIPARTITE_PROJECTION: "Bipartite projection" > |
           < LAYOUT: "Layout" > |            
-          < LAYOUT_NAME: "NOPE" > |
+          < VARIABLES: "Variables" > |
+          < NETWORK: "Network" > 
+}
+
+//TOKENS DE ENTRADA PARA CONFIGURACAO
+TOKEN [IGNORE_CASE] : {
+          < NETWORK_FORMAT: "NET" | "PAJ" > |	//Adicionar mais formatos futuramente
+          < SOURCE_FORMAT_INPUT: "CSV" > |		//Adicionar mais formatos futuramente
+          < LOGIC_VALUE: "TRUE" | "FALSE" > |            
+          < LAYOUT_NAME: "NOPE" > |				//Falta incluir os tipos de layout de rede
           < NO: "NO" > |
           < OR: "OR" > |
-          < AND: "AND" > |
-          < VARIABLES: "Variables" > |
-          < NETWORK: "Network" > |
+          < AND: "AND" > 
+}
+
+//----------Tokens unicos----------//
+TOKEN [IGNORE_CASE] : {
 			//[X...Y] / [X...Y) / (X...Y] / (X...Y)
 		  < FORMATELLIPSIS1: ((" ")* < BRACKET_OPEN > (" ")* < OPTION > (" ")* < ELLIPSIS > (" ")* < OPTION > (" ")* <BRACKET_CLOSE >) > |	
           < FORMATELLIPSIS2: ((" ")* < BRACKET_OPEN > (" ")* < OPTION > (" ")*  < ELLIPSIS > (" ")* < OPTION > (" ")* <PARENTHESIS_CLOSE >) > |		//[x ... y)
@@ -135,7 +158,11 @@ TOKEN [IGNORE_CASE] : {
 		  < FORMATELLIPSIS6: ((" ")* < PARENTHESIS_OPEN > (" ")* < ELLIPSIS > (" ")*  < OPTION > (" ")* <BRACKET_CLOSE >) > |
 		  < FORMATELLIPSIS7: ((" ")* < BRACKET_OPEN > (" ")* < OPTION >  (" ")* < ELLIPSIS > (" ")*   <PARENTHESIS_CLOSE >) > |
           < FORMATELLIPSIS8: ((" ")* < PARENTHESIS_OPEN > (" ")* < OPTION > (" ")* < ELLIPSIS > (" ")* <PARENTHESIS_CLOSE >) > |
- 	      < OPTION: < NUMBERCHARACTER > | < LETTERCHARACTER  > > |
+ 	      < OPTION: < NUMBERCHARACTER > | < LETTERCHARACTER  > >
+}
+
+//
+TOKEN [IGNORE_CASE] : {
           < #LETTERCHARACTER: ["a" - "z"] | ["A" - "Z"] > |
           < #NUMBERCHARACTER: (["0"-"9"])* ((".")? ["0"-"9"])+ > |
           < #VARIABLECHARACTER: ["a" - "z", "A" - "Z" ,"0" - "9", "_"] > |
@@ -151,14 +178,18 @@ void start(NetDefinition definition, VariableList variableList, LinkedList<Verte
 }
 void section1(NetDefinition definition):
 {
-  Token networkFormat, directedNetwork, bipartiteProjection, networkLayout;
+  Token header, sourceFormat, networkFormat, directedNetwork, bipartiteProjection, networkLayout;
 }
 {
+  	<SOURCE_FORMAT> <COLON> sourceFormat = <SOURCE_FORMAT_INPUT>
  	<TARGET_FORMAT> <COLON> networkFormat = <NETWORK_FORMAT>
+ 	<HEADER> <COLON> header = <LOGIC_VALUE> 
   	<DIRECTED_NETWORK> <COLON> directedNetwork = <LOGIC_VALUE> 
   	<BIPARTITE_PROJECTION> <COLON> bipartiteProjection = <LOGIC_VALUE>
  	<LAYOUT> <COLON> ( networkLayout = <LAYOUT_NAME> | networkLayout = <NO> )
   	{
+  	  	definition.setSourceFormat(sourceFormat.image);
+  	  	definition.setHeader(header.image);
   	  	definition.setTargetFormat(networkFormat.image);
   	  	definition.setNetworkLayout(networkLayout.image);
   	  	definition.setDirectedNetwork(directedNetwork.image);
@@ -177,11 +208,12 @@ void variableDefinition(VariableList variableList):
   Variable variable;
 }
 {
-	type = <TYPE_VARIABLE> headNameInCsv = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
-	(<COLON> variableName = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
-	{
-	  	if(variableName.image.isBlank()) variableName = headNameInCsv;
-	}
+	( type = <TYPE_VARIABLE_PRIMARY> | type = <TYPE_VARIABLE_SECONDARY> ) headNameInCsv = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
+	(
+	  	<COLON> variableName = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
+		{
+		  	if(variableName.image.isBlank()) variableName = headNameInCsv;
+		}
 	)?
 	{
 	 	if(type.image.equals("*")) {
@@ -245,13 +277,28 @@ void operationAND(Vertex expression):
 
 void vertexExpression(Vertex expression):
 {
-  Token variable;
+  Token variable, operator, operator2;
 }
 {
-	variable = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME> <EQUAL> vertexRangeDefinition(expression, variable)
+	variable = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME> (
+	  												operator = <EQUAL> vertexRangeDefinition(expression, variable, operator)
+													| operator = <TYPE_VARIABLE_SECONDARY>
+														(
+													  		operator2 = <EQUAL>
+	  												  		optionDualOperator(expression, variable, operator, operator2)
+	  												  		|
+	  												  		option(expression, variable, operator)
+	  												 	)
+													| operator = <LESSER>
+														(														  operator2 = <EQUAL>
+	  												  	  optionDualOperator(expression, variable, operator, operator2) 
+														  |
+														  option(expression, variable, operator)
+	  													)
+												   )
 }
 
-void vertexRangeDefinition(Vertex expression, Token variable):
+void vertexRangeDefinition(Vertex expression, Token variable, Token operator):
 {
   Token expressionToken;
   Item item = null;
@@ -269,35 +316,56 @@ void vertexRangeDefinition(Vertex expression, Token variable):
 			expression.add(item);
 			expression.addInterval(expressionToken.image, item);
 	 	}
-	   	|	rangeExpression(expression, variable)
+	   	|	rangeExpression(expression, variable, operator)
   	)
 }
 
-void rangeExpression(Vertex expression, Token variable):
-{
-  Token option;
-  Item item = null;
-}
+void rangeExpression(Vertex expression, Token variable, Token operator): { }
 {
 	(
 		( <PARENTHESIS_OPEN> | <BRACKET_OPEN> )
-		optionList(expression, variable)
+		optionList(expression, variable, operator)
 		( <PARENTHESIS_CLOSE> | <BRACKET_CLOSE> )
 	)
-	|	option = < OPTION >
+	|	option(expression, variable, operator)
+}
+
+void option(Vertex expression, Token variable, Token operator):
+{
+  Token opt;
+  Item item = null;
+}
+{
+ 	opt = < OPTION >
 	{	
 		item = new Variable(VariableType.NON_PRIMARY,variable.image);
 		expression.add(item);
-
-		item = new Operand(OperandType.NUMBER,option.image);
+		item = new Operand(OperandType.NUMBER, opt.image);
 		expression.add(item);
-
-		item = new Operator(OperatorType.EQUAL,"=");
+		item = new Operator(OperatorType.EQUAL, operator.image);
 		expression.add(item);
 	}
 }
 
-void optionList(Vertex expression, Token variable):
+void optionDualOperator(Vertex expression, Token variable, Token operator, Token operator2):
+{
+  Token opt;
+  Item item = null;
+}
+{
+ 	opt = < OPTION >
+	{	
+		item = new Variable(VariableType.NON_PRIMARY,variable.image);
+		expression.add(item);
+		item = new Operand(OperandType.NUMBER,opt.image);
+		expression.add(item);
+		item = new Operator(OperatorType.EQUAL, operator.image + operator2.image);
+		expression.add(item);
+	}
+}
+  
+
+void optionList(Vertex expression, Token variable, Token operator):
 {
   Token option;
   Item item = null;
@@ -307,15 +375,13 @@ void optionList(Vertex expression, Token variable):
    	{
    	  	item = new Variable(VariableType.NON_PRIMARY,variable.image);
 		expression.add(item);
-
 		item = new Operand(OperandType.NUMBER,option.image);
 		expression.add(item);
-
-	  	item = new Operator(OperatorType.EQUAL,"=");
+	  	item = new Operator(OperatorType.EQUAL,operator.image);
 		expression.add(item);
 	}
   	(
-  		<SEMICOLON> optionList(expression,variable)
+  		<SEMICOLON> optionList(expression,variable, operator)
   	  	{
 	  		item = new Operator(OperatorType.OR,"OR");
 			expression.add(item);
