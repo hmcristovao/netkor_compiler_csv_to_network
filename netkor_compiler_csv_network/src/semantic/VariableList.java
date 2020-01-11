@@ -6,7 +6,7 @@ import java.util.LinkedList;
 public class VariableList implements Iterable<Variable> {
 	LinkedList<Variable> variableList;
 	Integer primaryKeyPosition;
-	public int currentSize = 0;
+	int currentSize = 0;
  	
 	public VariableList() {
 		this.variableList = new LinkedList<Variable>();
@@ -15,6 +15,9 @@ public class VariableList implements Iterable<Variable> {
 	public void add(Variable variable) {
 		this.currentSize++;
 		this.variableList.add(variable);
+	}
+	public Variable getVariable(int position) {
+		return this.variableList.get(position);
 	}
 	
 	public LinkedList<Variable> getVariableList(){
@@ -58,6 +61,7 @@ public class VariableList implements Iterable<Variable> {
 	            public void remove() {
 	                throw new UnsupportedOperationException();
 	            }
+	            
 	        };
 	        return it;
 	    }

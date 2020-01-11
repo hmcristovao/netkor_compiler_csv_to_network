@@ -177,7 +177,7 @@ public class Vertex {
 		String valueCsv;
 		//Pilha que empilhara cada token contido 
 		LinkedList<Item> stack = new LinkedList<Item>();
-		for(Item token : this.expression) {
+		for(Item token : this.expression) {	
 			//Caso token OR, entao deve ser analisadas as ultimas duas posicoes da pilha
 			//Se alguma das posicoes nao for falsa, portanto remove-se os dois valores booleanos anteriores
 			//e eh empilhada true, se nao, a expressao esta incorreta para esta linha do csv e sai do metodo
@@ -203,13 +203,13 @@ public class Vertex {
 					stack.remove(counter-1);
 					stack.remove(counter-2);
 					counter = counter -2;
-					item = new Operand(OperandType.BOOLEAN,"true");
+					item = new Operand(OperandType.BOOLEAN, "true");
 					stack.add(item);
 				}
 				else {
 					stack.remove(counter-1);
 					stack.remove(counter-2);
-					item = new Operand(OperandType.BOOLEAN,"false");
+					item = new Operand(OperandType.BOOLEAN, "false");
 					stack.add(item);
 					counter = counter -2;
 				}	
@@ -219,7 +219,7 @@ public class Vertex {
 			}
 			counter++;
 		}
-		if(stack.element().getLexema() == "false")return false;
+		if(stack.element().getLexema() == "false") return false;
 		return true;
 	}
 	

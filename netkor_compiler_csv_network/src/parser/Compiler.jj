@@ -36,14 +36,14 @@ public class Compiler {
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//====Estrutura - Secao 1
 		//Contem as opcoes definidas no map a partir da section 1 e armazenadas no hashDefinition
-		NetDefinition definition = new NetDefinition();
+		NetDefinition definition;
 
 		//====Estrutura - Secao 2
 		//==VariableList - Lista que contem a definicoes das variaveis na section 2 e os nomes das colunas correspondentes
 		VariableList variableList = new VariableList();
 		
 		//====Estrutura - Secao 3
-		//==vertexList		 - Lista que armazena cada vertice definido na section 3
+		//==vertexList	- Lista que armazena cada vertice definido na section 3
 		LinkedList<Vertex> vertexList = new LinkedList<Vertex>();
 
 		//====Estruturas auxiliares
@@ -54,22 +54,31 @@ public class Compiler {
 		LinkedHashMap<Integer,ArrayList<Integer>> hashArcs = new LinkedHashMap<Integer,ArrayList<Integer>>();
 		try {
 			compiler = new Compiler(new FileInputStream(Configuration.mapFile));
-			Compiler.start(definition, variableList, vertexList);
+			definition = Compiler.start(variableList, vertexList);
+
+			//Analises semanticas
+			//----Se ha mais de uma variavel associada a uma coluna
+			//----Se ha definicao de mais de uma variavel com o mesmo nome
+			//----Warning em caso de variavel nao utilizada na secao 3
 			
-			//Leitura rapida do Csv para contar todas as linhas contindas no arquivo
-			Integer totalLinesCsv = ReaderCsv.countLines();	
+			//------Leitura rapida do Csv para contar todas as linhas contindas no arquivo-------		
+			//Metodo coutLines conta a partir de 0, portanto resulta em (valor total - 1) 
+			//Com header -> Desconsidera-se o header, logo este (valor total - 1) serve
+			Integer totalLinesCsv = ReaderCsv.countLines();
+			//Sem header -> Como nao ha header, todas as linhas devem ser consideradas, para isso ha o incremento
+			if(definition.getHeader().toLowerCase().equals("false")) totalLinesCsv++;	
 			
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			//========================================PRIMEIRA LEITURA DO CSV=========================================//
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-			ReaderCsv.readColumns(variableList);
+			ReaderCsv.readColumns(variableList, definition);
 			
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			//========================================SEGUNDA LEITURA DO CSV==========================================//
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-			ReaderCsv.readAllLines(listPrimaryKeyVertices, variableList, vertexList, totalLinesCsv, hashArcs);
+			ReaderCsv.readAllLines(listPrimaryKeyVertices, variableList, vertexList, totalLinesCsv, hashArcs, definition);
 			
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			//=======================================ESCRITA DO ARQUIVO NET===========================================//
@@ -170,15 +179,23 @@ TOKEN [IGNORE_CASE] : {
  	      < HEAD_NAME_IN_CSV_OR_VARIABLE_NAME: (< LETTERCHARACTER >) (< VARIABLECHARACTER > | "." )* >
 }
 
-void start(NetDefinition definition, VariableList variableList, LinkedList<Vertex> vertexList ): { }
+NetDefinition start(VariableList variableList, LinkedList<Vertex> vertexList ):
 {
-  	section1(definition)
+  NetDefinition definition;
+}
+{
+  	definition = section1()
   	section2(variableList)
   	section3(vertexList)
+  	{
+  	  return definition;
+  	}
 }
-void section1(NetDefinition definition):
+
+NetDefinition section1():
 {
   Token header, sourceFormat, networkFormat, directedNetwork, bipartiteProjection, networkLayout;
+  NetDefinition definition;
 }
 {
   	<SOURCE_FORMAT> <COLON> sourceFormat = <SOURCE_FORMAT_INPUT>
@@ -188,12 +205,9 @@ void section1(NetDefinition definition):
   	<BIPARTITE_PROJECTION> <COLON> bipartiteProjection = <LOGIC_VALUE>
  	<LAYOUT> <COLON> ( networkLayout = <LAYOUT_NAME> | networkLayout = <NO> )
   	{
-  	  	definition.setSourceFormat(sourceFormat.image);
-  	  	definition.setHeader(header.image);
-  	  	definition.setTargetFormat(networkFormat.image);
-  	  	definition.setNetworkLayout(networkLayout.image);
-  	  	definition.setDirectedNetwork(directedNetwork.image);
-  	  	definition.setBipartiteProjection(bipartiteProjection.image);
+  	  	definition = new NetDefinition(networkFormat.image, directedNetwork.image, bipartiteProjection.image,
+									networkLayout.image, header.image, sourceFormat.image);
+		return definition;
   	}
 }
 
@@ -217,10 +231,10 @@ void variableDefinition(VariableList variableList):
 	)?
 	{
 	 	if(type.image.equals("*")) {
-			variable = new Variable(headNameInCsv.image,variableName.image,VariableType.PRIMARY);
+			variable = new Variable(headNameInCsv.image,variableName.image,VariableType.PRIMARY, type.beginLine);
 		}
 		else {
-			variable = new Variable(headNameInCsv.image,variableName.image,VariableType.NON_PRIMARY);
+			variable = new Variable(headNameInCsv.image,variableName.image,VariableType.NON_PRIMARY, type.beginLine);
 		}	
 	  	variableList.add(variable);	
 	}
@@ -312,7 +326,7 @@ void vertexRangeDefinition(Vertex expression, Token variable, Token operator):
 	   		expressionToken = < FORMATELLIPSIS7 > | expressionToken = < FORMATELLIPSIS8 > 
 	   	)
 		{
-			item = new Variable(VariableType.NON_PRIMARY,variable.image);
+			item = new Variable(VariableType.NON_PRIMARY,variable.image, variable.beginLine);
 			expression.add(item);
 			expression.addInterval(expressionToken.image, item);
 	 	}
@@ -338,7 +352,7 @@ void option(Vertex expression, Token variable, Token operator):
 {
  	opt = < OPTION >
 	{	
-		item = new Variable(VariableType.NON_PRIMARY,variable.image);
+		item = new Variable(VariableType.NON_PRIMARY,variable.image, variable.beginLine);
 		expression.add(item);
 		item = new Operand(OperandType.NUMBER, opt.image);
 		expression.add(item);
@@ -355,7 +369,7 @@ void optionDualOperator(Vertex expression, Token variable, Token operator, Token
 {
  	opt = < OPTION >
 	{	
-		item = new Variable(VariableType.NON_PRIMARY,variable.image);
+		item = new Variable(VariableType.NON_PRIMARY,variable.image, variable.beginLine);
 		expression.add(item);
 		item = new Operand(OperandType.NUMBER,opt.image);
 		expression.add(item);
@@ -373,7 +387,7 @@ void optionList(Vertex expression, Token variable, Token operator):
 {
 	option = <OPTION>
    	{
-   	  	item = new Variable(VariableType.NON_PRIMARY,variable.image);
+   	  	item = new Variable(VariableType.NON_PRIMARY,variable.image, variable.beginLine);
 		expression.add(item);
 		item = new Operand(OperandType.NUMBER,option.image);
 		expression.add(item);

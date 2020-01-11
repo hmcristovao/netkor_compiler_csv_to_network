@@ -11,12 +11,15 @@ public class NetDefinition {
 	public NetDefinition() {
 	}
 	
-	/*public NetDefinition(String targetFormat, String directedNetwork ,String bipartiteProjection, String networkLayout) {
+	public NetDefinition(String targetFormat, String directedNetwork ,String bipartiteProjection, 
+						String networkLayout, String header, String sourceFormat) {
 		this.targetFormat = targetFormat;
 		this.directedNetwork = directedNetwork;
 		this.bipartiteProjection = bipartiteProjection;
 		this.networkLayout = networkLayout;
-	}*/
+		this.header = header;
+		this.sourceFormat = sourceFormat;
+	}
 	
 	public void setTargetFormat(String format) {
 		this.targetFormat = format;
@@ -27,7 +30,7 @@ public class NetDefinition {
 	}
 	
 	public void setDirectedNetwork(String bool) {
-		this.directedNetwork= bool;
+		this.directedNetwork = bool;
 	}
 	
 	public void setBipartiteProjection(String bool) {

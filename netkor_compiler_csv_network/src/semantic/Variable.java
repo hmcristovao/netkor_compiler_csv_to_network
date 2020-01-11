@@ -6,18 +6,21 @@ public class Variable extends Item {
 	public String headNameInCsv;
 	public String variableName;
 	public Integer column = 0;
+	public int positionMap = 0;
 
-	public Variable(VariableType type, String headNameInCsv) {
+	public Variable(VariableType type, String headNameInCsv, int positionMap) {
 		super(headNameInCsv);
 		this.headNameInCsv = headNameInCsv;
 		this.variableName = headNameInCsv;
 		this.type = type;
+		this.positionMap = positionMap;
 	}
-	public Variable(String headNameInCsv, String variableName, VariableType type) {
+	public Variable(String headNameInCsv, String variableName, VariableType type, int positionMap) {
 		super(variableName);
 		this.headNameInCsv = headNameInCsv;
 		this.variableName = variableName;
 		this.type = type;
+		this.positionMap = positionMap;
 	}
 	
 	public Variable(String variableName) {
@@ -28,6 +31,10 @@ public class Variable extends Item {
 	public String getLexema()
 	{
 		return this.headNameInCsv;
+	}
+	
+	public int getPosition() {
+		return this.positionMap;
 	}
 	
 	public String getVariableName()
