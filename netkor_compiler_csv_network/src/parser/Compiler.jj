@@ -56,11 +56,6 @@ public class Compiler {
 			compiler = new Compiler(new FileInputStream(Configuration.mapFile));
 			definition = Compiler.start(variableList, vertexList);
 
-			//Analises semanticas
-			//----Se ha mais de uma variavel associada a uma coluna
-			//----Se ha definicao de mais de uma variavel com o mesmo nome
-			//----Warning em caso de variavel nao utilizada na secao 3
-			
 			//------Leitura rapida do Csv para contar todas as linhas contindas no arquivo-------		
 			//Metodo coutLines conta a partir de 0, portanto resulta em (valor total - 1) 
 			//Com header -> Desconsidera-se o header, logo este (valor total - 1) serve
@@ -84,13 +79,20 @@ public class Compiler {
 			//=======================================ESCRITA DO ARQUIVO NET===========================================//
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+			SemanticActions.noNetwork(hashArcs);
+			SemanticActions.unusedVariable(variableList);
+			
 			WriterNet.writeAll(listPrimaryKeyVertices, vertexList, hashArcs, definition);
-			/*
-			if(SemanticActions.qtdWarnings > 0 ) {
-			  System.out.println("\n\n***** Compilacao bem sucedida com "+SemanticActions.qtdWarnings+" warnings! *****");
-			}else {
-				System.out.println("\n\n***** Compilacao bem sucedida! *****");
-			}*/
+			
+			if(SemanticActions.warnings == 1 ) {
+			  System.out.println("\n\n***** Successful compilation with "+SemanticActions.warnings+" warning! *****");
+			}
+			else if(SemanticActions.warnings > 1 ) {
+			  System.out.println("\n\n***** Successful compilation with "+SemanticActions.warnings+" warnings! *****");
+			}
+			else {
+				System.out.println("\n\n***** Successful compilation! *****");
+			}
 		}
 		catch(FileNotFoundException e) {
 			System.err.println("\nFile not found: ");
@@ -186,7 +188,7 @@ NetDefinition start(VariableList variableList, LinkedList<Vertex> vertexList ):
 {
   	definition = section1()
   	section2(variableList)
-  	section3(vertexList)
+  	section3(vertexList, variableList)
   	{
   	  return definition;
   	}
@@ -240,12 +242,12 @@ void variableDefinition(VariableList variableList):
 	}
 }
 
-void section3(LinkedList<Vertex> vertexList): { }
+void section3(LinkedList<Vertex> vertexList, VariableList variableList): { }
 {
-  	<NETWORK> <COLON> (vertexDefinition(vertexList))+
+  	<NETWORK> <COLON> (vertexDefinition(vertexList, variableList))+
 }
 
-void vertexDefinition(LinkedList<Vertex> vertexList):
+void vertexDefinition(LinkedList<Vertex> vertexList, VariableList variableList):
 {
   Token vertexName;
 }
@@ -254,20 +256,20 @@ void vertexDefinition(LinkedList<Vertex> vertexList):
 	{
 		Vertex vertex = new Vertex(vertexName.image);
 	}
-	<COLON> ( operationOR(vertex)
+	<COLON> ( operationOR(vertex, variableList)
 	{
 	  	vertexList.add(vertex);
 	}
 	)+
 }
 	
-void operationOR(Vertex expression):
+void operationOR(Vertex expression, VariableList variableList):
 {
   Token operator;
   Item item = null;
 }
 {
-	operationAND(expression) ( operator = < OR > operationAND(expression)
+	operationAND(expression, variableList) ( operator = < OR > operationAND(expression, variableList)
 	{
 	  	item = new Operator(OperatorType.OR, operator.image);
 		expression.add(item);
@@ -275,13 +277,13 @@ void operationOR(Vertex expression):
 	)*   
 }
 
-void operationAND(Vertex expression):
+void operationAND(Vertex expression, VariableList variableList):
 {
   Token operator;
   Item item = null;  
 }
 {
-	vertexExpression(expression) ( operator = < AND > vertexExpression(expression)
+	vertexExpression(expression, variableList) ( operator = < AND > vertexExpression(expression, variableList)
 	{
 		item = new Operator(OperatorType.AND, operator.image);
 		expression.add(item);
@@ -289,30 +291,30 @@ void operationAND(Vertex expression):
 	)*
 }
 
-void vertexExpression(Vertex expression):
+void vertexExpression(Vertex expression, VariableList variableList):
 {
   Token variable, operator, operator2;
 }
 {
 	variable = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME> (
-	  												operator = <EQUAL> vertexRangeDefinition(expression, variable, operator)
+	  												operator = <EQUAL> vertexRangeDefinition(expression, variable, operator, variableList)
 													| operator = <TYPE_VARIABLE_SECONDARY>
 														(
 													  		operator2 = <EQUAL>
-	  												  		optionDualOperator(expression, variable, operator, operator2)
+	  												  		optionDualOperator(expression, variable, operator, operator2, variableList)
 	  												  		|
-	  												  		option(expression, variable, operator)
+	  												  		option(expression, variable, operator, variableList)
 	  												 	)
 													| operator = <LESSER>
 														(														  operator2 = <EQUAL>
-	  												  	  optionDualOperator(expression, variable, operator, operator2) 
+	  												  	  optionDualOperator(expression, variable, operator, operator2, variableList) 
 														  |
-														  option(expression, variable, operator)
+														  option(expression, variable, operator, variableList)
 	  													)
 												   )
 }
 
-void vertexRangeDefinition(Vertex expression, Token variable, Token operator):
+void vertexRangeDefinition(Vertex expression, Token variable, Token operator, VariableList variableList):
 {
   Token expressionToken;
   Item item = null;
@@ -326,25 +328,26 @@ void vertexRangeDefinition(Vertex expression, Token variable, Token operator):
 	   		expressionToken = < FORMATELLIPSIS7 > | expressionToken = < FORMATELLIPSIS8 > 
 	   	)
 		{
-			item = new Variable(VariableType.NON_PRIMARY,variable.image, variable.beginLine);
+			item = new Variable(VariableType.NON_PRIMARY, variable.image, variable.beginLine);
+			SemanticActions.containsVariable(item, variableList, variable.beginLine);
 			expression.add(item);
 			expression.addInterval(expressionToken.image, item);
 	 	}
-	   	|	rangeExpression(expression, variable, operator)
+	   	|	rangeExpression(expression, variable, operator, variableList)
   	)
 }
 
-void rangeExpression(Vertex expression, Token variable, Token operator): { }
+void rangeExpression(Vertex expression, Token variable, Token operator, VariableList variableList): { }
 {
 	(
 		( <PARENTHESIS_OPEN> | <BRACKET_OPEN> )
-		optionList(expression, variable, operator)
+		optionList(expression, variable, operator, variableList)
 		( <PARENTHESIS_CLOSE> | <BRACKET_CLOSE> )
 	)
-	|	option(expression, variable, operator)
+	|	option(expression, variable, operator, variableList)
 }
 
-void option(Vertex expression, Token variable, Token operator):
+void option(Vertex expression, Token variable, Token operator, VariableList variableList):
 {
   Token opt;
   Item item = null;
@@ -353,6 +356,7 @@ void option(Vertex expression, Token variable, Token operator):
  	opt = < OPTION >
 	{	
 		item = new Variable(VariableType.NON_PRIMARY,variable.image, variable.beginLine);
+		SemanticActions.containsVariable(item, variableList, variable.beginLine);
 		expression.add(item);
 		item = new Operand(OperandType.NUMBER, opt.image);
 		expression.add(item);
@@ -361,7 +365,7 @@ void option(Vertex expression, Token variable, Token operator):
 	}
 }
 
-void optionDualOperator(Vertex expression, Token variable, Token operator, Token operator2):
+void optionDualOperator(Vertex expression, Token variable, Token operator, Token operator2, VariableList variableList):
 {
   Token opt;
   Item item = null;
@@ -370,6 +374,7 @@ void optionDualOperator(Vertex expression, Token variable, Token operator, Token
  	opt = < OPTION >
 	{	
 		item = new Variable(VariableType.NON_PRIMARY,variable.image, variable.beginLine);
+		SemanticActions.containsVariable(item, variableList, variable.beginLine);
 		expression.add(item);
 		item = new Operand(OperandType.NUMBER,opt.image);
 		expression.add(item);
@@ -379,7 +384,7 @@ void optionDualOperator(Vertex expression, Token variable, Token operator, Token
 }
   
 
-void optionList(Vertex expression, Token variable, Token operator):
+void optionList(Vertex expression, Token variable, Token operator, VariableList variableList):
 {
   Token option;
   Item item = null;
@@ -388,6 +393,7 @@ void optionList(Vertex expression, Token variable, Token operator):
 	option = <OPTION>
    	{
    	  	item = new Variable(VariableType.NON_PRIMARY,variable.image, variable.beginLine);
+		SemanticActions.containsVariable(item, variableList, variable.beginLine);
 		expression.add(item);
 		item = new Operand(OperandType.NUMBER,option.image);
 		expression.add(item);
@@ -395,7 +401,7 @@ void optionList(Vertex expression, Token variable, Token operator):
 		expression.add(item);
 	}
   	(
-  		<SEMICOLON> optionList(expression,variable, operator)
+  		<SEMICOLON> optionList(expression,variable, operator, variableList)
   	  	{
 	  		item = new Operator(OperatorType.OR,"OR");
 			expression.add(item);

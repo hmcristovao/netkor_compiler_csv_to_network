@@ -1,6 +1,7 @@
 package semantic;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 import error.SemanticError;
 
@@ -22,12 +23,29 @@ public class SemanticActions {
 
 	}
 	
-	//Terminar!
-	public static void unusedVariable(VariableList variableList, LinkedList<Vertex> vertexList){
-		for(Vertex expression : vertexList) {
-			//for(Variable var; variableList.)
-			System.out.println(expression.getExpression());	
+	public static void noNetwork(LinkedHashMap<Integer,ArrayList<Integer>> hashArcs ){
+		boolean empty = true;
+		for(ArrayList<Integer> teste : hashArcs.values()) {
+			if(!teste.isEmpty()) empty = false;
+		}
+		if (empty) throw new SemanticError("Network without arc/edge - Invalid definition of vertices at section 3!"); 
+
+	}
+	
+	public static void unusedVariable(VariableList variableList){
+		for(Variable var : variableList) {
+			if (!var.isVariablePrimaryKey() && !var.getUsed()) {
+				System.out.println("Warning: variable " + var.variableName + " at line " + var.positionMap + " wasn't used");
+				warnings++;
+			}
 		}
 	}
 	
+	public static void containsVariable(Item variable, VariableList variableList, int position){
+		boolean test = false;	
+		for (Variable var : variableList) {
+			if (var.getVariableName().equals(variable.token)) test = true;
+		}
+		if(!test) throw new SemanticError("Variable " + variable.token + " at line " + position + " it's not defined!"); 
+	}
 }

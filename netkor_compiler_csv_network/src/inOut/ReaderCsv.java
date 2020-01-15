@@ -105,8 +105,6 @@ public class ReaderCsv {
 			}
 			hashArcs.put(counterLineCsv++,expressions);														
 		}
-
-		
 		csvReader.close();		
 	}
 }

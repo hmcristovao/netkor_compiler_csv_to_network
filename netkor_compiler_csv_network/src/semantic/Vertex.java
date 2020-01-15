@@ -177,7 +177,7 @@ public class Vertex {
 		String valueCsv;
 		//Pilha que empilhara cada token contido 
 		LinkedList<Item> stack = new LinkedList<Item>();
-		for(Item token : this.expression) {	
+		for(Item token : this.expression) {
 			//Caso token OR, entao deve ser analisadas as ultimas duas posicoes da pilha
 			//Se alguma das posicoes nao for falsa, portanto remove-se os dois valores booleanos anteriores
 			//e eh empilhada true, se nao, a expressao esta incorreta para esta linha do csv e sai do metodo
@@ -191,7 +191,7 @@ public class Vertex {
 				}
 				//Se nao deve ser pego o valor correspondente ao operando da coluna no csv
 				else {
-					valueCsv = columnsCSV[variableList.getVariableColumnPosition(stack.get(counter-2).getLexema())];
+					valueCsv = columnsCSV[variableList.getVariableColumnPosition(stack.get(counter-2).getLexema())];		
 					if(valueCsv.isBlank()) {
 						operandCsv = new Operand(OperandType.NUMBER,("0"));
 					}
@@ -216,6 +216,9 @@ public class Vertex {
 			}
 			else {
 				stack.add(token);
+				if(token instanceof Variable && !((Variable) token).isVariablePrimaryKey()) {
+					variableList.variableUsed(((Variable) token).variableName);
+				}
 			}
 			counter++;
 		}
