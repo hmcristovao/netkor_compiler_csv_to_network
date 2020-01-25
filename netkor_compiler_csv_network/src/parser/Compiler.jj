@@ -32,27 +32,33 @@ public class Compiler {
 	public static void main(String args[])  throws ParseException  {
 		Compiler compiler = null;
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//========================================Estruturas de dados=============================================//
+		//========================================ESTRUTURAS DE DADOS=============================================//
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//====Estrutura - Secao 1
 		//Contem as opcoes definidas no map a partir da section 1 e armazenadas no hashDefinition
 		NetDefinition definition;
-
+		//
 		//====Estrutura - Secao 2
 		//==VariableList - Lista que contem a definicoes das variaveis na section 2 e os nomes das colunas correspondentes
 		VariableList variableList = new VariableList();
-		
+		//
 		//====Estrutura - Secao 3
 		//==vertexList	- Lista que armazena cada vertice definido na section 3
-		LinkedList<Vertex> vertexList = new LinkedList<Vertex>();
-
+		ArrayList<Vertex> vertexList = new ArrayList<Vertex>();
+		//
 		//====Estruturas auxiliares
 		//listPrimaryKeyVertices - Lista contendo todos os valores da coluna de primaryKey
-		//hashVertex			 - Hash que contem o nome do vertice e a sua linha (arquivo Net)
-		//hashArc				 - Hash que armazena todos as expressoes validas para cada vertice do Csv 
 		LinkedList<String> listPrimaryKeyVertices = new LinkedList<String>();
+		//hashArc				 - Hash que armazena todos as expressoes validas para cada vertice do Csv 
 		LinkedHashMap<Integer,ArrayList<Integer>> hashArcs = new LinkedHashMap<Integer,ArrayList<Integer>>();
+		//HashBipartite
+		LinkedHashMap<String, ArrayList<Integer>> hashBipartite = new LinkedHashMap<String,ArrayList<Integer>>();
+		//HashWeight
+		HashMap<ArrayList<Integer>,Integer> hashWeight = new LinkedHashMap<ArrayList<Integer>,Integer>();
 		try {
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//===========================================COMPILACAO===================================================//
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			compiler = new Compiler(new FileInputStream(Configuration.mapFile));
 			definition = Compiler.start(variableList, vertexList);
 
@@ -63,26 +69,29 @@ public class Compiler {
 			//Sem header -> Como nao ha header, todas as linhas devem ser consideradas, para isso ha o incremento
 			if(definition.getHeader().toLowerCase().equals("false")) totalLinesCsv++;	
 			
-			////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			//========================================PRIMEIRA LEITURA DO CSV=========================================//
-			////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 			ReaderCsv.readColumns(variableList, definition);
 			
-			////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			//========================================SEGUNDA LEITURA DO CSV==========================================//
-			////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-			ReaderCsv.readAllLines(listPrimaryKeyVertices, variableList, vertexList, totalLinesCsv, hashArcs, definition);
-			
-			////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			//=======================================ESCRITA DO ARQUIVO NET===========================================//
-			////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			ReaderCsv.readAllLines(listPrimaryKeyVertices, variableList, vertexList, totalLinesCsv,
+								   hashArcs, definition, hashBipartite);
 
-			SemanticActions.noNetwork(hashArcs);
 			SemanticActions.unusedVariable(variableList);
 			
-			WriterNet.writeAll(listPrimaryKeyVertices, vertexList, hashArcs, definition);
+			if(definition.getBipartiteProjection().toLowerCase().equals("false")) {
+			   	totalLinesCsv++;
+				SemanticActions.noNetwork(hashArcs);
+				WriterNet.writeAll(listPrimaryKeyVertices, vertexList, hashArcs, definition);
+			//========================================ESCRITA DO ARQUIVO NET==========================================//
+			}
+			
+			else {
+			  SemanticActions.preparation(hashBipartite,hashWeight);
+			//========================================ESCRITA DO ARQUIVO NET==========================================//
+				WriterNet.writeBipartite(vertexList, hashBipartite, hashWeight, definition);
+			}	
 			
 			if(SemanticActions.warnings == 1 ) {
 			  System.out.println("\n\n***** Successful compilation with "+SemanticActions.warnings+" warning! *****");
@@ -181,7 +190,7 @@ TOKEN [IGNORE_CASE] : {
  	      < HEAD_NAME_IN_CSV_OR_VARIABLE_NAME: (< LETTERCHARACTER >) (< VARIABLECHARACTER > | "." )* >
 }
 
-NetDefinition start(VariableList variableList, LinkedList<Vertex> vertexList ):
+NetDefinition start(VariableList variableList, ArrayList<Vertex> vertexList):
 {
   NetDefinition definition;
 }
@@ -242,12 +251,12 @@ void variableDefinition(VariableList variableList):
 	}
 }
 
-void section3(LinkedList<Vertex> vertexList, VariableList variableList): { }
+void section3(ArrayList<Vertex> vertexList, VariableList variableList): { }
 {
   	<NETWORK> <COLON> (vertexDefinition(vertexList, variableList))+
 }
 
-void vertexDefinition(LinkedList<Vertex> vertexList, VariableList variableList):
+void vertexDefinition(ArrayList<Vertex> vertexList, VariableList variableList):
 {
   Token vertexName;
 }
@@ -382,8 +391,7 @@ void optionDualOperator(Vertex expression, Token variable, Token operator, Token
 		expression.add(item);
 	}
 }
-  
-
+ 
 void optionList(Vertex expression, Token variable, Token operator, VariableList variableList):
 {
   Token option;

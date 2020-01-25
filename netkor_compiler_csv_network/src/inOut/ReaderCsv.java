@@ -6,8 +6,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
 import semantic.SemanticActions;
@@ -40,17 +40,18 @@ public class ReaderCsv {
 				Iterator<Variable> iterator = variableList.iterator();
 				while(iterator.hasNext()) {
 					Variable var = iterator.next();
+					counterColumnCsv = 0;
 					for(String column : columnsCsv) {
 						if(var.headNameInCsv.equals(column)) {
 							existingColumn = true;
 							var.setColumn(counterColumnCsv);
 							if(var.isVariablePrimaryKey()) variableList.setPrimaryKeyPosition(counterColumnCsv);	
-						}	
+						}
+						counterColumnCsv++;
 					}
 					//Verifica se alguma das colunas definidas na secao 2 eh invalida (nao existe no csv)
 					if(!existingColumn)SemanticActions.inexistingColumn(var.headNameInCsv, var.getPosition());
 					existingColumn = false;
-					counterColumnCsv++;
 				}
 			}
 			else {														//Se csv nao possui header
@@ -65,7 +66,8 @@ public class ReaderCsv {
 						if(var.headNameInCsv.equals(column)) {
 							var.setColumn(counterColumnCsv);
 							if(var.isVariablePrimaryKey()) variableList.setPrimaryKeyPosition(counterColumnCsv);	
-						}	
+						}
+						
 					}
 					counterColumnCsv++;
 				}	
@@ -74,9 +76,9 @@ public class ReaderCsv {
 	}
 	
 	public static void readAllLines(LinkedList<String> listPrimaryKeyVertices, 
-						VariableList variableList, LinkedList<Vertex> vertexList, 
-						Integer totalLinesCsv, HashMap<Integer, ArrayList<Integer>> hashArcs,
-						NetDefinition definition) throws IOException {
+						VariableList variableList, ArrayList<Vertex> vertexList, 
+						Integer totalLinesCsv, LinkedHashMap<Integer, ArrayList<Integer>> hashArcs,
+						NetDefinition definition, LinkedHashMap<String, ArrayList<Integer>> hashBipartite) throws IOException {
 		//Pulando a leitura das primeiras linhas ja que as colunas ja foram lidas anteriormente
 		BufferedReader csvReader = new BufferedReader(new FileReader(Configuration.csvFileInput));		
 		
@@ -99,11 +101,23 @@ public class ReaderCsv {
 			counterLineExpression = 1;																	
 			for(Vertex expression : vertexList) {
 				if(expression.verifierCsvExpression(columnsCsv, variableList)) {
-					expressions.add(totalLinesCsv + counterLineExpression);
+					if(definition.getBipartiteProjection().toLowerCase().equals("true")){
+						expressions.add(counterLineExpression);
+					}
+					else {
+						expressions.add(totalLinesCsv + counterLineExpression);
+					}
 				}
 				counterLineExpression++;	
 			}
-			hashArcs.put(counterLineCsv++,expressions);														
+			//Se for bipartite
+			if(definition.getBipartiteProjection().toLowerCase().equals("true")){
+				hashBipartite.put(listPrimaryKeyVertices.get(counterLineCsv-1), expressions);
+			}
+			else {
+				hashArcs.put(counterLineCsv,expressions);															
+			}
+			counterLineCsv++;
 		}
 		csvReader.close();		
 	}
