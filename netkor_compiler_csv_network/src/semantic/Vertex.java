@@ -192,7 +192,7 @@ public class Vertex {
 				//Se nao deve ser pego o valor correspondente ao operando da coluna no csv
 				else {
 					valueCsv = columnsCSV[variableList.getVariableColumnPosition(stack.get(counter-2).getLexema())];		
-					if(valueCsv.isBlank()) {
+					if(valueCsv.trim().isEmpty()) {
 						operandCsv = new Operand(OperandType.NUMBER,("0"));
 					}
 					else {

@@ -1,14 +1,12 @@
-/////////////////////////////////////////////////////////////////////////////////////
-//==Este compilador foi idealizado para preparar bases de dados em formato CSV====///
-//===a formatos de entrada para softwares de redes complexas como pajek e gephi===///
-/////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
-//Motivacao: Iniciacao cientifica/Trabalho de concluso de curso//////////////////////
-//Curso: Ciencia da computacao///////////////////////////////////////////////////////
-//Campus: Sao Mateus/////////////////////////////////////////////////////////////////
-//Desenvolvedores: Klaus Kly Cuzzuol Wolff e Luis Henrique Gundes Valim//////////////
-//Orientador: Henrique Monteiro Cristovao////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
+// Compilador para mapear bases de dados primitivas para formatos de redes complexas
+//
+// Universidade Federal do Espírito Santo
+// Grupo de Pesquisa: NetKOR (Networked  Knowledge Organization Retrieval)
+//
+// Desenvolvedores:
+// Henrique Monteiro Cristovão
+// Klaus Kly Cuzzuol Wolff
+// Luis Henrique Gundes Valim
 
 options {
 	DEBUG_PARSER = false;
@@ -31,9 +29,7 @@ import java.nio.charset.StandardCharsets;
 public class Compiler {
 	public static void main(String args[])  throws ParseException  {
 		Compiler compiler = null;
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//========================================ESTRUTURAS DE DADOS=============================================//
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//====Estrutura - Secao 1
 		//Contem as opcoes definidas no map a partir da section 1 e armazenadas no hashDefinition
 		NetDefinition definition;
@@ -49,16 +45,14 @@ public class Compiler {
 		//====Estruturas auxiliares
 		//listPrimaryKeyVertices - Lista contendo todos os valores da coluna de primaryKey
 		LinkedList<String> listPrimaryKeyVertices = new LinkedList<String>();
-		//hashArc				 - Hash que armazena todos as expressoes validas para cada vertice do Csv 
+		//hashArc - Hash que armazena todos as expressoes validas para cada vertice do Csv 
 		LinkedHashMap<Integer,ArrayList<Integer>> hashArcs = new LinkedHashMap<Integer,ArrayList<Integer>>();
 		//HashBipartite
 		LinkedHashMap<String, ArrayList<Integer>> hashBipartite = new LinkedHashMap<String,ArrayList<Integer>>();
 		//HashWeight
 		HashMap<ArrayList<Integer>,Integer> hashWeight = new LinkedHashMap<ArrayList<Integer>,Integer>();
 		try {
-			////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			//===========================================COMPILACAO===================================================//
-			////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			compiler = new Compiler(new FileInputStream(Configuration.mapFile));
 			definition = Compiler.start(variableList, vertexList);
 
@@ -81,23 +75,23 @@ public class Compiler {
 			SemanticActions.unusedVariable(variableList);
 			
 			if(definition.getBipartiteProjection().toLowerCase().equals("false")) {
-			   	totalLinesCsv++;
+				totalLinesCsv++;
 				SemanticActions.noNetwork(hashArcs);
 				WriterNet.writeAll(listPrimaryKeyVertices, vertexList, hashArcs, definition);
 			//========================================ESCRITA DO ARQUIVO NET==========================================//
 			}
 			
 			else {
-			  SemanticActions.preparation(hashBipartite,hashWeight);
+				SemanticActions.preparation(hashBipartite,hashWeight);
 			//========================================ESCRITA DO ARQUIVO NET==========================================//
 				WriterNet.writeBipartite(vertexList, hashBipartite, hashWeight, definition);
 			}	
 			
 			if(SemanticActions.warnings == 1 ) {
-			  System.out.println("\n\n***** Successful compilation with "+SemanticActions.warnings+" warning! *****");
+				System.out.println("\n\n***** Successful compilation with "+SemanticActions.warnings+" warning! *****");
 			}
 			else if(SemanticActions.warnings > 1 ) {
-			  System.out.println("\n\n***** Successful compilation with "+SemanticActions.warnings+" warnings! *****");
+				System.out.println("\n\n***** Successful compilation with "+SemanticActions.warnings+" warnings! *****");
 			}
 			else {
 				System.out.println("\n\n***** Successful compilation! *****");
@@ -130,103 +124,127 @@ SKIP : { "#" : comentarioGeral }
 
 //TOKENS DE SIMBOLOS
 TOKEN [IGNORE_CASE] : {
-          < PARENTHESIS_OPEN: "(" > |
-          < PARENTHESIS_CLOSE: ")" > |
-          < BRACKET_OPEN: "[" > |
-          < BRACKET_CLOSE: "]" > |
-          < ELLIPSIS: "..." > |
-          < SEMICOLON: ";" > |
-          < COLON: ":" > |
-          < EQUAL: "=" > |
-          < TYPE_VARIABLE_PRIMARY: "*" > |
-          < TYPE_VARIABLE_SECONDARY: ">" > |
-          < LESSER: "<" > 
+	< PARENTHESIS_OPEN: "(" > |
+	< PARENTHESIS_CLOSE: ")" > |	
+	< BRACKET_OPEN: "[" > |
+	< BRACKET_CLOSE: "]" > |
+	< ELLIPSIS: "..." > |
+	< SEMICOLON: ";" > |
+	< COLON: ":" > |
+	< EQUAL: "=" > |
+	< TYPE_VARIABLE_PRIMARY: "*" > |
+	< TYPE_VARIABLE_SECONDARY: ">" > |
+	< LESSER: "<" > 
 }
 
 //PALAVRAS RESERVADAS
 TOKEN [IGNORE_CASE] : {
- 		  < SOURCE_FORMAT: "Source format" > |
-          < TARGET_FORMAT: "Target format" > |
-          < HEADER: "Header" > |
-          < DIRECTED_NETWORK: "Directed network" > |
-          < BIPARTITE_PROJECTION: "Bipartite projection" > |
-          < LAYOUT: "Layout" > |            
-          < VARIABLES: "Variables" > |
-          < NETWORK: "Network" > 
+	< SOURCE_FORMAT: "Source format" > |
+	< TARGET_FORMAT: "Target format" > |
+	< HEADER: "Header" > |
+	< DIRECTED_NETWORK: "Directed network" > |
+	< BIPARTITE_PROJECTION: "Bipartite projection" > |
+	< LAYOUT: "Layout" > |            
+	< VARIABLES: "Variables" > |
+	< NETWORK: "Network" > 
 }
 
 //TOKENS DE ENTRADA PARA CONFIGURACAO
 TOKEN [IGNORE_CASE] : {
-          < NETWORK_FORMAT: "NET" | "PAJ" > |	//Adicionar mais formatos futuramente
-          < SOURCE_FORMAT_INPUT: "CSV" > |		//Adicionar mais formatos futuramente
-          < LOGIC_VALUE: "TRUE" | "FALSE" > |            
-          < LAYOUT_NAME: "NOPE" > |				//Falta incluir os tipos de layout de rede
-          < NO: "NO" > |
-          < OR: "OR" > |
-          < AND: "AND" > 
+	< NETWORK_FORMAT: "NET" | "PAJ" > |	//Adicionar mais formatos futuramente
+	< SOURCE_FORMAT_INPUT: "CSV" > |		//Adicionar mais formatos futuramente
+	< LOGIC_VALUE: "TRUE" | "FALSE" > |            
+	< LAYOUT_NAME: "NOPE" > |				//Falta incluir os tipos de layout de rede
+	< NO: "NO" > |
+	< OR: "OR" > |
+	< AND: "AND" > 
 }
 
 //----------Tokens unicos----------//
 TOKEN [IGNORE_CASE] : {
-			//[X...Y] / [X...Y) / (X...Y] / (X...Y)
-		  < FORMATELLIPSIS1: ((" ")* < BRACKET_OPEN > (" ")* < OPTION > (" ")* < ELLIPSIS > (" ")* < OPTION > (" ")* <BRACKET_CLOSE >) > |	
-          < FORMATELLIPSIS2: ((" ")* < BRACKET_OPEN > (" ")* < OPTION > (" ")*  < ELLIPSIS > (" ")* < OPTION > (" ")* <PARENTHESIS_CLOSE >) > |		//[x ... y)
-          < FORMATELLIPSIS3: ((" ")* < PARENTHESIS_OPEN > (" ")* < OPTION > < ELLIPSIS > (" ")* < OPTION > (" ")* <BRACKET_CLOSE >) > |	//(x ... y]
-          < FORMATELLIPSIS4: ((" ")* < PARENTHESIS_OPEN > (" ")* < OPTION > < ELLIPSIS > (" ")* < OPTION > (" ")* <PARENTHESIS_CLOSE >) > |	//(x ... y)
-			// (...X) / (...X] / [X...) / (X...)
-		  < FORMATELLIPSIS5: ((" ")* < PARENTHESIS_OPEN > (" ")* < ELLIPSIS > (" ")*  < OPTION > (" ")* <PARENTHESIS_CLOSE >) > |
-		  < FORMATELLIPSIS6: ((" ")* < PARENTHESIS_OPEN > (" ")* < ELLIPSIS > (" ")*  < OPTION > (" ")* <BRACKET_CLOSE >) > |
-		  < FORMATELLIPSIS7: ((" ")* < BRACKET_OPEN > (" ")* < OPTION >  (" ")* < ELLIPSIS > (" ")*   <PARENTHESIS_CLOSE >) > |
-          < FORMATELLIPSIS8: ((" ")* < PARENTHESIS_OPEN > (" ")* < OPTION > (" ")* < ELLIPSIS > (" ")* <PARENTHESIS_CLOSE >) > |
- 	      < OPTION: < NUMBERCHARACTER > | < LETTERCHARACTER  > >
+	//[X...Y] / [X...Y) / (X...Y] / (X...Y)
+	< FORMATELLIPSIS1: ((" ")* < BRACKET_OPEN > (" ")* < OPTION > (" ")* < ELLIPSIS > (" ")* < OPTION > (" ")* <BRACKET_CLOSE >) > |	
+	< FORMATELLIPSIS2: ((" ")* < BRACKET_OPEN > (" ")* < OPTION > (" ")*  < ELLIPSIS > (" ")* < OPTION > (" ")* <PARENTHESIS_CLOSE >) > | //[x ... y)
+	< FORMATELLIPSIS3: ((" ")* < PARENTHESIS_OPEN > (" ")* < OPTION > < ELLIPSIS > (" ")* < OPTION > (" ")* <BRACKET_CLOSE >) > |	//(x ... y]
+	< FORMATELLIPSIS4: ((" ")* < PARENTHESIS_OPEN > (" ")* < OPTION > < ELLIPSIS > (" ")* < OPTION > (" ")* <PARENTHESIS_CLOSE >) > |	//(x ... y)
+	
+	// (...X) / (...X] / [X...) / (X...)
+	< FORMATELLIPSIS5: ((" ")* < PARENTHESIS_OPEN > (" ")* < ELLIPSIS > (" ")*  < OPTION > (" ")* <PARENTHESIS_CLOSE >) > |
+	< FORMATELLIPSIS6: ((" ")* < PARENTHESIS_OPEN > (" ")* < ELLIPSIS > (" ")*  < OPTION > (" ")* <BRACKET_CLOSE >) > |
+	< FORMATELLIPSIS7: ((" ")* < BRACKET_OPEN > (" ")* < OPTION >  (" ")* < ELLIPSIS > (" ")*   <PARENTHESIS_CLOSE >) > |
+	< FORMATELLIPSIS8: ((" ")* < PARENTHESIS_OPEN > (" ")* < OPTION > (" ")* < ELLIPSIS > (" ")* <PARENTHESIS_CLOSE >) > |
+	< OPTION: < NUMBERCHARACTER > | < LETTERCHARACTER  > >
 }
 
 //
 TOKEN [IGNORE_CASE] : {
-          < #LETTERCHARACTER: ["a" - "z"] | ["A" - "Z"] > |
-          < #NUMBERCHARACTER: (["0"-"9"])* ((".")? ["0"-"9"])+ > |
-          < #VARIABLECHARACTER: ["a" - "z", "A" - "Z" ,"0" - "9", "_"] > |
- 	      < VERTEX_NAME_WITH_QUOTE_MARK: "\"" (~["\""])* "\"" > |
- 	      < HEAD_NAME_IN_CSV_OR_VARIABLE_NAME: (< LETTERCHARACTER >) (< VARIABLECHARACTER > | "." )* >
+	< #LETTERCHARACTER: ["a" - "z"] | ["A" - "Z"] > |
+	< #NUMBERCHARACTER: (["0"-"9"])* ((".")? ["0"-"9"])+ > |
+	< #VARIABLECHARACTER: ["a" - "z", "A" - "Z" ,"0" - "9", "_"] > |
+	< VERTEX_NAME_WITH_QUOTE_MARK: "\"" (~["\""])* "\"" > |
+	< HEAD_NAME_IN_CSV_OR_VARIABLE_NAME: (< LETTERCHARACTER >) (< VARIABLECHARACTER > | "." )* > 
 }
 
-NetDefinition start(VariableList variableList, ArrayList<Vertex> vertexList):
-{
-  NetDefinition definition;
+// Gramática:
+//
+// Start ->	section1 section 2 section 3
+//
+NetDefinition start(VariableList variableList, ArrayList<Vertex> vertexList) : {
+	NetDefinition definition;
 }
 {
-  	definition = section1()
-  	section2(variableList)
-  	section3(vertexList, variableList)
-  	{
-  	  return definition;
-  	}
-}
-
-NetDefinition section1():
-{
-  Token header, sourceFormat, networkFormat, directedNetwork, bipartiteProjection, networkLayout;
-  NetDefinition definition;
-}
-{
-  	<SOURCE_FORMAT> <COLON> sourceFormat = <SOURCE_FORMAT_INPUT>
- 	<TARGET_FORMAT> <COLON> networkFormat = <NETWORK_FORMAT>
- 	<HEADER> <COLON> header = <LOGIC_VALUE> 
-  	<DIRECTED_NETWORK> <COLON> directedNetwork = <LOGIC_VALUE> 
-  	<BIPARTITE_PROJECTION> <COLON> bipartiteProjection = <LOGIC_VALUE>
- 	<LAYOUT> <COLON> ( networkLayout = <LAYOUT_NAME> | networkLayout = <NO> )
-  	{
-  	  	definition = new NetDefinition(networkFormat.image, directedNetwork.image, bipartiteProjection.image,
-									networkLayout.image, header.image, sourceFormat.image);
+	definition = section1()
+	section2(variableList)
+	section3(vertexList, variableList)
+	{
 		return definition;
-  	}
+	}
 }
 
+// Gramática:
+//
+// section 1 ->	<SOURCE_FORMAT> <COLON> <SOURCE_FORMAT_INPUT>
+//				<TARGET_NAME> <COLON> <NETWORK_FORMAT>
+//				<DIRECTED_NETWORK> <COLON> <LOGIC_VALUE>
+//				<BIPARTITE_PROJECTION> <COLON> <LOGIC_VALUE>
+//				<LAYOUT> <COLON> (<LAYOUT_NAME> | <OR>)
+//
+//
+NetDefinition section1() : {
+	Token header, sourceFormat, networkFormat, directedNetwork, bipartiteProjection, networkLayout;
+	NetDefinition definition;
+}
+{
+	<SOURCE_FORMAT> <COLON> sourceFormat = <SOURCE_FORMAT_INPUT>
+	<TARGET_FORMAT> <COLON> networkFormat = <NETWORK_FORMAT>
+	<HEADER> <COLON> header = <LOGIC_VALUE> 
+	<DIRECTED_NETWORK> <COLON> directedNetwork = <LOGIC_VALUE> 
+	<BIPARTITE_PROJECTION> <COLON> bipartiteProjection = <LOGIC_VALUE>
+	<LAYOUT> <COLON>
+	(
+		networkLayout = <LAYOUT_NAME>
+		|
+		networkLayout = <NO> )
+  		{
+  	  		definition = new NetDefinition(networkFormat.image, directedNetwork.image, bipartiteProjection.image,
+						networkLayout.image, header.image, sourceFormat.image);
+			return definition;
+  		}
+}
+
+// Gramática:
+//
+// section2	->	<VARIABLES> <COLON> variableDefinition
+//
 void section2(VariableList variableList): { }
 {
 	<VARIABLES> <COLON> (variableDefinition(variableList))+
 }
 
+// Gramática:
+//
+// 
+//
 void variableDefinition(VariableList variableList):
 {
   Token type, headNameInCsv, variableName = null;
@@ -237,7 +255,7 @@ void variableDefinition(VariableList variableList):
 	(
 	  	<COLON> variableName = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
 		{
-		  	if(variableName.image.isBlank()) variableName = headNameInCsv;
+		  	if(variableName.image.trim().isEmpty()) variableName = headNameInCsv;
 		}
 	)?
 	{
@@ -251,27 +269,43 @@ void variableDefinition(VariableList variableList):
 	}
 }
 
+// Gramática:
+//
+// 
+//
 void section3(ArrayList<Vertex> vertexList, VariableList variableList): { }
 {
   	<NETWORK> <COLON> (vertexDefinition(vertexList, variableList))+
 }
 
+// Gramática:
+//
+// 
+//
 void vertexDefinition(ArrayList<Vertex> vertexList, VariableList variableList):
 {
   Token vertexName;
 }
 {
-	vertexName = <VERTEX_NAME_WITH_QUOTE_MARK>
-	{
-		Vertex vertex = new Vertex(vertexName.image);
-	}
-	<COLON> ( operationOR(vertex, variableList)
-	{
-	  	vertexList.add(vertex);
-	}
-	)+
+		<HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
+	| 
+		vertexName = <VERTEX_NAME_WITH_QUOTE_MARK>
+		{
+			Vertex vertex = new Vertex(vertexName.image);
+		}
+		<COLON>
+		(
+	  		operationOR(vertex, variableList)
+			{
+	  			vertexList.add(vertex);
+			}
+		)+
 }
-	
+
+// Gramática:
+//
+// 
+//	
 void operationOR(Vertex expression, VariableList variableList):
 {
   Token operator;
@@ -286,6 +320,10 @@ void operationOR(Vertex expression, VariableList variableList):
 	)*   
 }
 
+// Gramática:
+//
+// 
+//
 void operationAND(Vertex expression, VariableList variableList):
 {
   Token operator;
@@ -300,6 +338,10 @@ void operationAND(Vertex expression, VariableList variableList):
 	)*
 }
 
+// Gramática:
+//
+// 
+//
 void vertexExpression(Vertex expression, VariableList variableList):
 {
   Token variable, operator, operator2;
@@ -323,6 +365,10 @@ void vertexExpression(Vertex expression, VariableList variableList):
 												   )
 }
 
+// Gramática:
+//
+// 
+//
 void vertexRangeDefinition(Vertex expression, Token variable, Token operator, VariableList variableList):
 {
   Token expressionToken;
@@ -346,6 +392,10 @@ void vertexRangeDefinition(Vertex expression, Token variable, Token operator, Va
   	)
 }
 
+// Gramática:
+//
+// 
+//
 void rangeExpression(Vertex expression, Token variable, Token operator, VariableList variableList): { }
 {
 	(
@@ -356,6 +406,10 @@ void rangeExpression(Vertex expression, Token variable, Token operator, Variable
 	|	option(expression, variable, operator, variableList)
 }
 
+// Gramática:
+//
+// 
+//
 void option(Vertex expression, Token variable, Token operator, VariableList variableList):
 {
   Token opt;
@@ -374,6 +428,10 @@ void option(Vertex expression, Token variable, Token operator, VariableList vari
 	}
 }
 
+// Gramática:
+//
+// 
+//
 void optionDualOperator(Vertex expression, Token variable, Token operator, Token operator2, VariableList variableList):
 {
   Token opt;
@@ -391,7 +449,11 @@ void optionDualOperator(Vertex expression, Token variable, Token operator, Token
 		expression.add(item);
 	}
 }
- 
+
+// Gramática:
+//
+// 
+//
 void optionList(Vertex expression, Token variable, Token operator, VariableList variableList):
 {
   Token option;
