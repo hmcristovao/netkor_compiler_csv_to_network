@@ -234,7 +234,7 @@ NetDefinition section1() : {
 
 // Gramática:
 //
-// section2	->	<VARIABLES> <COLON> variableDefinition
+// section2	->	<VARIABLES> <COLON> (variableDefinition)+
 //
 void section2(VariableList variableList): { }
 {
@@ -243,35 +243,41 @@ void section2(VariableList variableList): { }
 
 // Gramática:
 //
-// 
+// variableDefinition -> ( <TYPE_VARIABLE_PRIMARY> | <TYPE_VARIABLE_SECONDARY> )
+//						 <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
+//                       ( <COLON> <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME> )?
 //
-void variableDefinition(VariableList variableList):
-{
-  Token type, headNameInCsv, variableName = null;
-  Variable variable;
+void variableDefinition(VariableList variableList) : {
+	Token type, headNameInCsv, variableName = null;
+	Variable variable;
 }
 {
-	( type = <TYPE_VARIABLE_PRIMARY> | type = <TYPE_VARIABLE_SECONDARY> ) headNameInCsv = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
 	(
-	  	<COLON> variableName = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
+		type = <TYPE_VARIABLE_PRIMARY>
+		|
+		type = <TYPE_VARIABLE_SECONDARY>
+	)
+	headNameInCsv = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
+	(
+		<COLON> variableName = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
 		{
-		  	if(variableName.image.trim().isEmpty()) variableName = headNameInCsv;
+			if(variableName.image.trim().isEmpty()) variableName = headNameInCsv;
 		}
 	)?
 	{
-	 	if(type.image.equals("*")) {
+		if(type.image.equals("*")) {
 			variable = new Variable(headNameInCsv.image,variableName.image,VariableType.PRIMARY, type.beginLine);
 		}
 		else {
 			variable = new Variable(headNameInCsv.image,variableName.image,VariableType.NON_PRIMARY, type.beginLine);
 		}	
-	  	variableList.add(variable);	
+		variableList.add(variable);	
 	}
 }
 
 // Gramática:
 //
-// 
+// section3 ->	<NETWORK> <COLON> (vertexDefinition)+
 //
 void section3(ArrayList<Vertex> vertexList, VariableList variableList): { }
 {
@@ -280,107 +286,133 @@ void section3(ArrayList<Vertex> vertexList, VariableList variableList): { }
 
 // Gramática:
 //
-// 
+// vertexDefinition ->	<HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
+// 						|
+// 						<VERTEX_NAME_WITH_QUOTE_MARK> <COLON> ( operationOR )+
 //
 void vertexDefinition(ArrayList<Vertex> vertexList, VariableList variableList):
 {
   Token vertexName;
 }
 {
-		<HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
+	<HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
 	| 
-		vertexName = <VERTEX_NAME_WITH_QUOTE_MARK>
+	vertexName = <VERTEX_NAME_WITH_QUOTE_MARK>
+	{
+		Vertex vertex = new Vertex(vertexName.image);
+	}
+	<COLON>
+	(
+		operationOR(vertex, variableList)
 		{
-			Vertex vertex = new Vertex(vertexName.image);
+			vertexList.add(vertex);
 		}
-		<COLON>
-		(
-	  		operationOR(vertex, variableList)
-			{
-	  			vertexList.add(vertex);
-			}
-		)+
+	)+
 }
 
 // Gramática:
 //
-// 
+// operationOR	->	operationAND ( <OR> operationAND)*
+
 //	
-void operationOR(Vertex expression, VariableList variableList):
-{
-  Token operator;
-  Item item = null;
+void operationOR(Vertex expression, VariableList variableList) : {	
+	Token operator;
+	Item item = null;
 }
 {
-	operationAND(expression, variableList) ( operator = < OR > operationAND(expression, variableList)
-	{
-	  	item = new Operator(OperatorType.OR, operator.image);
-		expression.add(item);
-	}
+	operationAND(expression, variableList)
+	(
+		operator = < OR > operationAND(expression, variableList)
+		{
+			item = new Operator(OperatorType.OR, operator.image);
+			expression.add(item);
+		}
 	)*   
 }
 
 // Gramática:
 //
-// 
+// operationAND	->	vertexExpression ( < AND > vertexExpression)*
 //
-void operationAND(Vertex expression, VariableList variableList):
-{
-  Token operator;
-  Item item = null;  
+void operationAND(Vertex expression, VariableList variableList) : {
+	Token operator;
+	Item item = null;  
 }
 {
-	vertexExpression(expression, variableList) ( operator = < AND > vertexExpression(expression, variableList)
-	{
-		item = new Operator(OperatorType.AND, operator.image);
-		expression.add(item);
-	}
+	vertexExpression(expression, variableList)
+	(
+		operator = < AND > vertexExpression(expression, variableList)
+		{
+			item = new Operator(OperatorType.AND, operator.image);
+			expression.add(item);
+		}
 	)*
 }
 
 // Gramática:
 //
-// 
+//	vertexExpression = 	<HEAD_NAME_IN_CSV_OR_VARIABLE_NAME> <EQUAL> vertexRangeDefinition
+//						| <TYPE_VARIABLE_SECONDARY> ( <EQUAL> optionDualOperator | option	)
+//						| <LESSER> ( <EQUAL> optionDualOperator	| option )
 //
-void vertexExpression(Vertex expression, VariableList variableList):
-{
-  Token variable, operator, operator2;
+void vertexExpression(Vertex expression, VariableList variableList) : {
+	Token variable, operator, operator2;
 }
 {
-	variable = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME> (
-	  												operator = <EQUAL> vertexRangeDefinition(expression, variable, operator, variableList)
-													| operator = <TYPE_VARIABLE_SECONDARY>
-														(
-													  		operator2 = <EQUAL>
-	  												  		optionDualOperator(expression, variable, operator, operator2, variableList)
-	  												  		|
-	  												  		option(expression, variable, operator, variableList)
-	  												 	)
-													| operator = <LESSER>
-														(														  operator2 = <EQUAL>
-	  												  	  optionDualOperator(expression, variable, operator, operator2, variableList) 
-														  |
-														  option(expression, variable, operator, variableList)
-	  													)
-												   )
+	variable = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
+	(
+		operator = <EQUAL> vertexRangeDefinition(expression, variable, operator, variableList)
+		|
+		operator = <TYPE_VARIABLE_SECONDARY>
+		(			operator2 = <EQUAL>
+			optionDualOperator(expression, variable, operator, operator2, variableList)
+			|
+			option(expression, variable, operator, variableList)
+		)
+		|
+		operator = <LESSER>
+		(			operator2 = <EQUAL>
+			optionDualOperator(expression, variable, operator, operator2, variableList) 
+			|
+			option(expression, variable, operator, variableList)
+	  		)
+	  	)
 }
 
 // Gramática:
 //
-// 
+// vertexRangeDefinition - >  <FORMATELLIPSIS1>
+//							| <FORMATELLIPSIS2>
+//							| <FORMATELLIPSIS3>
+//							| <FORMATELLIPSIS4> 
+// 							| <FORMATELLIPSIS5>
+// 							| <FORMATELLIPSIS6> 
+// 							| <FORMATELLIPSIS7>
+// 							| <FORMATELLIPSIS8>
+// 							| rangeExpression
 //
-void vertexRangeDefinition(Vertex expression, Token variable, Token operator, VariableList variableList):
-{
-  Token expressionToken;
-  Item item = null;
+void vertexRangeDefinition(Vertex expression, Token variable, Token operator, VariableList variableList) : {
+	Token expressionToken;
+	Item item = null;
 }
-{
+{ 
 	(
     	(
-	   		expressionToken = < FORMATELLIPSIS1 > | expressionToken = < FORMATELLIPSIS2 > |
-	   		expressionToken = < FORMATELLIPSIS3 > | expressionToken = < FORMATELLIPSIS4 > |
-	   		expressionToken = < FORMATELLIPSIS5 > | expressionToken = < FORMATELLIPSIS6 > |
-	   		expressionToken = < FORMATELLIPSIS7 > | expressionToken = < FORMATELLIPSIS8 > 
+	   		expressionToken = <FORMATELLIPSIS1>
+	   		|
+	   		expressionToken = <FORMATELLIPSIS2>
+	   		|
+	   		expressionToken = <FORMATELLIPSIS3>
+	   		|
+	   		expressionToken = <FORMATELLIPSIS4>
+	   		|
+	   		expressionToken = <FORMATELLIPSIS5>
+	   		|
+	   		expressionToken = <FORMATELLIPSIS6>
+	   		|
+	   		expressionToken = <FORMATELLIPSIS7>
+	   		|
+	   		expressionToken = <FORMATELLIPSIS8> 
 	   	)
 		{
 			item = new Variable(VariableType.NON_PRIMARY, variable.image, variable.beginLine);
@@ -388,35 +420,44 @@ void vertexRangeDefinition(Vertex expression, Token variable, Token operator, Va
 			expression.add(item);
 			expression.addInterval(expressionToken.image, item);
 	 	}
-	   	|	rangeExpression(expression, variable, operator, variableList)
+	   	|
+	   	rangeExpression(expression, variable, operator, variableList)
   	)
 }
 
 // Gramática:
 //
-// 
+// rangeExpression -> ( ( <PARENTHESIS_OPEN> | <BRACKET_OPEN> ) optionList ( <PARENTHESIS_CLOSE> | <BRACKET_CLOSE> ) )
+//					  |	option
 //
-void rangeExpression(Vertex expression, Token variable, Token operator, VariableList variableList): { }
+void rangeExpression(Vertex expression, Token variable, Token operator, VariableList variableList) : { }
 {
 	(
-		( <PARENTHESIS_OPEN> | <BRACKET_OPEN> )
+		(
+			<PARENTHESIS_OPEN>
+			|
+			<BRACKET_OPEN>
+		)
 		optionList(expression, variable, operator, variableList)
-		( <PARENTHESIS_CLOSE> | <BRACKET_CLOSE> )
+		(
+		  	<PARENTHESIS_CLOSE>
+		  	|
+		  	<BRACKET_CLOSE>
+		)
 	)
 	|	option(expression, variable, operator, variableList)
 }
 
 // Gramática:
 //
-// 
+// option -> <OPTION>
 //
-void option(Vertex expression, Token variable, Token operator, VariableList variableList):
-{
-  Token opt;
-  Item item = null;
+void option(Vertex expression, Token variable, Token operator, VariableList variableList) : {
+	Token opt;
+	Item item = null;
 }
 {
- 	opt = < OPTION >
+	opt = <OPTION>
 	{	
 		item = new Variable(VariableType.NON_PRIMARY,variable.image, variable.beginLine);
 		SemanticActions.containsVariable(item, variableList, variable.beginLine);
@@ -430,15 +471,14 @@ void option(Vertex expression, Token variable, Token operator, VariableList vari
 
 // Gramática:
 //
-// 
+// optionDualOperator -> <OPTION>
 //
-void optionDualOperator(Vertex expression, Token variable, Token operator, Token operator2, VariableList variableList):
-{
-  Token opt;
-  Item item = null;
+void optionDualOperator(Vertex expression, Token variable, Token operator, Token operator2, VariableList variableList) : {
+	Token opt;
+	Item item = null;
 }
 {
- 	opt = < OPTION >
+	opt = <OPTION>
 	{	
 		item = new Variable(VariableType.NON_PRIMARY,variable.image, variable.beginLine);
 		SemanticActions.containsVariable(item, variableList, variable.beginLine);
@@ -452,29 +492,28 @@ void optionDualOperator(Vertex expression, Token variable, Token operator, Token
 
 // Gramática:
 //
-// 
+// optionList -> <OPTION> ( <SEMINCOLON> )?
 //
-void optionList(Vertex expression, Token variable, Token operator, VariableList variableList):
-{
-  Token option;
-  Item item = null;
+void optionList(Vertex expression, Token variable, Token operator, VariableList variableList) : {
+	Token option;
+	Item item = null;
 }
 {
 	option = <OPTION>
    	{
-   	  	item = new Variable(VariableType.NON_PRIMARY,variable.image, variable.beginLine);
+		item = new Variable(VariableType.NON_PRIMARY,variable.image, variable.beginLine);
 		SemanticActions.containsVariable(item, variableList, variable.beginLine);
 		expression.add(item);
 		item = new Operand(OperandType.NUMBER,option.image);
 		expression.add(item);
-	  	item = new Operator(OperatorType.EQUAL,operator.image);
+		item = new Operator(OperatorType.EQUAL,operator.image);
 		expression.add(item);
 	}
-  	(
-  		<SEMICOLON> optionList(expression,variable, operator, variableList)
-  	  	{
-	  		item = new Operator(OperatorType.OR,"OR");
+	(
+		<SEMICOLON> optionList(expression,variable, operator, variableList)
+		{
+			item = new Operator(OperatorType.OR,"OR");
 			expression.add(item);
-  	  	}
+		}
 	)?
 }
