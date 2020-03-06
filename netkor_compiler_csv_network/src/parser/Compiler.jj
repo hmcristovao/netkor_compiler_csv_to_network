@@ -46,9 +46,11 @@ public class Compiler {
 		//listPrimaryKeyVertices - Lista contendo todos os valores da coluna de primaryKey
 		LinkedList<String> listPrimaryKeyVertices = new LinkedList<String>();
 		//hashArc - Hash que armazena todos as expressoes validas para cada vertice do Csv 
-		LinkedHashMap<Integer,ArrayList<Integer>> hashArcs = new LinkedHashMap<Integer,ArrayList<Integer>>();
+		LinkedHashMap<Integer,ArrayList<?>> hashArcs = new LinkedHashMap<Integer,ArrayList<?>>();
 		//HashBipartite
 		LinkedHashMap<String, ArrayList<Integer>> hashBipartite = new LinkedHashMap<String,ArrayList<Integer>>();
+		//Hash
+		LinkedHashMap<String, Integer> hashVertexVariable = new LinkedHashMap<String,Integer>();
 		//HashWeight
 		HashMap<ArrayList<Integer>,Integer> hashWeight = new LinkedHashMap<ArrayList<Integer>,Integer>();
 		try {
@@ -70,14 +72,14 @@ public class Compiler {
 			//========================================SEGUNDA LEITURA DO CSV==========================================//
 
 			ReaderCsv.readAllLines(listPrimaryKeyVertices, variableList, vertexList, totalLinesCsv,
-								   hashArcs, definition, hashBipartite);
+								   hashArcs, definition, hashBipartite, hashVertexVariable);
 
-			SemanticActions.unusedVariable(variableList);
+			//SemanticActions.unusedVariable(variableList);
 			
 			if(definition.getBipartiteProjection().toLowerCase().equals("false")) {
 				totalLinesCsv++;
 				SemanticActions.noNetwork(hashArcs);
-				WriterNet.writeAll(listPrimaryKeyVertices, vertexList, hashArcs, definition);
+				WriterNet.writeAll(listPrimaryKeyVertices, vertexList, hashArcs, hashVertexVariable, definition);
 			//========================================ESCRITA DO ARQUIVO NET==========================================//
 			}
 			
@@ -151,7 +153,7 @@ TOKEN [IGNORE_CASE] : {
 
 //TOKENS DE ENTRADA PARA CONFIGURACAO
 TOKEN [IGNORE_CASE] : {
-	< NETWORK_FORMAT: "NET" | "PAJ" > |	//Adicionar mais formatos futuramente
+	< NETWORK_FORMAT: "NET" | "PAJ" > |		//Adicionar mais formatos futuramente
 	< SOURCE_FORMAT_INPUT: "CSV" > |		//Adicionar mais formatos futuramente
 	< LOGIC_VALUE: "TRUE" | "FALSE" > |            
 	< LAYOUT_NAME: "NOPE" > |				//Falta incluir os tipos de layout de rede
@@ -238,7 +240,7 @@ NetDefinition section1() : {
 //
 void section2(VariableList variableList): { }
 {
-	<VARIABLES> <COLON> (variableDefinition(variableList))+
+	<VARIABLES> <COLON> variableDefinition(variableList)
 }
 
 // Gramática:
@@ -252,27 +254,31 @@ void variableDefinition(VariableList variableList) : {
 	Variable variable;
 }
 {
-	(
-		type = <TYPE_VARIABLE_PRIMARY>
-		|
-		type = <TYPE_VARIABLE_SECONDARY>
-	)
-	headNameInCsv = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
-	(
-		<COLON> variableName = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
+	(  	
+		(
+			type = <TYPE_VARIABLE_PRIMARY>
+			|
+			type = <TYPE_VARIABLE_SECONDARY>
+		)
+		headNameInCsv = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME> 
+		(
+			<COLON> variableName = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
+			{
+				if(variableName.image.trim().isEmpty()) variableName = headNameInCsv;
+			}
+		)?
 		{
-			if(variableName.image.trim().isEmpty()) variableName = headNameInCsv;
+			if(type.image.equals("*")) {
+				variable = new Variable(headNameInCsv.image,variableName.image,VariableType.PRIMARY, type.beginLine);
+			}
+			else {
+				variable = new Variable(headNameInCsv.image,variableName.image,VariableType.NON_PRIMARY, type.beginLine);
+			}	
+			variableList.add(variable);	
 		}
+	(	  variableDefinition(variableList)
 	)?
-	{
-		if(type.image.equals("*")) {
-			variable = new Variable(headNameInCsv.image,variableName.image,VariableType.PRIMARY, type.beginLine);
-		}
-		else {
-			variable = new Variable(headNameInCsv.image,variableName.image,VariableType.NON_PRIMARY, type.beginLine);
-		}	
-		variableList.add(variable);	
-	}
+	)
 }
 
 // Gramática:
@@ -292,21 +298,39 @@ void section3(ArrayList<Vertex> vertexList, VariableList variableList): { }
 //
 void vertexDefinition(ArrayList<Vertex> vertexList, VariableList variableList):
 {
-  Token vertexName;
+  Token vertexName, vertexVariable;
+  Vertex vertex2, vertex3;
+  VariableList variableListVertex = new VariableList();
 }
 {
-	<HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
-	| 
-	vertexName = <VERTEX_NAME_WITH_QUOTE_MARK>
+  	vertexVariable = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
+  	{
+		vertex2 = new Vertex(vertexVariable.image, true);
+	}
+	optionVariable(vertex2, vertexVariable, variableList)
+	{
+		vertexList.add(vertex2);
+	}
+ 	| 
+	vertexName = <VERTEX_NAME_WITH_QUOTE_MARK> <COLON>
 	{
 		Vertex vertex = new Vertex(vertexName.image);
 	}
-	<COLON>
 	(
 		operationOR(vertex, variableList)
 		{
-			vertexList.add(vertex);
+				vertexList.add(vertex);
 		}
+		(
+		  	vertexVariable = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
+		  	{
+		  	  	vertex3 = new Vertex(vertexVariable.image, true);
+		  	}
+		  	optionVariable(vertex3, vertexVariable, variableList)
+			{
+				vertexList.add(vertex3);
+			}
+		 )*
 	)+
 }
 
@@ -324,7 +348,7 @@ void operationOR(Vertex expression, VariableList variableList) : {
 	(
 		operator = < OR > operationAND(expression, variableList)
 		{
-			item = new Operator(OperatorType.OR, operator.image);
+			item = new Operator(operator.image);
 			expression.add(item);
 		}
 	)*   
@@ -343,7 +367,7 @@ void operationAND(Vertex expression, VariableList variableList) : {
 	(
 		operator = < AND > vertexExpression(expression, variableList)
 		{
-			item = new Operator(OperatorType.AND, operator.image);
+			item = new Operator(operator.image);
 			expression.add(item);
 		}
 	)*
@@ -375,8 +399,8 @@ void vertexExpression(Vertex expression, VariableList variableList) : {
 			optionDualOperator(expression, variable, operator, operator2, variableList) 
 			|
 			option(expression, variable, operator, variableList)
-	  		)
-	  	)
+		)
+	)
 }
 
 // Gramática:
@@ -464,7 +488,18 @@ void option(Vertex expression, Token variable, Token operator, VariableList vari
 		expression.add(item);
 		item = new Operand(OperandType.NUMBER, opt.image);
 		expression.add(item);
-		item = new Operator(OperatorType.EQUAL, operator.image);
+		item = new Operator(operator.image);
+		expression.add(item);
+	}
+}
+
+void optionVariable(Vertex expression, Token variable, VariableList variableList) : {
+	Item item = null;
+}
+{
+	{	
+		item = new Variable(VariableType.NON_PRIMARY,variable.image, variable.beginLine);
+		SemanticActions.containsVariable(item, variableList, variable.beginLine);
 		expression.add(item);
 	}
 }
@@ -485,7 +520,7 @@ void optionDualOperator(Vertex expression, Token variable, Token operator, Token
 		expression.add(item);
 		item = new Operand(OperandType.NUMBER,opt.image);
 		expression.add(item);
-		item = new Operator(OperatorType.EQUAL, operator.image + operator2.image);
+		item = new Operator(operator.image + operator2.image);
 		expression.add(item);
 	}
 }
@@ -506,13 +541,13 @@ void optionList(Vertex expression, Token variable, Token operator, VariableList 
 		expression.add(item);
 		item = new Operand(OperandType.NUMBER,option.image);
 		expression.add(item);
-		item = new Operator(OperatorType.EQUAL,operator.image);
+		item = new Operator(operator.image);
 		expression.add(item);
 	}
 	(
 		<SEMICOLON> optionList(expression,variable, operator, variableList)
 		{
-			item = new Operator(OperatorType.OR,"OR");
+			item = new Operator("OR");
 			expression.add(item);
 		}
 	)?

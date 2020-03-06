@@ -1,5 +1,6 @@
 package semantic;
 
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,9 +28,9 @@ public class SemanticActions {
 		throw new SemanticError("Line " + position + " (MAP file)" + ": Column \""+ variable + "\" doesn't exist!"); 
 	}
 	
-	public static void noNetwork(LinkedHashMap<Integer,ArrayList<Integer>> hashArcs ){
+	public static void noNetwork(LinkedHashMap<Integer,ArrayList<?>> hashArcs ){
 		boolean empty = true;
-		for(ArrayList<Integer> teste : hashArcs.values()) {
+		for(ArrayList<?> teste : hashArcs.values()) {
 			if(!teste.isEmpty()) empty = false;
 		}
 		if (empty) throw new SemanticError("Network without arc/edge - Invalid definition of vertices at section 3!"); 

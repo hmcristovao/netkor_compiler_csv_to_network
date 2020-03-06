@@ -5,10 +5,19 @@ import java.util.LinkedList;
 public class Vertex {
 	
 	String vertexName;
+	boolean isVariable;
+	boolean isUsed = false;
 	LinkedList<Item> expression;
 	
 	public Vertex(String name) {
 		this.vertexName = name;
+		this.isVariable = false;
+		this.expression = new LinkedList<Item>();
+	}
+	
+	public Vertex(String name, boolean variable) {
+		this.vertexName = name;
+		this.isVariable = variable;
 		this.expression = new LinkedList<Item>();
 	}
 	
@@ -24,6 +33,18 @@ public class Vertex {
 		return this.vertexName;
 	}
 	
+	public boolean isVertexVariable(){
+		return this.isVariable;
+	}
+	
+	public boolean isUsed(){
+		return this.isUsed;
+	}
+	
+	public void setIsUsed(){
+		this.isUsed = true;
+	}
+	
 	public void addInterval(String range, Item variable) {
 		range = range.replaceAll(" ","");
 		Item item;
@@ -34,7 +55,7 @@ public class Vertex {
 			operandA = (String) range.subSequence(1, range.indexOf("..."));
 			item = new Operand(OperandType.NUMBER,operandA);
 			this.expression.add(item);
-			item = new Operator(OperatorType.GREATER,">");
+			item = new Operator(">");
 			this.expression.add(item);
 		}
 	    //=========================Case [x...)======================
@@ -43,7 +64,7 @@ public class Vertex {
 	    	operandA = (String) range.subSequence(1, range.indexOf("..."));
 			item = new Operand(OperandType.NUMBER,operandA);
 	    	this.expression.add(item);
-			item = new Operator(OperatorType.GREATER_EQUAL,">=");
+			item = new Operator(">=");
 			this.expression.add(item);	
 		}
 	    //=========================Case (...x)======================
@@ -52,7 +73,7 @@ public class Vertex {
    			operandA = (String) range.subSequence(range.indexOf("...")+3, range.indexOf(")"));
 			item = new Operand(OperandType.NUMBER,operandA);		
    			this.expression.add(item);
-			item = new Operator(OperatorType.LESSER,"<");
+			item = new Operator("<");
 			this.expression.add(item);		
 		}
 	    //=========================Case (...x]======================
@@ -61,7 +82,7 @@ public class Vertex {
 			operandA = (String) range.subSequence(range.indexOf("...")+3, range.indexOf("]"));
 			item = new Operand(OperandType.NUMBER,operandA);
 			this.expression.add(item);
-			item = new Operator(OperatorType.LESSER_EQUAL,"<=");
+			item = new Operator("<=");
 			this.expression.add(item);
 		}
 	    //==============Case (x...y) or [x...y] or (x...y] or [x...y)================
@@ -76,7 +97,7 @@ public class Vertex {
 				operandA = (String) range.subSequence(1, range.indexOf("..."));
 				item = new Operand(OperandType.NUMBER,operandA);
 				this.expression.add(item);
-				item = new Operator(OperatorType.GREATER,">");
+				item = new Operator(">");
 				this.expression.add(item);
 				//Como o intervalo eh composto de dois operandos (x e y), portanto a expressao final 	
 				//precisa ter um formato tipo [variavel, operandoA, >, variavel, operandoB, <]
@@ -86,9 +107,9 @@ public class Vertex {
 				operandB = (String) range.subSequence(range.indexOf("...")+3, range.indexOf(")"));
 				item = new Operand(OperandType.NUMBER,operandB);
 				this.expression.add(item);
-				item = new Operator(OperatorType.LESSER,"<");
+				item = new Operator("<");
 				this.expression.add(item);
-				item = new Operator(OperatorType.AND,"AND");
+				item = new Operator("AND");
 				this.expression.add(item);
 				SemanticActions.isWrongInterval(this.vertexName, range, Integer.valueOf(operandA), Integer.valueOf(operandB));
 			}
@@ -98,7 +119,7 @@ public class Vertex {
 				operandA = (String) range.subSequence(1, range.indexOf("..."));
 				item = new Operand(OperandType.NUMBER,operandA);
 				this.expression.add(item);
-				item = new Operator(OperatorType.GREATER_EQUAL,">=");
+				item = new Operator(">=");
 				this.expression.add(item);
 				//Como o intervalo eh composto de dois operandos (x e y), portanto a expressao final 	
 				//precisa ter um formato tipo [variavel, operandoA, >, variavel, operandoB, <]
@@ -108,9 +129,9 @@ public class Vertex {
 				operandB = (String) range.subSequence(range.indexOf("...")+3, range.indexOf(")"));
 				item = new Operand(OperandType.NUMBER,operandB);
 				this.expression.add(item);
-				item = new Operator(OperatorType.LESSER,"<");
+				item = new Operator("<");
 				this.expression.add(item);
-				item = new Operator(OperatorType.AND,"AND");
+				item = new Operator("AND");
 				this.expression.add(item);
 				SemanticActions.isWrongInterval(this.vertexName, range, Integer.valueOf(operandA), Integer.valueOf(operandB));
 			}
@@ -120,7 +141,7 @@ public class Vertex {
 				operandA = (String) range.subSequence(1, range.indexOf("..."));
 				item = new Operand(OperandType.NUMBER,operandA);
 				this.expression.add(item);
-				item = new Operator(OperatorType.GREATER,">");
+				item = new Operator(">");
 				this.expression.add(item);
 				//Como o intervalo eh composto de dois operandos (x e y), portanto a expressao final 	
 				//precisa ter um formato tipo [variavel, operandoA, >, variavel, operandoB, <]
@@ -130,9 +151,9 @@ public class Vertex {
 				operandB = (String) range.subSequence(range.indexOf("...")+3, range.indexOf("]"));
 				item = new Operand(OperandType.NUMBER,operandB);
 				this.expression.add(item);
-				item = new Operator(OperatorType.LESSER_EQUAL,"<=");
+				item = new Operator("<=");
 				this.expression.add(item);
-				item = new Operator(OperatorType.AND,"AND");
+				item = new Operator("AND");
 				this.expression.add(item);
 				SemanticActions.isWrongInterval(this.vertexName, range, Integer.valueOf(operandA), Integer.valueOf(operandB));
 			}
@@ -142,7 +163,7 @@ public class Vertex {
 				operandA = (String) range.subSequence(1, range.indexOf("..."));
 				item = new Operand(OperandType.NUMBER,operandA);
 				this.expression.add(item);
-				item = new Operator(OperatorType.GREATER_EQUAL,">=");
+				item = new Operator(">=");
 				this.expression.add(item);
 				//Como o intervalo eh composto de dois operandos (x e y), portanto a expressao final 	
 				//precisa ter um formato tipo [variavel, operandoA, >, variavel, operandoB, <]
@@ -152,9 +173,9 @@ public class Vertex {
 				operandB = (String) range.subSequence(range.indexOf("...")+3, range.indexOf("]"));
 				item = new Operand(OperandType.NUMBER,operandB);
 				this.expression.add(item);
-				item = new Operator(OperatorType.LESSER_EQUAL,"<=");
+				item = new Operator("<=");
 				this.expression.add(item);
-				item = new Operator(OperatorType.AND,"AND");
+				item = new Operator("AND");
 				this.expression.add(item);
 				SemanticActions.isWrongInterval(this.vertexName, range, Integer.valueOf(operandA), Integer.valueOf(operandB));
 			}
@@ -186,12 +207,12 @@ public class Vertex {
 				operandExpression = (stack.get(counter-1));
 				//Se o operador lido for um operador logico
 				//Portanto as duas ultimas posicoes da pilha serao operandos booleanos
-				if(operator.getOperatorType() == OperatorType.OR || operator.getOperatorType() == OperatorType.AND ) {
+				if(operator.getOperatorType().equals(OperatorType.OR) || operator.getOperatorType().equals(OperatorType.AND)) {
 					operandCsv = new Operand(OperandType.BOOLEAN,(stack.get(counter-2)).getLexema());
 				}
 				//Se nao deve ser pego o valor correspondente ao operando da coluna no csv
 				else {
-					valueCsv = columnsCSV[variableList.getVariableColumnPosition(stack.get(counter-2).getLexema())];		
+					valueCsv = columnsCSV[variableList.getVariableColumnPosition(stack.get(counter-2).getLexema())];
 					if(valueCsv.trim().isEmpty()) {
 						operandCsv = new Operand(OperandType.NUMBER,("0"));
 					}
@@ -205,6 +226,7 @@ public class Vertex {
 					counter = counter -2;
 					item = new Operand(OperandType.BOOLEAN, "true");
 					stack.add(item);
+					
 				}
 				else {
 					stack.remove(counter-1);
@@ -222,32 +244,32 @@ public class Vertex {
 			}
 			counter++;
 		}
-		if(stack.element().getLexema() == "false") return false;
+		if(stack.element().getLexema().equals("false")) return false;
 		return true;
 	}
 	
 	//Metodo que realiza a comparacao do valor do CSV, o valor da expressao e a operacao correspondente
 	public static boolean operation(Item valueExpression, Item valueCsv, Operator operation) {
-		if(operation.getOperatorType() == OperatorType.GREATER_EQUAL) {
+		if(operation.getOperatorType().equals(OperatorType.GREATER_EQUAL)) {
 			if(Integer.valueOf(valueCsv.getLexema()) >= Integer.valueOf(valueExpression.getLexema())) return true;
 		}
 		else if(operation.getOperatorType() == OperatorType.GREATER) {
 			if(Integer.valueOf(valueCsv.getLexema()) > Integer.valueOf(valueExpression.getLexema())) return true;
 			}
-		else if(operation.getOperatorType() == OperatorType.LESSER_EQUAL) {
+		else if(operation.getOperatorType().equals(OperatorType.LESSER_EQUAL)) {
 			if(Integer.valueOf(valueCsv.getLexema()) <= Integer.valueOf(valueExpression.getLexema())) return true;
 				}
-		else if(operation.getOperatorType() == OperatorType.LESSER) {
+		else if(operation.getOperatorType().equals(OperatorType.LESSER)) {
 			if(Integer.valueOf(valueCsv.getLexema()) < Integer.valueOf(valueExpression.getLexema())) return true;
 		}
-		else if(operation.getOperatorType() == OperatorType.EQUAL) {
-			if(Integer.valueOf(valueCsv.getLexema()) == Integer.valueOf(valueExpression.getLexema())) return true;
+		else if(operation.getOperatorType().equals(OperatorType.EQUAL)) {
+			if(Integer.valueOf(valueCsv.getLexema()).equals(Integer.valueOf(valueExpression.getLexema()))) return true;
 		}
-		else if(operation.getOperatorType() == OperatorType.OR) {
-			if(String.valueOf(valueCsv) == "true" || String.valueOf(valueExpression) == "true")	return true;
+		else if(operation.getOperatorType().equals(OperatorType.OR)) {
+			if(String.valueOf(valueCsv).equals("true") || String.valueOf(valueExpression).equals("true"))	return true;
 		}
-		else if(operation.getOperatorType() == OperatorType.AND) {
-			if(String.valueOf(valueCsv) == "true" && String.valueOf(valueExpression) == "true")	return true;
+		else if(operation.getOperatorType().equals(OperatorType.AND)) {
+			if(String.valueOf(valueCsv).equals("true") && String.valueOf(valueExpression).equals("true"))	return true;
 		}
 		return false;
 	}

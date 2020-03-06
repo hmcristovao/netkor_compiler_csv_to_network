@@ -77,14 +77,16 @@ public class ReaderCsv {
 	
 	public static void readAllLines(LinkedList<String> listPrimaryKeyVertices, 
 						VariableList variableList, ArrayList<Vertex> vertexList, 
-						Integer totalLinesCsv, LinkedHashMap<Integer, ArrayList<Integer>> hashArcs,
-						NetDefinition definition, LinkedHashMap<String, ArrayList<Integer>> hashBipartite) throws IOException {
+						Integer totalLinesCsv, LinkedHashMap<Integer, ArrayList<?>> hashArcs,
+						NetDefinition definition, LinkedHashMap<String, ArrayList<Integer>> hashBipartite,
+						LinkedHashMap<String, Integer> hashVertexVariable) throws IOException {
 		//Pulando a leitura das primeiras linhas ja que as colunas ja foram lidas anteriormente
 		BufferedReader csvReader = new BufferedReader(new FileReader(Configuration.csvFileInput));		
 		
 		//Em caso de haver header no arquivo CSV, a primeira linha deve ser desconsiderada neste processamento
 		if(definition.getHeader().toLowerCase().equals("true")) csvReader.readLine();			
-		Integer counterLineExpression = 1, counterLineCsv = 1;
+		Integer counterLineExpression = 1, counterLineCsv = 1, counterVariableVertex = 0;
+		String variableVertex;
 		
 	
 		//Leitura do CSV, para cada linha do Csv:
@@ -100,7 +102,20 @@ public class ReaderCsv {
 	/* 2 */	ArrayList<Integer> expressions = new ArrayList<Integer>();
 			counterLineExpression = 1;																	
 			for(Vertex expression : vertexList) {
-				if(expression.verifierCsvExpression(columnsCsv, variableList)) {
+				if(expression.isVertexVariable()) 
+				{ 
+					variableVertex = columnsCsv[variableList.getVariableColumnPosition(expression.getExpression().element().token)];
+					if(expression.isUsed()) {
+						hashVertexVariable.put(variableVertex, 1);
+						expression.setIsUsed();
+					}
+					else {
+						counterVariableVertex = hashVertexVariable.get(variableVertex);
+						
+					}
+					System.out.println(hashVertexVariable);
+				} 
+				else if(expression.verifierCsvExpression(columnsCsv, variableList)) {
 					if(definition.getBipartiteProjection().toLowerCase().equals("true")){
 						expressions.add(counterLineExpression);
 					}
@@ -115,10 +130,11 @@ public class ReaderCsv {
 				hashBipartite.put(listPrimaryKeyVertices.get(counterLineCsv-1), expressions);
 			}
 			else {
-				hashArcs.put(counterLineCsv,expressions);															
+				hashArcs.put(counterLineCsv,expressions);
 			}
 			counterLineCsv++;
 		}
+		System.out.println(hashArcs);
 		csvReader.close();		
 	}
 }
