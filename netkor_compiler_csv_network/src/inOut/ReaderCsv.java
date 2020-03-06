@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
+import semantic.Item;
 import semantic.SemanticActions;
 import semantic.Variable;
 import semantic.VariableList;
@@ -75,6 +76,7 @@ public class ReaderCsv {
 		csvReader.close();
 	}
 	
+	@SuppressWarnings("unlikely-arg-type")
 	public static void readAllLines(LinkedList<String> listPrimaryKeyVertices, 
 						VariableList variableList, ArrayList<Vertex> vertexList, 
 						Integer totalLinesCsv, LinkedHashMap<Integer, ArrayList<?>> hashArcs,
@@ -85,10 +87,9 @@ public class ReaderCsv {
 		
 		//Em caso de haver header no arquivo CSV, a primeira linha deve ser desconsiderada neste processamento
 		if(definition.getHeader().toLowerCase().equals("true")) csvReader.readLine();			
-		Integer counterLineExpression = 1, counterLineCsv = 1, counterVariableVertex = 0;
+		Integer counterLineExpression = 1, counterLineCsv = 1, counterVariableVertex = 1;
 		String variableVertex;
 		
-	
 		//Leitura do CSV, para cada linha do Csv:
 		//	1 ==== Preenchimento do listPrimaryKeyVertices com os valores da coluna Primary Key no Csv
 		//	2 ==== Loop que avalia todas expressoes definidas na section 3 para cada linha do Csv
@@ -99,20 +100,22 @@ public class ReaderCsv {
 		  	String[] columnsCsv = lineCsv.split(",");
 	/* 1 */	listPrimaryKeyVertices.add(columnsCsv[variableList.getPrimaryKeyPosition()]);
 	
-	/* 2 */	ArrayList<Integer> expressions = new ArrayList<Integer>();
+	/* 2 */	ArrayList<Integer> expressions = new ArrayList<>();
+			ArrayList<String> teste = new ArrayList<>();
 			counterLineExpression = 1;																	
 			for(Vertex expression : vertexList) {
 				if(expression.isVertexVariable()) 
 				{ 
 					variableVertex = columnsCsv[variableList.getVariableColumnPosition(expression.getExpression().element().token)];
-					if(expression.isUsed()) {
+					if(!hashVertexVariable.containsKey(expression)) {
 						hashVertexVariable.put(variableVertex, 1);
-						expression.setIsUsed();
 					}
 					else {
-						counterVariableVertex = hashVertexVariable.get(variableVertex);
-						
+						counterVariableVertex = hashVertexVariable.get(expression);
+						hashVertexVariable.replace(variableVertex, ++counterVariableVertex);
 					}
+					counterVariableVertex++;
+					teste.add(variableVertex);
 					System.out.println(hashVertexVariable);
 				} 
 				else if(expression.verifierCsvExpression(columnsCsv, variableList)) {
@@ -134,7 +137,6 @@ public class ReaderCsv {
 			}
 			counterLineCsv++;
 		}
-		System.out.println(hashArcs);
 		csvReader.close();		
 	}
 }

@@ -28,9 +28,6 @@ public class WriterNet {
 		for(Vertex vertex : vertexList) {
 			if(!vertex.isVertexVariable()) resultFileWriter.println(counterLineNet++ +  " " + vertex.getVertexName() + "");			
 		}
-		for(Vertex vertex : vertexList) {
-			if(vertex.isVertexVariable()) resultFileWriter.println(counterLineNet++ +  " \"" + vertex.getVertexName() + "\"");			
-		}
 		Set<Map.Entry<String,Integer>> entries = hashVertexVariable.entrySet();
 		for (Map.Entry<String,Integer> entry : entries) {	
 			System.out.println(entry);						
@@ -50,6 +47,9 @@ public class WriterNet {
 				resultFileWriter.println(entry.getKey() + " " + valueExpression + " \n");
 			}							
 		}
+		
+		//Método para imprimir os vertices das variaveis, bastando pegar keys hashVertexVariable
+		//
 		resultFile.close();
 		
 	}	
