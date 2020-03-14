@@ -209,12 +209,12 @@ public class Vertex {
 				//Portanto as duas ultimas posicoes da pilha serao operandos booleanos
 				if(operator.getOperatorType().equals(OperatorType.OR) || operator.getOperatorType().equals(OperatorType.AND)) {
 					operandCsv = new Operand(OperandType.BOOLEAN,(stack.get(counter-2)).getLexema());
-				}
+					}
 				//Se nao deve ser pego o valor correspondente ao operando da coluna no csv
 				else {
 					valueCsv = columnsCSV[variableList.getVariableColumnPosition(stack.get(counter-2).getLexema())];
 					if(valueCsv.trim().isEmpty()) {
-						operandCsv = new Operand(OperandType.NUMBER,("0"));
+						operandCsv = new Operand(OperandType.NUMBER,("999"));
 					}
 					else {
 						operandCsv = new Operand(OperandType.NUMBER,(valueCsv));
@@ -225,8 +225,7 @@ public class Vertex {
 					stack.remove(counter-2);
 					counter = counter -2;
 					item = new Operand(OperandType.BOOLEAN, "true");
-					stack.add(item);
-					
+					stack.add(item);			
 				}
 				else {
 					stack.remove(counter-1);
@@ -260,7 +259,7 @@ public class Vertex {
 			if(Integer.valueOf(valueCsv.getLexema()) <= Integer.valueOf(valueExpression.getLexema())) return true;
 				}
 		else if(operation.getOperatorType().equals(OperatorType.LESSER)) {
-			if(Integer.valueOf(valueCsv.getLexema()) < Integer.valueOf(valueExpression.getLexema())) return true;
+			if(Integer.valueOf(valueCsv.getLexema()) < Integer.valueOf(valueExpression.getLexema()))  return true;
 		}
 		else if(operation.getOperatorType().equals(OperatorType.EQUAL)) {
 			if(Integer.valueOf(valueCsv.getLexema()).equals(Integer.valueOf(valueExpression.getLexema()))) return true;
@@ -269,7 +268,7 @@ public class Vertex {
 			if(String.valueOf(valueCsv).equals("true") || String.valueOf(valueExpression).equals("true"))	return true;
 		}
 		else if(operation.getOperatorType().equals(OperatorType.AND)) {
-			if(String.valueOf(valueCsv).equals("true") && String.valueOf(valueExpression).equals("true"))	return true;
+			if(String.valueOf(valueCsv).equals("true") && String.valueOf(valueExpression).equals("true"))  return true;
 		}
 		return false;
 	}

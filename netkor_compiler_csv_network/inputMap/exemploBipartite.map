@@ -13,10 +13,12 @@ Variables:
 > V1 : v1
 > V2 : v2
 > V3 : v3
-> V4 : v4
+> nome : nome
+> teste : teste
 
 Network:
+nome
 "A" : v1 = 1
 "B" : v2 = 2
 "C" : v3 = 3
-"D" : v4 = 4  
+teste

@@ -46,13 +46,13 @@ public class Compiler {
 		//listPrimaryKeyVertices - Lista contendo todos os valores da coluna de primaryKey
 		LinkedList<String> listPrimaryKeyVertices = new LinkedList<String>();
 		//hashArc - Hash que armazena todos as expressoes validas para cada vertice do Csv 
-		LinkedHashMap<Integer,ArrayList<?>> hashArcs = new LinkedHashMap<Integer,ArrayList<?>>();
+		LinkedHashMap<Integer,ArrayList<String>> hashArcs = new LinkedHashMap<Integer,ArrayList<String>>();
 		//HashBipartite
-		LinkedHashMap<String, ArrayList<Integer>> hashBipartite = new LinkedHashMap<String,ArrayList<Integer>>();
+		LinkedHashMap<String, ArrayList<String>> hashBipartite = new LinkedHashMap<String,ArrayList<String>>();
 		//Hash
 		LinkedHashMap<String, Integer> hashVertexVariable = new LinkedHashMap<String,Integer>();
 		//HashWeight
-		HashMap<ArrayList<Integer>,Integer> hashWeight = new LinkedHashMap<ArrayList<Integer>,Integer>();
+		HashMap<ArrayList<String>,Integer> hashWeight = new LinkedHashMap<ArrayList<String>,Integer>();
 		try {
 			//===========================================COMPILACAO===================================================//
 			compiler = new Compiler(new FileInputStream(Configuration.mapFile));
@@ -66,7 +66,7 @@ public class Compiler {
 			if(definition.getHeader().toLowerCase().equals("false")) totalLinesCsv++;	
 			
 			//========================================PRIMEIRA LEITURA DO CSV=========================================//
-
+			//Leitura do cabecalho e armazenamento da posicao da variaveis associadas
 			ReaderCsv.readColumns(variableList, definition);
 			
 			//========================================SEGUNDA LEITURA DO CSV==========================================//
@@ -84,9 +84,8 @@ public class Compiler {
 			}
 			
 			else {
-				SemanticActions.preparation(hashBipartite,hashWeight);
 			//========================================ESCRITA DO ARQUIVO NET==========================================//
-				WriterNet.writeBipartite(vertexList, hashBipartite, hashWeight, definition);
+				WriterNet.writeBipartite(vertexList, hashBipartite, hashWeight, hashVertexVariable, definition);
 			}	
 			
 			if(SemanticActions.warnings == 1 ) {

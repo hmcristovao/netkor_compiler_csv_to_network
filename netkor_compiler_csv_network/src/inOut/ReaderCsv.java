@@ -10,7 +10,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
-import semantic.Item;
 import semantic.SemanticActions;
 import semantic.Variable;
 import semantic.VariableList;
@@ -68,7 +67,6 @@ public class ReaderCsv {
 							var.setColumn(counterColumnCsv);
 							if(var.isVariablePrimaryKey()) variableList.setPrimaryKeyPosition(counterColumnCsv);	
 						}
-						
 					}
 					counterColumnCsv++;
 				}	
@@ -76,12 +74,11 @@ public class ReaderCsv {
 		csvReader.close();
 	}
 	
-	@SuppressWarnings("unlikely-arg-type")
 	public static void readAllLines(LinkedList<String> listPrimaryKeyVertices, 
 						VariableList variableList, ArrayList<Vertex> vertexList, 
-						Integer totalLinesCsv, LinkedHashMap<Integer, ArrayList<?>> hashArcs,
-						NetDefinition definition, LinkedHashMap<String, ArrayList<Integer>> hashBipartite,
-						LinkedHashMap<String, Integer> hashVertexVariable) throws IOException {
+						Integer totalLinesCsv, LinkedHashMap<Integer, ArrayList<String>> hashArcs,
+						NetDefinition definition, LinkedHashMap<String, ArrayList<String>> hashBipartite,
+						LinkedHashMap<String, Integer> hashVertexVariable ) throws IOException {
 		//Pulando a leitura das primeiras linhas ja que as colunas ja foram lidas anteriormente
 		BufferedReader csvReader = new BufferedReader(new FileReader(Configuration.csvFileInput));		
 		
@@ -100,30 +97,29 @@ public class ReaderCsv {
 		  	String[] columnsCsv = lineCsv.split(",");
 	/* 1 */	listPrimaryKeyVertices.add(columnsCsv[variableList.getPrimaryKeyPosition()]);
 	
-	/* 2 */	ArrayList<Integer> expressions = new ArrayList<>();
-			ArrayList<String> teste = new ArrayList<>();
+	/* 2 */	ArrayList<String> expressions = new ArrayList<>();
 			counterLineExpression = 1;																	
 			for(Vertex expression : vertexList) {
 				if(expression.isVertexVariable()) 
 				{ 
 					variableVertex = columnsCsv[variableList.getVariableColumnPosition(expression.getExpression().element().token)];
-					if(!hashVertexVariable.containsKey(expression)) {
+					if(!hashVertexVariable.containsKey(variableVertex)) {
 						hashVertexVariable.put(variableVertex, 1);
 					}
 					else {
-						counterVariableVertex = hashVertexVariable.get(expression);
+						counterVariableVertex = hashVertexVariable.get(variableVertex);
 						hashVertexVariable.replace(variableVertex, ++counterVariableVertex);
 					}
 					counterVariableVertex++;
-					teste.add(variableVertex);
-					System.out.println(hashVertexVariable);
+					expressions.add(variableVertex);
+					counterLineExpression--;
 				} 
 				else if(expression.verifierCsvExpression(columnsCsv, variableList)) {
 					if(definition.getBipartiteProjection().toLowerCase().equals("true")){
-						expressions.add(counterLineExpression);
+						expressions.add(counterLineExpression.toString());
 					}
 					else {
-						expressions.add(totalLinesCsv + counterLineExpression);
+						expressions.add(String.valueOf(totalLinesCsv + counterLineExpression));
 					}
 				}
 				counterLineExpression++;	
@@ -137,6 +133,6 @@ public class ReaderCsv {
 			}
 			counterLineCsv++;
 		}
-		csvReader.close();		
+		csvReader.close();
 	}
 }

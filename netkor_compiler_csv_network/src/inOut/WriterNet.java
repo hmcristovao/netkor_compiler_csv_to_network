@@ -4,33 +4,42 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import semantic.CollectionLink;
 import semantic.Vertex;
 import setting.Configuration;
 import setting.NetDefinition;
 
 public class WriterNet {
 	public static void writeAll(LinkedList<String> listPrimaryKeyVertices, ArrayList<Vertex> vertexList, 
-						HashMap<Integer, ArrayList<?>> hashArcs, LinkedHashMap<String, Integer> hashVertexVariable,
+						HashMap<Integer, ArrayList<String>> hashArcs, LinkedHashMap<String, Integer> hashVertexVariable,
 						NetDefinition definition) throws IOException {
-		Integer counterLineNet = 1;
+		Integer counterLineNet = 1, counterVertexVariable = 0;
 		FileWriter resultFile = new FileWriter(Configuration.csvFileOutput);
-		PrintWriter resultFileWriter = new PrintWriter(resultFile);									
-		resultFileWriter.println("*Vertices " + (listPrimaryKeyVertices.size() + vertexList.size()));	
+		PrintWriter resultFileWriter = new PrintWriter(resultFile);
+		for(Vertex vertex : vertexList) {
+			if(vertex.isVertexVariable()) counterVertexVariable++;
+		}
+		resultFileWriter.println("*Vertices " + (listPrimaryKeyVertices.size() + vertexList.size() 
+									-counterVertexVariable + hashVertexVariable.size()));	
 		for(String vertex : listPrimaryKeyVertices) {
 			resultFileWriter.println(counterLineNet++ +  " \"" + vertex + "\"");							
 		}
 		for(Vertex vertex : vertexList) {
 			if(!vertex.isVertexVariable()) resultFileWriter.println(counterLineNet++ +  " " + vertex.getVertexName() + "");			
 		}
-		Set<Map.Entry<String,Integer>> entries = hashVertexVariable.entrySet();
-		for (Map.Entry<String,Integer> entry : entries) {	
-			System.out.println(entry);						
+		Set<Map.Entry<String, Integer>> entries = hashVertexVariable.entrySet();
+		for (Map.Entry<String, Integer> entry : entries) {					
+			resultFileWriter.println(counterLineNet++ +  " \"" + entry.getKey() + "\"");
+			hashVertexVariable.replace(entry.getKey(), counterLineNet-1);
 		}
 		
 		switch(definition.getDirectedNetwork().toLowerCase()) {
@@ -41,30 +50,82 @@ public class WriterNet {
 				resultFileWriter.println("*Edges");
 				break;
 		}
-		Set<Map.Entry<Integer,ArrayList<?>>> entriesRelations = hashArcs.entrySet();
-		for (Map.Entry<Integer,ArrayList<?>> entry : entriesRelations) {	
-			for(Object valueExpression : entry.getValue()) {
-				resultFileWriter.println(entry.getKey() + " " + valueExpression + " \n");
-			}							
+		ArrayList<Integer> expressions = new ArrayList<>();
+		Integer counterLine = 1;
+		Set<Map.Entry<Integer,ArrayList<String>>> entriesRelations = hashArcs.entrySet();
+		for (Map.Entry<Integer,ArrayList<String>> entry : entriesRelations) {	
+			for(String valueExpression : entry.getValue()) {
+				if(hashVertexVariable.containsKey(valueExpression)) {
+					expressions.add(hashVertexVariable.get(valueExpression));
+				}
+				else {
+					expressions.add(Integer.valueOf(valueExpression));
+				}
+			}
+			Collections.sort(expressions);
+			for(Integer value: expressions) {
+				if(counterLine.equals(listPrimaryKeyVertices.size()) && value.equals(expressions.get(expressions.size()-1))) {
+					resultFileWriter.print(counterLine + " " + value + "");
+				}
+				else {
+					resultFileWriter.println(counterLine + " " + value + "");
+				}
+			}
+			counterLine++;
+			expressions.clear();
 		}
-		
-		//Método para imprimir os vertices das variaveis, bastando pegar keys hashVertexVariable
-		//
-		resultFile.close();
-		
+		resultFile.close();	
 	}	
 	
 	public static void writeBipartite(ArrayList<Vertex> vertexList, 
-			LinkedHashMap<String, ArrayList<Integer>> hashBipartite,
-			HashMap<ArrayList<Integer>,Integer> hashWeight, NetDefinition definition) throws IOException {
-		Integer counterLineNet = 1;
+			LinkedHashMap<String, ArrayList<String>> hashBipartite,
+			HashMap<ArrayList<String>,Integer> hashWeight, 
+			LinkedHashMap<String, Integer> hashVertexVariable,
+			NetDefinition definition) throws IOException {
+		
+		Integer counterLineNet = 1, vertexVariableQuant = hashVertexVariable.size();
+		ArrayList<String> lastWeight = new ArrayList<String>();
 		FileWriter resultFile = new FileWriter(Configuration.csvFileOutput);
-		PrintWriter resultFileWriter = new PrintWriter(resultFile);									
-		resultFileWriter.println("*Vertices " + (vertexList.size()));	
 		for(Vertex vertex : vertexList) {
-			System.out.println(vertex.getVertexName());
-			resultFileWriter.println(counterLineNet++ +  " " + vertex.getVertexName() + "");			
+			if(vertex.isVertexVariable()) vertexVariableQuant--;
 		}
+		PrintWriter resultFileWriter = new PrintWriter(resultFile);									
+		resultFileWriter.println("*Vertices " + (vertexList.size() + vertexVariableQuant));	
+		for(Vertex vertex : vertexList) {
+			if(!vertex.isVertexVariable()) resultFileWriter.println(counterLineNet++ +  " " + vertex.getVertexName() + "");		
+		}
+		Set<Map.Entry<String, Integer>> entries = hashVertexVariable.entrySet();
+		for (Map.Entry<String, Integer> entry : entries) {					
+			resultFileWriter.println(counterLineNet++ +  " \"" + entry.getKey() + "\"");
+			hashVertexVariable.replace(entry.getKey(), counterLineNet-1);
+		}
+		for (ArrayList<String> entry : hashBipartite.values()) {
+		    for(int counterInitial = 0; counterInitial < entry.size()-1; counterInitial++) {
+		    	for(int counter = counterInitial + 1; counter < entry.size(); counter++) {	
+					List<String> link = new ArrayList<>(Arrays.asList(entry.get(counterInitial),entry.get(counter)));
+					for(String vertexVariable : hashVertexVariable.keySet()) {
+						if(link.contains(vertexVariable)) {
+							link.set(link.indexOf(vertexVariable), String.valueOf(hashVertexVariable.get(vertexVariable)));
+						}
+					}
+					if(hashWeight.containsKey(link)) {
+						Integer value = hashWeight.get(link);
+						hashWeight.replace((ArrayList<String>) link, value, ++value);
+					}
+					else {
+						hashWeight.put((ArrayList<String>)link, 1);
+					}
+				}	 
+			}
+		}
+		//Ordenando os valores    
+		List<Map.Entry<ArrayList<String>,Integer>> list = new ArrayList<>(hashWeight.entrySet());
+		Collections.sort(list, new CollectionLink());
+		hashWeight.clear();
+		
+		for(Map.Entry<ArrayList<String>,Integer> test : list) {
+			hashWeight.put(test.getKey(), test.getValue());
+		}	
 		
 		switch(definition.getDirectedNetwork().toLowerCase()) {
 			case "true":
@@ -75,16 +136,29 @@ public class WriterNet {
 				break;
 		}
 		
-		Set<Map.Entry<ArrayList<Integer>,Integer>> entries = hashWeight.entrySet();
-		for (Map.Entry<ArrayList<Integer>,Integer> entry : entries) {
-			ArrayList<Integer> link = entry.getKey();
-			int x = link.get(0), y = link.get(1);
-			if(entry.getValue().equals(1)) {
-				resultFileWriter.println(x + " " + y);										
+		Integer counter = 1;
+		Set<Map.Entry<ArrayList<String>,Integer>> entriesWeight = hashWeight.entrySet();
+		for (Map.Entry<ArrayList<String>,Integer> entryWeight : entriesWeight) {
+			ArrayList<String> link = entryWeight.getKey();
+			String x = link.get(0);
+			String y = link.get(1);
+			if(entryWeight.getValue().equals(1)) {
+				if(counter.equals(hashWeight.size()) && link.equals(hashWeight.keySet().toArray()[hashWeight.size()-1])) {
+					resultFileWriter.print(x + " " + y);
+				}
+				else {
+					resultFileWriter.println(x + " " + y);
+				}										
 			}
 			else {
-				resultFileWriter.println(x + " " + y + " " + entry.getValue());
+				if(counter.equals(hashWeight.size()) && link.equals(hashWeight.keySet().toArray()[hashWeight.size() -1])) {
+					resultFileWriter.print(x + " " + y + " " + entryWeight.getValue());
+				}
+				else {
+					resultFileWriter.println(x + " " + y + " " + entryWeight.getValue());
+				}	
 			}
+			counter++;
 		}
 		resultFile.close();
 	}
