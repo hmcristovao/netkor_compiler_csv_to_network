@@ -1,10 +1,10 @@
 // Compilador para mapear bases de dados primitivas para formatos de redes complexas
 //
-// Universidade Federal do Espírito Santo
+// Universidade Federal do Espï¿½rito Santo
 // Grupo de Pesquisa: NetKOR (Networked  Knowledge Organization Retrieval)
 //
 // Desenvolvedores:
-// Henrique Monteiro Cristovão
+// Henrique Monteiro Cristovï¿½o
 // Klaus Kly Cuzzuol Wolff
 // Luis Henrique Gundes Valim
 
@@ -55,9 +55,9 @@ public class Compiler {
 		HashMap<ArrayList<String>,Integer> hashWeight = new LinkedHashMap<ArrayList<String>,Integer>();
 		try {
 			//===========================================COMPILACAO===================================================//
-			compiler = new Compiler(new FileInputStream(Configuration.mapFile));
+			compiler = new Compiler(new FileInputStream(Configuration.mapFile), "UTF-8");
 			definition = Compiler.start(variableList, vertexList);
-
+			System.out.println(variableList.getVariableList());
 			//------Leitura rapida do Csv para contar todas as linhas contindas no arquivo-------		
 			//Metodo coutLines conta a partir de 0, portanto resulta em (valor total - 1) 
 			//Com header -> Desconsidera-se o header, logo este (valor total - 1) serve
@@ -130,9 +130,11 @@ TOKEN [IGNORE_CASE] : {
 	< BRACKET_OPEN: "[" > |
 	< BRACKET_CLOSE: "]" > |
 	< ELLIPSIS: "..." > |
+	< COMMA: "," > |
 	< SEMICOLON: ";" > |
 	< COLON: ":" > |
 	< EQUAL: "=" > |
+	< QUOTATION_MARK: "\"" > | 
 	< TYPE_VARIABLE_PRIMARY: "*" > |
 	< TYPE_VARIABLE_SECONDARY: ">" > |
 	< LESSER: "<" > 
@@ -147,7 +149,8 @@ TOKEN [IGNORE_CASE] : {
 	< BIPARTITE_PROJECTION: "Bipartite projection" > |
 	< LAYOUT: "Layout" > |            
 	< VARIABLES: "Variables" > |
-	< NETWORK: "Network" > 
+	< NETWORK: "Network" > |
+	< COLUMN_SEPARATOR: "Column Separator" > 
 }
 
 //TOKENS DE ENTRADA PARA CONFIGURACAO
@@ -179,14 +182,15 @@ TOKEN [IGNORE_CASE] : {
 
 //
 TOKEN [IGNORE_CASE] : {
-	< #LETTERCHARACTER: ["a" - "z"] | ["A" - "Z"] > |
+  	< SEPARATOR: "," |  <SEMICOLON> >  |
+	< #LETTERCHARACTER: ["a" - "\u00ff"] > |
 	< #NUMBERCHARACTER: (["0"-"9"])* ((".")? ["0"-"9"])+ > |
-	< #VARIABLECHARACTER: ["a" - "z", "A" - "Z" ,"0" - "9", "_"] > |
-	< VERTEX_NAME_WITH_QUOTE_MARK: "\"" (~["\""])* "\"" > |
+	< #VARIABLECHARACTER: ["a" - "\u00ff", "0" - "9", "_"] > |
+	< VERTEX_NAME_WITH_QUOTE_MARK: <QUOTATION_MARK> (~["\""])* <QUOTATION_MARK> > |
 	< HEAD_NAME_IN_CSV_OR_VARIABLE_NAME: (< LETTERCHARACTER >) (< VARIABLECHARACTER > | "." )* > 
 }
 
-// Gramática:
+// Gramï¿½tica:
 //
 // Start ->	section1 section 2 section 3
 //
@@ -202,7 +206,7 @@ NetDefinition start(VariableList variableList, ArrayList<Vertex> vertexList) : {
 	}
 }
 
-// Gramática:
+// Gramï¿½tica:
 //
 // section 1 ->	<SOURCE_FORMAT> <COLON> <SOURCE_FORMAT_INPUT>
 //				<TARGET_NAME> <COLON> <NETWORK_FORMAT>
@@ -212,7 +216,7 @@ NetDefinition start(VariableList variableList, ArrayList<Vertex> vertexList) : {
 //
 //
 NetDefinition section1() : {
-	Token header, sourceFormat, networkFormat, directedNetwork, bipartiteProjection, networkLayout;
+	Token header, sourceFormat, networkFormat, directedNetwork, bipartiteProjection, networkLayout, separator;
 	NetDefinition definition;
 }
 {
@@ -221,28 +225,29 @@ NetDefinition section1() : {
 	<HEADER> <COLON> header = <LOGIC_VALUE> 
 	<DIRECTED_NETWORK> <COLON> directedNetwork = <LOGIC_VALUE> 
 	<BIPARTITE_PROJECTION> <COLON> bipartiteProjection = <LOGIC_VALUE>
-	<LAYOUT> <COLON>
+	<COLUMN_SEPARATOR> <COLON>  (separator = <SEMICOLON> | separator  = <COMMA>) 
+	<LAYOUT> <COLON> 
 	(
 		networkLayout = <LAYOUT_NAME>
 		|
 		networkLayout = <NO> )
   		{
   	  		definition = new NetDefinition(networkFormat.image, directedNetwork.image, bipartiteProjection.image,
-						networkLayout.image, header.image, sourceFormat.image);
+						networkLayout.image, header.image, sourceFormat.image, separator.image);
 			return definition;
   		}
 }
 
-// Gramática:
+// Gramï¿½tica:
 //
 // section2	->	<VARIABLES> <COLON> (variableDefinition)+
 //
 void section2(VariableList variableList): { }
 {
-	<VARIABLES> <COLON> variableDefinition(variableList)
+	<VARIABLES> <COLON> (variableDefinition(variableList))+
 }
 
-// Gramática:
+// Gramï¿½tica:
 //
 // variableDefinition -> ( <TYPE_VARIABLE_PRIMARY> | <TYPE_VARIABLE_SECONDARY> )
 //						 <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
@@ -262,11 +267,9 @@ void variableDefinition(VariableList variableList) : {
 		headNameInCsv = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME> 
 		(
 			<COLON> variableName = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
-			{
-				if(variableName.image.trim().isEmpty()) variableName = headNameInCsv;
-			}
 		)?
 		{
+		  	if(variableName == null || variableName.image.trim().isEmpty()) variableName = headNameInCsv;
 			if(type.image.equals("*")) {
 				variable = new Variable(headNameInCsv.image,variableName.image,VariableType.PRIMARY, type.beginLine);
 			}
@@ -275,12 +278,10 @@ void variableDefinition(VariableList variableList) : {
 			}	
 			variableList.add(variable);	
 		}
-	(	  variableDefinition(variableList)
-	)?
 	)
 }
 
-// Gramática:
+// Gramï¿½tica:
 //
 // section3 ->	<NETWORK> <COLON> (vertexDefinition)+
 //
@@ -289,7 +290,7 @@ void section3(ArrayList<Vertex> vertexList, VariableList variableList): { }
   	<NETWORK> <COLON> (vertexDefinition(vertexList, variableList))+
 }
 
-// Gramática:
+// Gramï¿½tica:
 //
 // vertexDefinition ->	<HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
 // 						|
@@ -333,7 +334,7 @@ void vertexDefinition(ArrayList<Vertex> vertexList, VariableList variableList):
 	)+
 }
 
-// Gramática:
+// Gramï¿½tica:
 //
 // operationOR	->	operationAND ( <OR> operationAND)*
 
@@ -353,7 +354,7 @@ void operationOR(Vertex expression, VariableList variableList) : {
 	)*   
 }
 
-// Gramática:
+// Gramï¿½tica:
 //
 // operationAND	->	vertexExpression ( < AND > vertexExpression)*
 //
@@ -372,7 +373,7 @@ void operationAND(Vertex expression, VariableList variableList) : {
 	)*
 }
 
-// Gramática:
+// Gramï¿½tica:
 //
 //	vertexExpression = 	<HEAD_NAME_IN_CSV_OR_VARIABLE_NAME> <EQUAL> vertexRangeDefinition
 //						| <TYPE_VARIABLE_SECONDARY> ( <EQUAL> optionDualOperator | option	)
@@ -402,7 +403,7 @@ void vertexExpression(Vertex expression, VariableList variableList) : {
 	)
 }
 
-// Gramática:
+// Gramï¿½tica:
 //
 // vertexRangeDefinition - >  <FORMATELLIPSIS1>
 //							| <FORMATELLIPSIS2>
@@ -448,7 +449,7 @@ void vertexRangeDefinition(Vertex expression, Token variable, Token operator, Va
   	)
 }
 
-// Gramática:
+// Gramï¿½tica:
 //
 // rangeExpression -> ( ( <PARENTHESIS_OPEN> | <BRACKET_OPEN> ) optionList ( <PARENTHESIS_CLOSE> | <BRACKET_CLOSE> ) )
 //					  |	option
@@ -471,7 +472,7 @@ void rangeExpression(Vertex expression, Token variable, Token operator, Variable
 	|	option(expression, variable, operator, variableList)
 }
 
-// Gramática:
+// Gramï¿½tica:
 //
 // option -> <OPTION>
 //
@@ -503,7 +504,7 @@ void optionVariable(Vertex expression, Token variable, VariableList variableList
 	}
 }
 
-// Gramática:
+// Gramï¿½tica:
 //
 // optionDualOperator -> <OPTION>
 //
@@ -524,7 +525,7 @@ void optionDualOperator(Vertex expression, Token variable, Token operator, Token
 	}
 }
 
-// Gramática:
+// Gramï¿½tica:
 //
 // optionList -> <OPTION> ( <SEMINCOLON> )?
 //

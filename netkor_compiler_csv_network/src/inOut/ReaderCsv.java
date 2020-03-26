@@ -1,6 +1,8 @@
 package inOut;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -20,7 +22,7 @@ import setting.NetDefinition;
 public class ReaderCsv {
 	public static Integer countLines() throws IOException {
 		Integer totalLines = 0;
-		LineNumberReader lnr = new LineNumberReader(new FileReader(new File(Configuration.csvFileInput)));
+		LineNumberReader lnr = new LineNumberReader(new InputStreamReader(new FileInputStream(Configuration.csvFileInput), "UTF-8"));
 		lnr.skip(Long.MAX_VALUE);
 		totalLines = lnr.getLineNumber();
 		lnr.close();
@@ -28,11 +30,16 @@ public class ReaderCsv {
 	}
 	
 	public static void readColumns(VariableList variableList, NetDefinition definition) throws IOException  {
-		BufferedReader csvReader = new BufferedReader(new FileReader(Configuration.csvFileInput));										//
+		BufferedReader csvReader = new BufferedReader(new InputStreamReader(new FileInputStream(Configuration.csvFileInput), "UTF-8"));	
+		//
 		Integer counterColumnCsv = 0;
 		boolean existingColumn = false;
-		String line = csvReader.readLine();																	
-		String[] columnsCsv = line.split(",");
+		String line = csvReader.readLine();
+		System.out.println(definition.getSeparator());
+		String[] columnsCsv = line.split(definition.getSeparator());
+		for(int i=0; i < columnsCsv.length; i++) {
+			System.out.println(columnsCsv[i] + "\n");
+		}
 		//Loop para associar para cada variavel definida sua coluna correspondete no csv
 		
 		//Talvez otimizar este processo retirando as variaveis ja selecionadas nas iteracoes posteriores
@@ -45,7 +52,7 @@ public class ReaderCsv {
 						if(var.headNameInCsv.equals(column)) {
 							existingColumn = true;
 							var.setColumn(counterColumnCsv);
-							if(var.isVariablePrimaryKey()) variableList.setPrimaryKeyPosition(counterColumnCsv);	
+							if(var.isVariablePrimaryKey()) variableList.setPrimaryKeyPosition(counterColumnCsv);
 						}
 						counterColumnCsv++;
 					}
@@ -70,7 +77,7 @@ public class ReaderCsv {
 					}
 					counterColumnCsv++;
 				}	
-			}	
+			}
 		csvReader.close();
 	}
 	
@@ -94,7 +101,7 @@ public class ReaderCsv {
 		//		   Ao final armazenando todas as expressoes validas para cada linha no hashArcs
 		String lineCsv = null;
 		while ((lineCsv = csvReader.readLine()) != null) {
-		  	String[] columnsCsv = lineCsv.split(",");
+		  	String[] columnsCsv = lineCsv.split(definition.getSeparator());
 	/* 1 */	listPrimaryKeyVertices.add(columnsCsv[variableList.getPrimaryKeyPosition()]);
 	
 	/* 2 */	ArrayList<String> expressions = new ArrayList<>();

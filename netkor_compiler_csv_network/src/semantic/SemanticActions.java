@@ -16,7 +16,7 @@ public class SemanticActions {
 
 	public static int warnings = 0;
 	
-	public static void isWrongInterval (String vertexName, String range, int operandA, int operandB) {
+	public static void isWrongInterval (String vertexName, String range, double operandA, double operandB) {
 		if(operandA > operandB) {
 			throw new SemanticError("Invalid interval " + range + " at vertex "+ vertexName + " -> " + "x(" +operandA + ")" +" it's greater than " + "y("+operandB+")"); 
 		}

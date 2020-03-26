@@ -111,7 +111,7 @@ public class Vertex {
 				this.expression.add(item);
 				item = new Operator("AND");
 				this.expression.add(item);
-				SemanticActions.isWrongInterval(this.vertexName, range, Integer.valueOf(operandA), Integer.valueOf(operandB));
+				SemanticActions.isWrongInterval(this.vertexName, range, Double.valueOf(operandA), Double.valueOf(operandB));
 			}
 			//============================Case [x...y)=========================
 			else if(range.startsWith("[") && range.endsWith(")")) {
@@ -133,7 +133,7 @@ public class Vertex {
 				this.expression.add(item);
 				item = new Operator("AND");
 				this.expression.add(item);
-				SemanticActions.isWrongInterval(this.vertexName, range, Integer.valueOf(operandA), Integer.valueOf(operandB));
+				SemanticActions.isWrongInterval(this.vertexName, range, Double.valueOf(operandA), Double.valueOf(operandB));
 			}
 			//============================Case (x...y]=========================
 			else if(range.startsWith("(") && range.endsWith("]")) {
@@ -155,7 +155,7 @@ public class Vertex {
 				this.expression.add(item);
 				item = new Operator("AND");
 				this.expression.add(item);
-				SemanticActions.isWrongInterval(this.vertexName, range, Integer.valueOf(operandA), Integer.valueOf(operandB));
+				SemanticActions.isWrongInterval(this.vertexName, range, Double.valueOf(operandA), Double.valueOf(operandB));
 			}
 			//============================Case [x...y]=========================
 			else if(range.startsWith("[") && range.endsWith("]")) {
@@ -177,7 +177,7 @@ public class Vertex {
 				this.expression.add(item);
 				item = new Operator("AND");
 				this.expression.add(item);
-				SemanticActions.isWrongInterval(this.vertexName, range, Integer.valueOf(operandA), Integer.valueOf(operandB));
+				SemanticActions.isWrongInterval(this.vertexName, range, Double.valueOf(operandA), Double.valueOf(operandB));
 			}
 		}
 	}
@@ -250,19 +250,19 @@ public class Vertex {
 	//Metodo que realiza a comparacao do valor do CSV, o valor da expressao e a operacao correspondente
 	public static boolean operation(Item valueExpression, Item valueCsv, Operator operation) {
 		if(operation.getOperatorType().equals(OperatorType.GREATER_EQUAL)) {
-			if(Integer.valueOf(valueCsv.getLexema()) >= Integer.valueOf(valueExpression.getLexema())) return true;
+			if(Double.valueOf(valueCsv.getLexema()) >= Double.valueOf(valueExpression.getLexema())) return true;
 		}
 		else if(operation.getOperatorType() == OperatorType.GREATER) {
-			if(Integer.valueOf(valueCsv.getLexema()) > Integer.valueOf(valueExpression.getLexema())) return true;
+			if(Double.valueOf(valueCsv.getLexema()) > Double.valueOf(valueExpression.getLexema())) return true;
 			}
 		else if(operation.getOperatorType().equals(OperatorType.LESSER_EQUAL)) {
-			if(Integer.valueOf(valueCsv.getLexema()) <= Integer.valueOf(valueExpression.getLexema())) return true;
+			if(Double.valueOf(valueCsv.getLexema()) <= Double.valueOf(valueExpression.getLexema())) return true;
 				}
 		else if(operation.getOperatorType().equals(OperatorType.LESSER)) {
-			if(Integer.valueOf(valueCsv.getLexema()) < Integer.valueOf(valueExpression.getLexema()))  return true;
+			if(Double.valueOf(valueCsv.getLexema()) < Double.valueOf(valueExpression.getLexema())) return true;
 		}
 		else if(operation.getOperatorType().equals(OperatorType.EQUAL)) {
-			if(Integer.valueOf(valueCsv.getLexema()).equals(Integer.valueOf(valueExpression.getLexema()))) return true;
+			if(Double.valueOf(valueCsv.getLexema()).equals(Double.valueOf(valueExpression.getLexema()))) return true;
 		}
 		else if(operation.getOperatorType().equals(OperatorType.OR)) {
 			if(String.valueOf(valueCsv).equals("true") || String.valueOf(valueExpression).equals("true"))	return true;

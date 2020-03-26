@@ -1,7 +1,7 @@
-codigo.emenda,ano,nome.autor,nome.estado,nome.regiao,valor.empenhado,subfuncao.funcao
-91,1999,Klaus,ES,norte,0,loco
-92,2000,Klaus,BA,sul,1000,loco
-93,2005,Cuzzuol,BH,nordeste,20,loco
-94,2010,Wolff,PA,suldeste,999999,loco
-95,2015,teste,SP,leste,1,loco
-96,2016,Klaus,RJ,oeste,128470128,loco
+codigo.emenda;ano;nome.autor;nome.estado;nome.região;valor.empenhado;subfunção.função
+91;1999;Acarajé;ES;norte;0;loco
+92;2000;Klaus;BA;sul;1000;loco
+93;2005;Cuzzuol;BH;nordeste;20;loco
+94;2010;Wolff;PA;suldeste;999999;loco
+95;2015;teste;SP;leste;1;loco
+96;2016;Klaus;RJ;oeste;128470128;loco

@@ -4,16 +4,16 @@ Target format: NET
 Header: TRUE
 Directed network: TRUE
 Bipartite projection: FALSE
-Layout: NO  
+Layout: NO
 
 # Section 2: determines the selected variables (column header) in the CSV file
 Variables:
-#c�digo da emenda (chave primaria)
-* codigo.emenda : codigo.emenda
+#código da emenda (chave primaria)
+* codigo.emenda :codigo.emenda
 > ano : ano
 > nome.autor : nome.autor
 > nome.estado : nome.estado
-> nome.regiao : nome.regiao
+> nome.região : nome.região
 > valor.empenhado : valor.empenhado
 > subfuncao.funcao : subfuncao.funcao
 
@@ -26,7 +26,7 @@ Network:
 "Ano 2019" : ano = 2019 
 nome.autor
 nome.estado
-nome.regiao
+nome.região
 "Menos de 100 mil" : valor.empenhado < 100000 
 "Entre 100 mil e 500 mil" : valor.empenhado > 100000 AND valor.empenhado < 500000  
 "Acima de 500 mil" : valor.empenhado > 500000 
