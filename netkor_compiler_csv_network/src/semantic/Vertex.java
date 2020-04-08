@@ -2,6 +2,8 @@ package semantic;
 
 import java.util.LinkedList;
 
+import setting.NetDefinition;
+
 public class Vertex {
 	
 	String vertexName;
@@ -191,7 +193,7 @@ public class Vertex {
 	
 	//-=========a lista expression sempre tera um formato do tipo:		[variavel, operando, operacao, ...]
 	
-	public boolean verifierCsvExpression(String[] columnsCSV, VariableList variableList) {
+	public boolean verifierCsvExpression(String[] columnsCSV, VariableList variableList, NetDefinition definition) {
 		Item item;
 		Item operandExpression, operandCsv = null;
 		Integer counter = 0;
@@ -220,7 +222,7 @@ public class Vertex {
 						operandCsv = new Operand(OperandType.NUMBER,(valueCsv));
 					}
 				}
-				if(operation(operandExpression, operandCsv, operator)) {
+				if(operation(operandExpression, operandCsv, operator, definition)) {
 					stack.remove(counter-1);
 					stack.remove(counter-2);
 					counter = counter -2;
@@ -248,21 +250,21 @@ public class Vertex {
 	}
 	
 	//Metodo que realiza a comparacao do valor do CSV, o valor da expressao e a operacao correspondente
-	public static boolean operation(Item valueExpression, Item valueCsv, Operator operation) {
+	public static boolean operation(Item valueExpression, Item valueCsv, Operator operation, NetDefinition definition) {	
 		if(operation.getOperatorType().equals(OperatorType.GREATER_EQUAL)) {
-			if(Double.valueOf(valueCsv.getLexema()) >= Double.valueOf(valueExpression.getLexema())) return true;
+			if(Double.valueOf(valueCsv.getLexema().replace(",", ".")) >= Double.valueOf(valueExpression.getLexema())) return true;
 		}
 		else if(operation.getOperatorType() == OperatorType.GREATER) {
-			if(Double.valueOf(valueCsv.getLexema()) > Double.valueOf(valueExpression.getLexema())) return true;
+			if(Double.valueOf(valueCsv.getLexema().replace(",", ".")) > Double.valueOf(valueExpression.getLexema())) return true;
 			}
 		else if(operation.getOperatorType().equals(OperatorType.LESSER_EQUAL)) {
-			if(Double.valueOf(valueCsv.getLexema()) <= Double.valueOf(valueExpression.getLexema())) return true;
+			if(Double.valueOf(valueCsv.getLexema().replace(",", ".")) <= Double.valueOf(valueExpression.getLexema())) return true;
 				}
 		else if(operation.getOperatorType().equals(OperatorType.LESSER)) {
-			if(Double.valueOf(valueCsv.getLexema()) < Double.valueOf(valueExpression.getLexema())) return true;
+			if(Double.valueOf(valueCsv.getLexema().replace(",", ".")) < Double.valueOf(valueExpression.getLexema())) return true;
 		}
 		else if(operation.getOperatorType().equals(OperatorType.EQUAL)) {
-			if(Double.valueOf(valueCsv.getLexema()).equals(Double.valueOf(valueExpression.getLexema()))) return true;
+			if(Double.valueOf(valueCsv.getLexema().replace(",", ".")).equals(Double.valueOf(valueExpression.getLexema()))) return true;
 		}
 		else if(operation.getOperatorType().equals(OperatorType.OR)) {
 			if(String.valueOf(valueCsv).equals("true") || String.valueOf(valueExpression).equals("true"))	return true;

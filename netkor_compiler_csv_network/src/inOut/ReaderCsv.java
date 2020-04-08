@@ -35,8 +35,7 @@ public class ReaderCsv {
 		Integer counterColumnCsv = 0;
 		boolean existingColumn = false;
 		String line = csvReader.readLine();
-		System.out.println(definition.getSeparator());
-		String[] columnsCsv = line.split(definition.getSeparator());
+		String[] columnsCsv = line.split(definition.getColumnSeparator());
 		for(int i=0; i < columnsCsv.length; i++) {
 			System.out.println(columnsCsv[i] + "\n");
 		}
@@ -101,7 +100,7 @@ public class ReaderCsv {
 		//		   Ao final armazenando todas as expressoes validas para cada linha no hashArcs
 		String lineCsv = null;
 		while ((lineCsv = csvReader.readLine()) != null) {
-		  	String[] columnsCsv = lineCsv.split(definition.getSeparator());
+		  	String[] columnsCsv = lineCsv.split(definition.getColumnSeparator());
 	/* 1 */	listPrimaryKeyVertices.add(columnsCsv[variableList.getPrimaryKeyPosition()]);
 	
 	/* 2 */	ArrayList<String> expressions = new ArrayList<>();
@@ -121,7 +120,7 @@ public class ReaderCsv {
 					expressions.add(variableVertex);
 					counterLineExpression--;
 				} 
-				else if(expression.verifierCsvExpression(columnsCsv, variableList)) {
+				else if(expression.verifierCsvExpression(columnsCsv, variableList, definition)) {
 					if(definition.getBipartiteProjection().toLowerCase().equals("true")){
 						expressions.add(counterLineExpression.toString());
 					}

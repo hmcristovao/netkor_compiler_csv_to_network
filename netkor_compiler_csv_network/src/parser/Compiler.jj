@@ -130,7 +130,6 @@ TOKEN [IGNORE_CASE] : {
 	< BRACKET_OPEN: "[" > |
 	< BRACKET_CLOSE: "]" > |
 	< ELLIPSIS: "..." > |
-	< COMMA: "," > |
 	< SEMICOLON: ";" > |
 	< COLON: ":" > |
 	< EQUAL: "=" > |
@@ -150,7 +149,8 @@ TOKEN [IGNORE_CASE] : {
 	< LAYOUT: "Layout" > |            
 	< VARIABLES: "Variables" > |
 	< NETWORK: "Network" > |
-	< COLUMN_SEPARATOR: "Column Separator" > 
+	< COLUMN_SEPARATOR: "Column separator" > |
+	< DECIMAL_SEPARATOR: "Decimal separator" >
 }
 
 //TOKENS DE ENTRADA PARA CONFIGURACAO
@@ -177,14 +177,17 @@ TOKEN [IGNORE_CASE] : {
 	< FORMATELLIPSIS6: ((" ")* < PARENTHESIS_OPEN > (" ")* < ELLIPSIS > (" ")*  < OPTION > (" ")* <BRACKET_CLOSE >) > |
 	< FORMATELLIPSIS7: ((" ")* < BRACKET_OPEN > (" ")* < OPTION >  (" ")* < ELLIPSIS > (" ")*   <PARENTHESIS_CLOSE >) > |
 	< FORMATELLIPSIS8: ((" ")* < PARENTHESIS_OPEN > (" ")* < OPTION > (" ")* < ELLIPSIS > (" ")* <PARENTHESIS_CLOSE >) > |
-	< OPTION: < NUMBERCHARACTER > | < LETTERCHARACTER  > >
+	< OPTION: < NUMBER_CHARACTER_WITH_COMMA > | < NUMBER_CHARACTER_WITH_POINT > |< LETTERCHARACTER  > > 
 }
 
 //
 TOKEN [IGNORE_CASE] : {
-  	< SEPARATOR: "," |  <SEMICOLON> >  |
-	< #LETTERCHARACTER: ["a" - "\u00ff"] > |
-	< #NUMBERCHARACTER: (["0"-"9"])* ((".")? ["0"-"9"])+ > |
+	< SEPARATOR: ["\u0021" - "\u002b", "\u002d" - "\u002f", "\u003A" - "\u00ff"] >  |
+  	< COMMA: "," > |
+	< PERIOD: "." > |
+  	< #LETTERCHARACTER: ["a" - "\u00ff"] > |
+	< #NUMBER_CHARACTER_WITH_POINT: (["0"-"9"])* ((",")? ["0"-"9"])+ > |
+	< #NUMBER_CHARACTER_WITH_COMMA: (["0"-"9"])* ((".")? ["0"-"9"])+ > |
 	< #VARIABLECHARACTER: ["a" - "\u00ff", "0" - "9", "_"] > |
 	< VERTEX_NAME_WITH_QUOTE_MARK: <QUOTATION_MARK> (~["\""])* <QUOTATION_MARK> > |
 	< HEAD_NAME_IN_CSV_OR_VARIABLE_NAME: (< LETTERCHARACTER >) (< VARIABLECHARACTER > | "." )* > 
@@ -216,24 +219,29 @@ NetDefinition start(VariableList variableList, ArrayList<Vertex> vertexList) : {
 //
 //
 NetDefinition section1() : {
-	Token header, sourceFormat, networkFormat, directedNetwork, bipartiteProjection, networkLayout, separator;
+	Token header, sourceFormat, networkFormat, directedNetwork, bipartiteProjection, networkLayout,
+	columnSeparator, decimalSeparator;
 	NetDefinition definition;
 }
 {
-	<SOURCE_FORMAT> <COLON> sourceFormat = <SOURCE_FORMAT_INPUT>
-	<TARGET_FORMAT> <COLON> networkFormat = <NETWORK_FORMAT>
-	<HEADER> <COLON> header = <LOGIC_VALUE> 
-	<DIRECTED_NETWORK> <COLON> directedNetwork = <LOGIC_VALUE> 
-	<BIPARTITE_PROJECTION> <COLON> bipartiteProjection = <LOGIC_VALUE>
-	<COLUMN_SEPARATOR> <COLON>  (separator = <SEMICOLON> | separator  = <COMMA>) 
-	<LAYOUT> <COLON> 
+	<SOURCE_FORMAT> sourceFormat = <SOURCE_FORMAT_INPUT>
+	<TARGET_FORMAT> networkFormat = <NETWORK_FORMAT>
+	<HEADER> header = <LOGIC_VALUE> 
+	<DIRECTED_NETWORK> directedNetwork = <LOGIC_VALUE> 
+	<BIPARTITE_PROJECTION> bipartiteProjection = <LOGIC_VALUE>
+	<COLUMN_SEPARATOR> (columnSeparator = <SEPARATOR> | columnSeparator = <COMMA> | columnSeparator = <PERIOD>
+						| columnSeparator = <SEMICOLON> | columnSeparator = <COLON> )
+	<DECIMAL_SEPARATOR>  (decimalSeparator = <COMMA> | decimalSeparator  = <PERIOD>)
+	 
+	<LAYOUT>  
 	(
 		networkLayout = <LAYOUT_NAME>
 		|
 		networkLayout = <NO> )
   		{
   	  		definition = new NetDefinition(networkFormat.image, directedNetwork.image, bipartiteProjection.image,
-						networkLayout.image, header.image, sourceFormat.image, separator.image);
+						networkLayout.image, header.image, sourceFormat.image,
+						columnSeparator.image, decimalSeparator.image);
 			return definition;
   		}
 }
@@ -275,7 +283,7 @@ void variableDefinition(VariableList variableList) : {
 			}
 			else {
 				variable = new Variable(headNameInCsv.image,variableName.image,VariableType.NON_PRIMARY, type.beginLine);
-			}	
+			}
 			variableList.add(variable);	
 		}
 	)
@@ -477,16 +485,16 @@ void rangeExpression(Vertex expression, Token variable, Token operator, Variable
 // option -> <OPTION>
 //
 void option(Vertex expression, Token variable, Token operator, VariableList variableList) : {
-	Token opt;
+	Token option;
 	Item item = null;
 }
 {
-	opt = <OPTION>
+	option = <OPTION> 
 	{	
 		item = new Variable(VariableType.NON_PRIMARY,variable.image, variable.beginLine);
 		SemanticActions.containsVariable(item, variableList, variable.beginLine);
 		expression.add(item);
-		item = new Operand(OperandType.NUMBER, opt.image);
+		item = new Operand(OperandType.NUMBER, option.image);
 		expression.add(item);
 		item = new Operator(operator.image);
 		expression.add(item);
@@ -509,16 +517,16 @@ void optionVariable(Vertex expression, Token variable, VariableList variableList
 // optionDualOperator -> <OPTION>
 //
 void optionDualOperator(Vertex expression, Token variable, Token operator, Token operator2, VariableList variableList) : {
-	Token opt;
+	Token option;
 	Item item = null;
 }
 {
-	opt = <OPTION>
+	option = <OPTION> 
 	{	
 		item = new Variable(VariableType.NON_PRIMARY,variable.image, variable.beginLine);
 		SemanticActions.containsVariable(item, variableList, variable.beginLine);
 		expression.add(item);
-		item = new Operand(OperandType.NUMBER,opt.image);
+		item = new Operand(OperandType.NUMBER,option.image);
 		expression.add(item);
 		item = new Operator(operator.image + operator2.image);
 		expression.add(item);
@@ -534,8 +542,8 @@ void optionList(Vertex expression, Token variable, Token operator, VariableList 
 	Item item = null;
 }
 {
-	option = <OPTION>
-   	{
+	option = <OPTION> 
+	{
 		item = new Variable(VariableType.NON_PRIMARY,variable.image, variable.beginLine);
 		SemanticActions.containsVariable(item, variableList, variable.beginLine);
 		expression.add(item);

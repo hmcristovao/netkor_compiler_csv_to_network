@@ -1,10 +1,12 @@
 # Section 1: general configurations
-Source format: CSV
-Target format: NET
-Header: TRUE
-Directed network: TRUE
-Bipartite projection: FALSE
-Layout: NO
+Source format CSV
+Target format NET
+Header TRUE
+Directed network TRUE
+Bipartite projection FALSE
+Column separator ;
+Decimal separator ,
+Layout NO
 
 # Section 2: determines the selected variables (column header) in the CSV file
 Variables:
@@ -15,7 +17,7 @@ Variables:
 > nome.estado : nome.estado
 > nome.região : nome.região
 > valor.empenhado : valor.empenhado
-> subfuncao.funcao : subfuncao.funcao
+> subfunção.função : subfunção.função
 
 # Section 3: network nodes and links (edges or arcs)
 Network:
@@ -30,4 +32,4 @@ nome.região
 "Menos de 100 mil" : valor.empenhado < 100000 
 "Entre 100 mil e 500 mil" : valor.empenhado > 100000 AND valor.empenhado < 500000  
 "Acima de 500 mil" : valor.empenhado > 500000 
-subfuncao.funcao
+subfunção.função
