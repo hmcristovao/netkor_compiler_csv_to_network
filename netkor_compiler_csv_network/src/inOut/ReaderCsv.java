@@ -31,14 +31,10 @@ public class ReaderCsv {
 	
 	public static void readColumns(VariableList variableList, NetDefinition definition) throws IOException  {
 		BufferedReader csvReader = new BufferedReader(new InputStreamReader(new FileInputStream(Configuration.csvFileInput), "UTF-8"));	
-		//
 		Integer counterColumnCsv = 0;
 		boolean existingColumn = false;
 		String line = csvReader.readLine();
 		String[] columnsCsv = line.split(definition.getColumnSeparator());
-		for(int i=0; i < columnsCsv.length; i++) {
-			System.out.println(columnsCsv[i] + "\n");
-		}
 		//Loop para associar para cada variavel definida sua coluna correspondete no csv
 		
 		//Talvez otimizar este processo retirando as variaveis ja selecionadas nas iteracoes posteriores

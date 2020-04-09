@@ -57,7 +57,6 @@ public class Compiler {
 			//===========================================COMPILACAO===================================================//
 			compiler = new Compiler(new FileInputStream(Configuration.mapFile), "UTF-8");
 			definition = Compiler.start(variableList, vertexList);
-			System.out.println(variableList.getVariableList());
 			//------Leitura rapida do Csv para contar todas as linhas contindas no arquivo-------		
 			//Metodo coutLines conta a partir de 0, portanto resulta em (valor total - 1) 
 			//Com header -> Desconsidera-se o header, logo este (valor total - 1) serve
@@ -236,7 +235,7 @@ NetDefinition section1() : {
 		|
 		networkLayout = <NO> )
   		{
-  	  		definition = new NetDefinition(networkFormat.image, directedNetwork.image, bipartiteProjection.image,
+  		  	definition = new NetDefinition(networkFormat.image, directedNetwork.image, bipartiteProjection.image,
 						networkLayout.image, header.image, sourceFormat.image,
 						columnSeparator.image);
 			return definition;
