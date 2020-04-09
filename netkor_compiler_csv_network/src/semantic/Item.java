@@ -5,7 +5,7 @@ public abstract class Item {
 	public String token;
 
 	public Item(String token) {
-		this.token = token.strip();
+		this.token = token.trim();
 	}
 	public String getLexema() {
 		return this.token;

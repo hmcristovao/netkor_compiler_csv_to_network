@@ -182,12 +182,12 @@ TOKEN [IGNORE_CASE] : {
 
 //
 TOKEN [IGNORE_CASE] : {
-	< SEPARATOR: ["\u0021" - "\u002b", "\u002d" - "\u002f", "\u003A" - "\u00ff"] >  |
-  	< COMMA: "," > |
-	< PERIOD: "." > |
+	< SEPARATOR: ["\u0021" - "\u00ff"] >  |
+  	< #COMMA: "," > |
+	< #PERIOD: "." > |
   	< #LETTERCHARACTER: ["a" - "\u00ff"] > |
-	< #NUMBER_CHARACTER_WITH_POINT: (["0"-"9"])* ((",")? ["0"-"9"])+ > |
-	< #NUMBER_CHARACTER_WITH_COMMA: (["0"-"9"])* ((".")? ["0"-"9"])+ > |
+	< #NUMBER_CHARACTER_WITH_POINT: (["0"-"9"])* ((<COMMA>)? ["0"-"9"])+ > |
+	< #NUMBER_CHARACTER_WITH_COMMA: (["0"-"9"])* ((<PERIOD>)? ["0"-"9"])+ > |
 	< #VARIABLECHARACTER: ["a" - "\u00ff", "0" - "9", "_"] > |
 	< VERTEX_NAME_WITH_QUOTE_MARK: <QUOTATION_MARK> (~["\""])* <QUOTATION_MARK> > |
 	< HEAD_NAME_IN_CSV_OR_VARIABLE_NAME: (< LETTERCHARACTER >) (< VARIABLECHARACTER > | "." )* > 
@@ -220,7 +220,7 @@ NetDefinition start(VariableList variableList, ArrayList<Vertex> vertexList) : {
 //
 NetDefinition section1() : {
 	Token header, sourceFormat, networkFormat, directedNetwork, bipartiteProjection, networkLayout,
-	columnSeparator, decimalSeparator;
+	columnSeparator;
 	NetDefinition definition;
 }
 {
@@ -229,10 +229,7 @@ NetDefinition section1() : {
 	<HEADER> header = <LOGIC_VALUE> 
 	<DIRECTED_NETWORK> directedNetwork = <LOGIC_VALUE> 
 	<BIPARTITE_PROJECTION> bipartiteProjection = <LOGIC_VALUE>
-	<COLUMN_SEPARATOR> (columnSeparator = <SEPARATOR> | columnSeparator = <COMMA> | columnSeparator = <PERIOD>
-						| columnSeparator = <SEMICOLON> | columnSeparator = <COLON> )
-	<DECIMAL_SEPARATOR>  (decimalSeparator = <COMMA> | decimalSeparator  = <PERIOD>)
-	 
+	<COLUMN_SEPARATOR> (columnSeparator = <SEPARATOR> | columnSeparator = <SEMICOLON> | columnSeparator = <COLON> ) 
 	<LAYOUT>  
 	(
 		networkLayout = <LAYOUT_NAME>
@@ -241,7 +238,7 @@ NetDefinition section1() : {
   		{
   	  		definition = new NetDefinition(networkFormat.image, directedNetwork.image, bipartiteProjection.image,
 						networkLayout.image, header.image, sourceFormat.image,
-						columnSeparator.image, decimalSeparator.image);
+						columnSeparator.image);
 			return definition;
   		}
 }

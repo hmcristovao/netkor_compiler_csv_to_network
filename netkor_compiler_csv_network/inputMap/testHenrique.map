@@ -5,7 +5,6 @@ Header TRUE
 Directed network TRUE
 Bipartite projection FALSE
 Column separator ;
-Decimal separator ,
 Layout NO
 
 # Section 2: determines the selected variables (column header) in the CSV file

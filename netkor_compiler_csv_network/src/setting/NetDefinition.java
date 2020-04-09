@@ -8,14 +8,12 @@ public class NetDefinition {
 	String networkLayout;
 	String header;
 	String columnSeparator;
-	String decimalSeparator;
 	
 	public NetDefinition() {
 	}
 	
 	public NetDefinition(String targetFormat, String directedNetwork ,String bipartiteProjection, 
-						String networkLayout, String header, String sourceFormat, String columnSeparator,
-						String decimalSeparator) {
+						String networkLayout, String header, String sourceFormat, String columnSeparator) {
 		this.targetFormat = targetFormat;
 		this.directedNetwork = directedNetwork;
 		this.bipartiteProjection = bipartiteProjection;
@@ -23,7 +21,6 @@ public class NetDefinition {
 		this.header = header;
 		this.sourceFormat = sourceFormat;
 		this.columnSeparator = columnSeparator;
-		this.decimalSeparator = decimalSeparator;
 	}
 	
 	public void setTargetFormat(String format) {
@@ -78,7 +75,4 @@ public class NetDefinition {
 		return this.columnSeparator;
 	}
 	
-	public String getDecimalSeparator() {
-		return this.decimalSeparator;
-	}
 }
