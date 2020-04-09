@@ -2,47 +2,49 @@
 ---
 ## Compilador para mapear arquivos CSV para Network 
 
-Arquivo de entrada: CSV - contém a base de dados a ser mapeada
+Arquivo de entrada: CSV - contÃ©m a base de dados a ser mapeada
 
-Arquivo de mapeamnento: MAP - contém a programação a ser usada no mapeamento do arquivo CVS para o formato Network
+Arquivo de mapeamnento: MAP - contÃ©m a programaÃ§Ã£o a ser usada no mapeamento do arquivo CVS para o formato Network
 
-Arquivo de network: NET (default) - contém a saída a ser gerada pelo mapeamento realizado sobre o arquivo CSV
+Arquivo de network: NET (default) - contÃ©m a saÃ­da a ser gerada pelo mapeamento realizado sobre o arquivo CSV
 
 ---
 
 ### Melhorias
-#### A) Novas funcionalidades - Nível de prioridade MÁXIMO 
-1. ~~Permitir a colocação de variáveis de cabeçalho na seção 3. Assim os nós são criados usando-se os valores dessas variáveis. Atualmente são permitidas apenas constantes.~~ 
-2. ~~Em Section 2, permitir nome de identificador sozinho (sem dois pontos seguido de outro identificador). Nesse caso ele serve para identificar, com o mesmo nome, o cabeçalho de coluna do CSV e a variável interna usada no MAP.~~
-3. Cabeçalho das colunas do CSV: aceitar acentuação e espaços em branco. Nesse caso, a descrição da coluna ficaria entre aspas. 
-4. Tratar uma expressão do tipo data de calendário. Assim aceitar operações com os relacionais e intervalos.
-5. Tratar uma expressão string alfabeticamente aceitando expressões alfabéticas para definir intervalos. 
-6. Implementar "Column separator:" em Section 1: permite configurar o caractere usado para separar os campos do CSV (o default seria a vírgula). 
-7. Implementar "Decimal separator:" em Section 1: permite configurar o caractere usado na separação decimal em números reais. (o default seria o ponto). 
-8. Implementar "Text delimiter:" em Section 1: permite configurar o caractere usado para envolver valores das colunas evitando  conflitos. Por exemplo, se a vírgula é usada para separar campos e ao mesmo tempo como conteúdo de um campo. 
+#### A) Novas funcionalidades - NÃ­vel de prioridade MÃXIMO 
+1. ~~Permitir a colocaÃ§Ã£o de variÃ¡veis de cabeÃ§alho na seÃ§Ã£o 3. Assim os nÃ³s sÃ£o criados usando-se os valores dessas variÃ¡veis. Atualmente sÃ£o permitidas apenas constantes.~~ 
+2. ~~Em Section 2, permitir nome de identificador sozinho (sem dois pontos seguido de outro identificador). Nesse caso ele serve para identificar, com o mesmo nome, o cabeÃ§alho de coluna do CSV e a variÃ¡vel interna usada no MAP.~~
+3. ~~CabeÃ§alho das colunas do CSV com possibilidade de acentuaÃ§Ã£o.~~
+4. ~~Possibilitar nÃºmeros decimais com ponto ou com vÃ­rgula.~~
+5. Implementar "Column separator:" em Section 1: permite configurar o caractere usado para separar os campos do CSV (o default seria a vÃ­rgula). 
+6. Tratar uma expressÃ£o do tipo data de calendÃ¡rio. Assim aceitar operaÃ§Ãµes com os relacionais e intervalos.
+7. Tratar uma expressÃ£o string alfabeticamente aceitando expressÃµes alfabÃ©ticas para definir intervalos. 
+8. Implementar "Text delimiter:" em Section 1: permite configurar o caractere usado para envolver valores das colunas evitando  conflitos. Por exemplo, se a vÃ­rgula Ã© usada para separar campos e ao mesmo tempo como conteÃºdo de um campo. 
 
-#### B) Novas funcionalidades - Nível de prioridade MÉDIO
-1. Permitir mesclagem de colunas. Exemplo do caso do documento Emendas.csv nas colunas nome Nome Subfunção + “ (“ + Nome Função + “)” 
-2. Permitir o descarte de linhas que atendam um determinado critério. Exemplo do caso do documento Emendas.csv onde foram descartadas 1500 linhas cujo critério foi Código IBGE Estado = -2
-3. Permitir a criação de colunas “virtuais” a partir de expressões envolvendo as colunas existentes. Por exemplo: coluna “nome do mês” é a extração do mês de uma data; coluna “taxa de feridos graves e mortos” é a razão da soma da qtde de feridos graves e mortos de um acidente pela qtde de ocupantes do veículo. 
-4. Aceitar mistura de tipos. Exemplo, a coluna km contém a quilometragem do acidente, mas pode ter a string “NA” como não conhecido. Permitir que isso seja usado em expressões, tal como:
-“km 0-10” : km <= 10
-“Km NA” : km = “NA”
+#### B) Novas funcionalidades - NÃ­vel de prioridade MÃ‰DIO
+1. Permitir mesclagem de colunas. Exemplo do caso do documento Emendas.csv nas colunas nome Nome SubfunÃ§Ã£o + â€œ (â€œ + Nome FunÃ§Ã£o + â€œ)â€ 
+2. Permitir o descarte de linhas que atendam um determinado critÃ©rio. Exemplo do caso do documento Emendas.csv onde foram descartadas 1500 linhas cujo critÃ©rio foi CÃ³digo IBGE Estado = -2
+3. Permitir a criaÃ§Ã£o de colunas â€œvirtuaisâ€ a partir de expressÃµes envolvendo as colunas existentes. Por exemplo: coluna â€œnome do mÃªsâ€ Ã© a extraÃ§Ã£o do mÃªs de uma data; coluna â€œtaxa de feridos graves e mortosâ€ Ã© a razÃ£o da soma da qtde de feridos graves e mortos de um acidente pela qtde de ocupantes do veÃ­culo. 
+4. Aceitar mistura de tipos. Exemplo, a coluna km contÃ©m a quilometragem do acidente, mas pode ter a string â€œNAâ€ como nÃ£o conhecido. Permitir que isso seja usado em expressÃµes, tal como:
+â€œkm 0-10â€ : km <= 10
+â€œKm NAâ€ : km = â€œNAâ€
+5. CabeÃ§alhos com possibilidade de espaÃ§os em branco. Nesse caso, a descriÃ§Ã£o da coluna ficaria entre o caractere definido em Text delimiter. 
 
-#### C) Análise Semântica
-1. ~~Definição de variáveis com nomes iguais~~
-2. ~~Definição de uma variável para duas ou mais colunas~~
-3. Variável não utilizada na definição dos vértices de incidência (Klaus, isso deve ser um Warning!)
-4. Verificar se todas as variáveis usadas nas expressões da #Section 3 foram devidamente definidas em #Section 2.
-5. Vértices de incidência com o mesmo nome (o que é isso Klaus?)
-
+#### C) AnÃ¡lise SemÃ¢ntica
+1. ~~DefiniÃ§Ã£o de variÃ¡veis com nomes iguais~~
+2. ~~DefiniÃ§Ã£o de uma variÃ¡vel para duas ou mais colunas~~
+3. VariÃ¡vel nÃ£o utilizada na definiÃ§Ã£o dos vÃ©rtices de incidÃªncia (Klaus, isso deve ser um Warning!)
+4. Verificar se todas as variÃ¡veis usadas nas expressÃµes da #Section 3 foram devidamente definidas em #Section 2.
+5. VÃ©rtices de incidÃªncia com o mesmo nome (o que Ã© isso Klaus?)
+6. O Caractere definido como delimitador aparece no conteÃºdo de campo do CVS, sendo ainda que esse nÃ£o estÃ¡ envolto pelo caractere definido em "Text delimiter" (Section 1).
+7. Quantidade de valores de uma linha Ã© incompatÃ­vel com a quantidade de cabeÃ§alhos do CSV.
   
 ---
-### Universidade Federal do Espírito Santo
+### Universidade Federal do EspÃ­rito Santo
 #### Grupo de pesquisa NetKOR (Networked Knowledge Organization Retrieval)  
 #### Desenvolvimento:
 ##### Coordenador
-* Henrique Monteiro Cristovão - hmcristovao@gmail.com
+* Henrique Monteiro CristovÃ£o - hmcristovao@gmail.com
 ##### Colaboradores
 * Klaus Kly Cuzzuol Wolff - darkkcw@gmail.com
 * Luis Henrique Gundes Valim - henriquegundes@outlook.com
