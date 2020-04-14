@@ -20,6 +20,7 @@ Arquivo de network: NET (default) - contém a saída a ser gerada pelo mapeament
 6. Tratar uma expressão do tipo data de calendário. Assim aceitar operações com os relacionais e intervalos.
 7. Tratar uma expressão string alfabeticamente aceitando expressões alfabéticas para definir intervalos. 
 8. Implementar "Text delimiter:" em Section 1: permite configurar o caractere usado para envolver valores das colunas evitando  conflitos. Por exemplo, se a vírgula é usada para separar campos e ao mesmo tempo como conteúdo de um campo. 
+9. Aceitar o formato GDF - https://gephi.org/users/supported-graph-formats/gdf-format/, compatíveis com as novas definições do documento MAP
 
 #### B) Novas funcionalidades - Nível de prioridade MÉDIO
 1. Permitir mesclagem de colunas. Exemplo do caso do documento Emendas.csv nas colunas nome Nome Subfunção + “ (“ + Nome Função + “)” 
