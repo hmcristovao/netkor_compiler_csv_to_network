@@ -16,7 +16,7 @@ Arquivo de network: NET (default) - contém a saída a ser gerada pelo mapeament
 2. ~~Em Section 2, permitir nome de identificador sozinho (sem dois pontos seguido de outro identificador). Nesse caso ele serve para identificar, com o mesmo nome, o cabeçalho de coluna do CSV e a variável interna usada no MAP.~~
 3. ~~Cabeçalho das colunas do CSV com possibilidade de acentuação.~~
 4. ~~Possibilitar números decimais com ponto ou com vírgula.~~
-5. Implementar "Column separator:" em Section 1: permite configurar o caractere usado para separar os campos do CSV (o default seria a vírgula). 
+5. ~~Implementar "Column separator:" em Section 1: permite configurar o caractere usado para separar os campos do CSV (o default seria a vírgula).~~ 
 6. Tratar uma expressão do tipo data de calendário. Assim aceitar operações com os relacionais e intervalos.
 7. Tratar uma expressão string alfabeticamente aceitando expressões alfabéticas para definir intervalos. 
 8. Implementar "Text delimiter:" em Section 1: permite configurar o caractere usado para envolver valores das colunas evitando  conflitos. Por exemplo, se a vírgula é usada para separar campos e ao mesmo tempo como conteúdo de um campo. 
