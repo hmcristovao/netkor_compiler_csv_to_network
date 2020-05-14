@@ -1,4 +1,4 @@
-package setting;
+package intermediate;
 
 public class NetDefinition {
 	String targetFormat;

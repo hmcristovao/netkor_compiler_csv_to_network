@@ -1,10 +1,10 @@
 // Compilador para mapear bases de dados primitivas para formatos de redes complexas
 //
-// Universidade Federal do Esp�rito Santo
+// Universidade Federal do Espirito Santo
 // Grupo de Pesquisa: NetKOR (Networked  Knowledge Organization Retrieval)
 //
 // Desenvolvedores:
-// Henrique Monteiro Cristov�o
+// Henrique Monteiro Cristovao
 // Klaus Kly Cuzzuol Wolff
 // Luis Henrique Gundes Valim
 
@@ -18,8 +18,9 @@ PARSER_BEGIN(Compiler)
 package parser;
 import setting.*;
 import error.*;
-import semantic.*;
-import inOut.*;
+import intermediate.*;
+import destination.*;
+
 
 import java.util.*;
 import java.io.*;
@@ -40,52 +41,16 @@ public class Compiler {
 		//
 		//====Estrutura - Secao 3
 		//==vertexList	- Lista que armazena cada vertice definido na section 3
-		ArrayList<Vertex> vertexList = new ArrayList<Vertex>();
+		VertexList vertexList = new VertexList();
 		//
-		//====Estruturas auxiliares
-		//listPrimaryKeyVertices - Lista contendo todos os valores da coluna de primaryKey
-		LinkedList<String> listPrimaryKeyVertices = new LinkedList<String>();
-		//hashArc - Hash que armazena todos as expressoes validas para cada vertice do Csv 
-		LinkedHashMap<Integer,ArrayList<String>> hashArcs = new LinkedHashMap<Integer,ArrayList<String>>();
-		//HashBipartite
-		LinkedHashMap<String, ArrayList<String>> hashBipartite = new LinkedHashMap<String,ArrayList<String>>();
-		//Hash
-		LinkedHashMap<String, Integer> hashVertexVariable = new LinkedHashMap<String,Integer>();
-		//HashWeight
-		HashMap<ArrayList<String>,Integer> hashWeight = new LinkedHashMap<ArrayList<String>,Integer>();
 		try {
 			//===========================================COMPILACAO===================================================//
 			compiler = new Compiler(new FileInputStream(Configuration.mapFile), "UTF-8");
 			definition = Compiler.start(variableList, vertexList);
-			//------Leitura rapida do Csv para contar todas as linhas contindas no arquivo-------		
-			//Metodo coutLines conta a partir de 0, portanto resulta em (valor total - 1) 
-			//Com header -> Desconsidera-se o header, logo este (valor total - 1) serve
-			Integer totalLinesCsv = ReaderCsv.countLines();
-			//Sem header -> Como nao ha header, todas as linhas devem ser consideradas, para isso ha o incremento
-			if(definition.getHeader().toLowerCase().equals("false")) totalLinesCsv++;	
-			
-			//========================================PRIMEIRA LEITURA DO CSV=========================================//
-			//Leitura do cabecalho e armazenamento da posicao da variaveis associadas
-			ReaderCsv.readColumns(variableList, definition);
-			
-			//========================================SEGUNDA LEITURA DO CSV==========================================//
 
-			ReaderCsv.readAllLines(listPrimaryKeyVertices, variableList, vertexList, totalLinesCsv,
-								   hashArcs, definition, hashBipartite, hashVertexVariable);
 
-			//SemanticActions.unusedVariable(variableList);
-			
-			if(definition.getBipartiteProjection().toLowerCase().equals("false")) {
-				totalLinesCsv++;
-				SemanticActions.noNetwork(hashArcs);
-				WriterNet.writeAll(listPrimaryKeyVertices, vertexList, hashArcs, hashVertexVariable, definition);
-			//========================================ESCRITA DO ARQUIVO NET==========================================//
-			}
-			
-			else {
-			//========================================ESCRITA DO ARQUIVO NET==========================================//
-				WriterNet.writeBipartite(vertexList, hashBipartite, hashWeight, hashVertexVariable, definition);
-			}	
+			Network net = new Network(definition, variableList, vertexList);
+			net.writeNET();	
 			
 			if(SemanticActions.warnings == 1 ) {
 				System.out.println("\n\n***** Successful compilation with "+SemanticActions.warnings+" warning! *****");
@@ -192,11 +157,11 @@ TOKEN [IGNORE_CASE] : {
 	< HEAD_NAME_IN_CSV_OR_VARIABLE_NAME: (< LETTERCHARACTER >) (< VARIABLECHARACTER > | "." )* > 
 }
 
-// Gram�tica:
+// Gramatica:
 //
 // Start ->	section1 section 2 section 3
 //
-NetDefinition start(VariableList variableList, ArrayList<Vertex> vertexList) : {
+NetDefinition start(VariableList variableList, VertexList vertexList) : {
 	NetDefinition definition;
 }
 {
@@ -208,7 +173,7 @@ NetDefinition start(VariableList variableList, ArrayList<Vertex> vertexList) : {
 	}
 }
 
-// Gram�tica:
+// Gramatica:
 //
 // section 1 ->	<SOURCE_FORMAT> <COLON> <SOURCE_FORMAT_INPUT>
 //				<TARGET_NAME> <COLON> <NETWORK_FORMAT>
@@ -242,7 +207,7 @@ NetDefinition section1() : {
   		}
 }
 
-// Gram�tica:
+// Gramatica:
 //
 // section2	->	<VARIABLES> <COLON> (variableDefinition)+
 //
@@ -251,7 +216,7 @@ void section2(VariableList variableList): { }
 	<VARIABLES> <COLON> (variableDefinition(variableList))+
 }
 
-// Gram�tica:
+// Gramatica:
 //
 // variableDefinition -> ( <TYPE_VARIABLE_PRIMARY> | <TYPE_VARIABLE_SECONDARY> )
 //						 <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
@@ -273,6 +238,7 @@ void variableDefinition(VariableList variableList) : {
 			<COLON> variableName = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
 		)?
 		{
+		  	
 		  	if(variableName == null || variableName.image.trim().isEmpty()) variableName = headNameInCsv;
 			if(type.image.equals("*")) {
 				variable = new Variable(headNameInCsv.image,variableName.image,VariableType.PRIMARY, type.beginLine);
@@ -285,22 +251,22 @@ void variableDefinition(VariableList variableList) : {
 	)
 }
 
-// Gram�tica:
+// Gramatica:
 //
 // section3 ->	<NETWORK> <COLON> (vertexDefinition)+
 //
-void section3(ArrayList<Vertex> vertexList, VariableList variableList): { }
+void section3(VertexList vertexList, VariableList variableList): { }
 {
   	<NETWORK> <COLON> (vertexDefinition(vertexList, variableList))+
 }
 
-// Gram�tica:
+// Gramatica:
 //
 // vertexDefinition ->	<HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
 // 						|
 // 						<VERTEX_NAME_WITH_QUOTE_MARK> <COLON> ( operationOR )+
 //
-void vertexDefinition(ArrayList<Vertex> vertexList, VariableList variableList):
+void vertexDefinition(VertexList vertexList, VariableList variableList):
 {
   Token vertexName, vertexVariable;
   Vertex vertex2, vertex3;
@@ -313,7 +279,7 @@ void vertexDefinition(ArrayList<Vertex> vertexList, VariableList variableList):
 	}
 	optionVariable(vertex2, vertexVariable, variableList)
 	{
-		vertexList.add(vertex2);
+		vertexList.addVertex(vertex2);
 	}
  	| 
 	vertexName = <VERTEX_NAME_WITH_QUOTE_MARK> <COLON>
@@ -323,7 +289,7 @@ void vertexDefinition(ArrayList<Vertex> vertexList, VariableList variableList):
 	(
 		operationOR(vertex, variableList)
 		{
-				vertexList.add(vertex);
+				vertexList.addVertex(vertex);
 		}
 		(
 		  	vertexVariable = <HEAD_NAME_IN_CSV_OR_VARIABLE_NAME>
@@ -332,13 +298,13 @@ void vertexDefinition(ArrayList<Vertex> vertexList, VariableList variableList):
 		  	}
 		  	optionVariable(vertex3, vertexVariable, variableList)
 			{
-				vertexList.add(vertex3);
+				vertexList.addVertex(vertex3);
 			}
 		 )*
 	)+
 }
 
-// Gram�tica:
+// Gramatica:
 //
 // operationOR	->	operationAND ( <OR> operationAND)*
 
@@ -358,7 +324,7 @@ void operationOR(Vertex expression, VariableList variableList) : {
 	)*   
 }
 
-// Gram�tica:
+// Gramatica:
 //
 // operationAND	->	vertexExpression ( < AND > vertexExpression)*
 //
@@ -377,7 +343,7 @@ void operationAND(Vertex expression, VariableList variableList) : {
 	)*
 }
 
-// Gram�tica:
+// Gramatica:
 //
 //	vertexExpression = 	<HEAD_NAME_IN_CSV_OR_VARIABLE_NAME> <EQUAL> vertexRangeDefinition
 //						| <TYPE_VARIABLE_SECONDARY> ( <EQUAL> optionDualOperator | option	)
@@ -407,7 +373,7 @@ void vertexExpression(Vertex expression, VariableList variableList) : {
 	)
 }
 
-// Gram�tica:
+// Gramatica:
 //
 // vertexRangeDefinition - >  <FORMATELLIPSIS1>
 //							| <FORMATELLIPSIS2>
@@ -453,7 +419,7 @@ void vertexRangeDefinition(Vertex expression, Token variable, Token operator, Va
   	)
 }
 
-// Gram�tica:
+// Gramatica:
 //
 // rangeExpression -> ( ( <PARENTHESIS_OPEN> | <BRACKET_OPEN> ) optionList ( <PARENTHESIS_CLOSE> | <BRACKET_CLOSE> ) )
 //					  |	option
@@ -476,7 +442,7 @@ void rangeExpression(Vertex expression, Token variable, Token operator, Variable
 	|	option(expression, variable, operator, variableList)
 }
 
-// Gram�tica:
+// Gramatica:
 //
 // option -> <OPTION>
 //
@@ -508,7 +474,7 @@ void optionVariable(Vertex expression, Token variable, VariableList variableList
 	}
 }
 
-// Gram�tica:
+// Gramatica:
 //
 // optionDualOperator -> <OPTION>
 //
@@ -529,7 +495,7 @@ void optionDualOperator(Vertex expression, Token variable, Token operator, Token
 	}
 }
 
-// Gram�tica:
+// Gramatica:
 //
 // optionList -> <OPTION> ( <SEMINCOLON> )?
 //

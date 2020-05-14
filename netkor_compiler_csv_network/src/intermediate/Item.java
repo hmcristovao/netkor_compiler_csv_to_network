@@ -1,4 +1,4 @@
-package semantic;
+package intermediate;
 
 public abstract class Item {
 

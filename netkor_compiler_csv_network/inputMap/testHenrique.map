@@ -10,7 +10,7 @@ Layout NO
 # Section 2: determines the selected variables (column header) in the CSV file
 Variables:
 #código da emenda (chave primaria)
-* codigo.emenda 
+* codigo.emenda
 > ano 
 > nome.autor 
 > nome.estado 

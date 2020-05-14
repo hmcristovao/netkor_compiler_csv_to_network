@@ -13,27 +13,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import semantic.CollectionLink;
-import semantic.Vertex;
+import intermediate.CollectionLink;
+import intermediate.NetDefinition;
+import intermediate.Vertex;
+import intermediate.VertexList;
 import setting.Configuration;
-import setting.NetDefinition;
 
 public class WriterNet {
-	public static void writeAll(LinkedList<String> listPrimaryKeyVertices, ArrayList<Vertex> vertexList, 
+	public static void writeAll(LinkedList<String> listPrimaryKeyVertices, VertexList vertexList, 
 						HashMap<Integer, ArrayList<String>> hashArcs, LinkedHashMap<String, Integer> hashVertexVariable,
 						NetDefinition definition) throws IOException {
 		Integer counterLineNet = 1, counterVertexVariable = 0;
 		FileWriter resultFile = new FileWriter(Configuration.csvFileOutput);
 		PrintWriter resultFileWriter = new PrintWriter(resultFile);
-		for(Vertex vertex : vertexList) {
+		for(Vertex vertex : vertexList.getVertexList()) {
 			if(vertex.isVertexVariable()) counterVertexVariable++;
 		}
-		resultFileWriter.println("*Vertices " + (listPrimaryKeyVertices.size() + vertexList.size() 
+		resultFileWriter.println("*Vertices " + (listPrimaryKeyVertices.size() + vertexList.getVertexListSize()
 									-counterVertexVariable + hashVertexVariable.size()));	
 		for(String vertex : listPrimaryKeyVertices) {
 			resultFileWriter.println(counterLineNet++ +  " \"" + vertex + "\"");							
 		}
-		for(Vertex vertex : vertexList) {
+		for(Vertex vertex : vertexList.getVertexList()) {
 			if(!vertex.isVertexVariable()) resultFileWriter.println(counterLineNet++ +  " " + vertex.getVertexName() + "");			
 		}
 		Set<Map.Entry<String, Integer>> entries = hashVertexVariable.entrySet();
@@ -77,7 +78,7 @@ public class WriterNet {
 		resultFile.close();	
 	}	
 	
-	public static void writeBipartite(ArrayList<Vertex> vertexList, 
+	public static void writeBipartite(VertexList vertexList, 
 			LinkedHashMap<String, ArrayList<String>> hashBipartite,
 			HashMap<ArrayList<String>,Integer> hashWeight, 
 			LinkedHashMap<String, Integer> hashVertexVariable,
@@ -86,12 +87,12 @@ public class WriterNet {
 		Integer counterLineNet = 1, vertexVariableQuant = hashVertexVariable.size();
 		ArrayList<String> lastWeight = new ArrayList<String>();
 		FileWriter resultFile = new FileWriter(Configuration.csvFileOutput);
-		for(Vertex vertex : vertexList) {
+		for(Vertex vertex : vertexList.getVertexList()) {
 			if(vertex.isVertexVariable()) vertexVariableQuant--;
 		}
 		PrintWriter resultFileWriter = new PrintWriter(resultFile);									
-		resultFileWriter.println("*Vertices " + (vertexList.size() + vertexVariableQuant));	
-		for(Vertex vertex : vertexList) {
+		resultFileWriter.println("*Vertices " + (vertexList.getVertexListSize() + vertexVariableQuant));	
+		for(Vertex vertex : vertexList.getVertexList()) {
 			if(!vertex.isVertexVariable()) resultFileWriter.println(counterLineNet++ +  " " + vertex.getVertexName() + "");		
 		}
 		Set<Map.Entry<String, Integer>> entries = hashVertexVariable.entrySet();

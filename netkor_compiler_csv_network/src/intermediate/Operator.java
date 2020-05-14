@@ -1,4 +1,4 @@
-package semantic;
+package intermediate;
 
 public class Operator extends Item{
 	

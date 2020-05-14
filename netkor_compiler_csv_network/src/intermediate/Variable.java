@@ -1,4 +1,4 @@
-package semantic;
+package intermediate;
 
 public class Variable extends Item {
 
@@ -8,7 +8,7 @@ public class Variable extends Item {
 	public Integer column = 0;
 	public int positionMap = 0;
 	public boolean isUsed = false;
-
+	
 	public Variable(VariableType type, String headNameInCsv, int positionMap) {
 		super(headNameInCsv);
 		this.headNameInCsv = headNameInCsv;
@@ -28,6 +28,12 @@ public class Variable extends Item {
 	public Variable(String variableName) {
 		super(variableName);
 		this.variableName = variableName;
+	}
+	
+
+	
+	public void variableCreate() {
+		
 	}
 
 	public String getLexema()

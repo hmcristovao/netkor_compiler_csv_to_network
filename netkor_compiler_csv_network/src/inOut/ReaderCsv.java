@@ -12,12 +12,13 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
-import semantic.SemanticActions;
-import semantic.Variable;
-import semantic.VariableList;
-import semantic.Vertex;
+import intermediate.NetDefinition;
+import intermediate.SemanticActions;
+import intermediate.Variable;
+import intermediate.VariableList;
+import intermediate.Vertex;
+import intermediate.VertexList;
 import setting.Configuration;
-import setting.NetDefinition;
 
 public class ReaderCsv {
 	public static Integer countLines() throws IOException {
@@ -52,7 +53,7 @@ public class ReaderCsv {
 						counterColumnCsv++;
 					}
 					//Verifica se alguma das colunas definidas na secao 2 eh invalida (nao existe no csv)
-					if(!existingColumn)SemanticActions.inexistingColumn(var.headNameInCsv, var.getPosition());
+					if(!existingColumn) SemanticActions.inexistingColumn(var.headNameInCsv, var.getPosition());
 					existingColumn = false;
 				}
 			}
@@ -77,7 +78,7 @@ public class ReaderCsv {
 	}
 	
 	public static void readAllLines(LinkedList<String> listPrimaryKeyVertices, 
-						VariableList variableList, ArrayList<Vertex> vertexList, 
+						VariableList variableList, VertexList vertexList, 
 						Integer totalLinesCsv, LinkedHashMap<Integer, ArrayList<String>> hashArcs,
 						NetDefinition definition, LinkedHashMap<String, ArrayList<String>> hashBipartite,
 						LinkedHashMap<String, Integer> hashVertexVariable ) throws IOException {
@@ -101,7 +102,7 @@ public class ReaderCsv {
 	
 	/* 2 */	ArrayList<String> expressions = new ArrayList<>();
 			counterLineExpression = 1;																	
-			for(Vertex expression : vertexList) {
+			for(Vertex expression : vertexList.getVertexList()) {
 				if(expression.isVertexVariable()) 
 				{ 
 					variableVertex = columnsCsv[variableList.getVariableColumnPosition(expression.getExpression().element().token)];

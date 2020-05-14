@@ -1,4 +1,4 @@
-package semantic;
+package intermediate;
 
 public class Operand extends Item {
 

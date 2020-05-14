@@ -1,4 +1,4 @@
-package semantic;
+package intermediate;
 
 import java.util.ArrayList;
 import java.util.Comparator;

@@ -1,5 +1,5 @@
   
-package semantic;
+package intermediate;
 
 public enum OperatorType 
 {

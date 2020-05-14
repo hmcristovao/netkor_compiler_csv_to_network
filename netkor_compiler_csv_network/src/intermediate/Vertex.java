@@ -1,8 +1,6 @@
-package semantic;
+package intermediate;
 
 import java.util.LinkedList;
-
-import setting.NetDefinition;
 
 public class Vertex {
 	
