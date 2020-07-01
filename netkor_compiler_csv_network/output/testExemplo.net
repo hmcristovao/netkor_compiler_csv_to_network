@@ -1,0 +1,13 @@
+* Vértices 5
+"menor de idade"
+"maior de idade"
+"masculino"
+"feminino"
+"outro sexo"
+* Edges 5
+1 3 
+1 4 2 
+2 4 
+2 3 
+2 5 
+* Arcs 5

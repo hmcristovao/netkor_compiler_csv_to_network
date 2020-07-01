@@ -1,10 +1,11 @@
 # Section 1: general configurations
-Source format: CSV
-Target format: NET
-Header: TRUE
-Directed network: FALSE
-Bipartite projection: TRUE
-Layout: NO  
+Source format CSV
+Target format NET
+Header TRUE
+Directed network FALSE
+Bipartite projection TRUE
+Column separator ,
+Layout NO  
  
 # Section 2: determines the selected variables (column header) in the CSV file
 Variables:

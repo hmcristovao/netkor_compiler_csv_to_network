@@ -1,24 +1,18 @@
 package destination;
 
-import java.util.ArrayList;
-
 public class Node {
 
 	private String name;
-	private String id_node; // TODO: Is necessary?
-	
-	
-	public Node(String name) {
+	private Integer id_node;
+
+	public Node(String name, Integer id_node) {
 		this.name = name;
+		this.id_node = id_node;
 	}
-
-	protected String getName() {
-		return name;
+	public String getName() {
+		return this.name;
 	}
-
-	protected String getId_node() {
-		return id_node;
+	public Integer getId_node() {
+		return this.id_node;
 	}
-	
-	
 }

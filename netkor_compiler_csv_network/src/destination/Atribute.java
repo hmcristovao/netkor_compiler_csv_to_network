@@ -2,6 +2,11 @@ package destination;
 
 import java.util.ArrayList;
 
+/*
+ * ESTA CLASSE NAO FAZ NADA 
+ * 
+ * */
+
 interface OneTypeAtribute<E> {
 	public E getElement();
 }

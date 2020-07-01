@@ -48,9 +48,10 @@ public class Compiler {
 			compiler = new Compiler(new FileInputStream(Configuration.mapFile), "UTF-8");
 			definition = Compiler.start(variableList, vertexList);
 
-
-			Network net = new Network(definition, variableList, vertexList);
-			net.writeNET();	
+			IntermediateGenerator.setIntermediateGenerator(definition, variableList, vertexList);
+			Network net = new Network();
+			Procedures.generateBipartiteNetwork(net);
+			Procedures.FileWriteBipartiteNetwork(net);
 			
 			if(SemanticActions.warnings == 1 ) {
 				System.out.println("\n\n***** Successful compilation with "+SemanticActions.warnings+" warning! *****");

@@ -1,38 +1,39 @@
-*Vertices 33
-1 "91"
-2 "92"
-3 "93"
-4 "94"
-5 "95"
-6 "96"
-7 "Ano 2015"
-8 "Ano 2016"
-9 "Ano 2017"
-10 "Ano 2018"
-11 "Ano 2019"
-12 "Menos de 100 mil"
-13 "Entre 100 mil e 500 mil"
-14 "Acima de 500 mil"
-15 "Acarajé"
-16 "ES"
-17 "norte"
-18 "loco"
-19 "Klaus"
-20 "BA"
-21 "sul"
-22 "Cuzzuol"
-23 "BH"
-24 "nordeste"
-25 "8"
-26 "Wolff"
-27 "PA"
-28 "suldeste"
-29 "teste"
-30 "SP"
-31 "leste"
-32 "RJ"
-33 "oeste"
-*Arcs
+* Vértices 33
+91
+92
+93
+94
+95
+96
+"Ano 2015"
+"Ano 2016"
+"Ano 2017"
+"Ano 2018"
+"Ano 2019"
+"Menos de 100 mil"
+"Entre 100 mil e 500 mil"
+"Acima de 500 mil"
+ "Acarajé"
+ "ES"
+ "norte"
+ "loco"
+ "Klaus"
+ "BA"
+ "sul"
+ "Cuzzuol"
+ "BH"
+ "nordeste"
+ "8"
+ "Wolff"
+ "PA"
+ "suldeste"
+ "teste"
+ "SP"
+ "leste"
+ "RJ"
+ "oeste"
+* Edges 32
+* Arcs 32
 1 12
 1 15
 1 16
