@@ -47,8 +47,10 @@ public class Compiler {
 			//===========================================COMPILACAO===================================================//
 			compiler = new Compiler(new FileInputStream(Configuration.mapFile), "UTF-8");
 			definition = Compiler.start(variableList, vertexList);
-
+			// Gerar estruturas intermediarias
 			IntermediateGenerator.setIntermediateGenerator(definition, variableList, vertexList);
+
+			// Gerar rede e depois escrever no arquivo
 			Network net = new Network();
 			Procedures.generateBipartiteNetwork(net);
 			Procedures.FileWriteBipartiteNetwork(net);
