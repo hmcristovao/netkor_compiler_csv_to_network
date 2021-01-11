@@ -1,0 +1,115 @@
+nodedef>name VARCHAR,label VARCHAR
+SP,'uf'
+'Sem vomito','vomito'
+M,'sexo'
+'Sem diarreia','diarreira'
+'Urbana','zonaResidencia'
+'Com diabetes','diabetes'
+'Não Gestante','gestante'
+'Sem febre','febre'
+'Não veio a óbito por covid','obito'
+F,'sexo'
+'Com diarreia','diarreira'
+'Com febre','febre'
+'Sem diabetes','diabetes'
+PR,'uf'
+'Zona Rural','zonaResidencia'
+RJ,'uf'
+AC,'uf'
+AM,'uf'
+BA,'uf'
+'Gestante','gestante'
+ES,'uf'
+'Com vomito','vomito'
+MG,'uf'
+edgedef>node1 VARCHAR,node2 VARCHAR, weight DOUBLE
+SP,'Sem vomito',16.0
+SP,M,8.0
+SP,'Sem diarreia',15.0
+SP,'Urbana',17.0
+SP,'Com diabetes',6.0
+SP,'Não Gestante',18.0
+SP,'Sem febre',6.0
+SP,'Não veio a óbito por covid',18.0
+SP,F,10.0
+SP,'Com diarreia',3.0
+SP,'Com febre',12.0
+SP,'Sem diabetes',12.0
+PR,'Sem vomito',6.0
+PR,M,3.0
+PR,'Sem diarreia',6.0
+PR,'Urbana',4.0
+PR,'Com diabetes',2.0
+PR,'Não Gestante',6.0
+PR,'Com febre',6.0
+PR,'Não veio a óbito por covid',6.0
+PR,'Zona Rural',2.0
+RJ,'Sem vomito',6.0
+RJ,F,1.0
+RJ,'Sem diarreia',6.0
+RJ,'Urbana',6.0
+RJ,'Com diabetes',3.0
+RJ,'Não Gestante',6.0
+RJ,'Sem febre',3.0
+RJ,'Não veio a óbito por covid',6.0
+AC,'Sem vomito',2.0
+AC,M,2.0
+AC,'Sem diarreia',2.0
+AC,'Urbana',2.0
+AC,'Sem diabetes',2.0
+AC,'Não Gestante',2.0
+AC,'Com febre',2.0
+AC,'Não veio a óbito por covid',2.0
+RJ,M,5.0
+RJ,'Com febre',3.0
+RJ,'Sem diabetes',3.0
+AM,'Sem vomito',6.0
+AM,F,4.0
+AM,'Com diarreia',1.0
+AM,'Urbana',5.0
+AM,'Sem diabetes',6.0
+AM,'Não Gestante',6.0
+AM,'Sem febre',1.0
+AM,'Não veio a óbito por covid',6.0
+PR,F,3.0
+PR,'Sem diabetes',4.0
+AM,'Sem diarreia',5.0
+AM,'Com febre',5.0
+AM,'Zona Rural',1.0
+AM,M,2.0
+BA,'Sem vomito',5.0
+BA,M,3.0
+BA,'Sem diarreia',5.0
+BA,'Zona Rural',1.0
+BA,'Sem diabetes',4.0
+BA,'Não Gestante',4.0
+BA,'Com febre',5.0
+BA,'Não veio a óbito por covid',5.0
+BA,F,2.0
+BA,'Urbana',4.0
+BA,'Gestante',1.0
+ES,'Sem vomito',7.0
+ES,M,3.0
+ES,'Com diarreia',1.0
+ES,'Urbana',7.0
+ES,'Com diabetes',3.0
+ES,'Não Gestante',7.0
+ES,'Com febre',6.0
+ES,'Não veio a óbito por covid',7.0
+ES,F,4.0
+ES,'Sem diarreia',6.0
+ES,'Sem diabetes',4.0
+BA,'Com diabetes',1.0
+SP,'Zona Rural',1.0
+SP,'Com vomito',2.0
+MG,'Sem vomito',5.0
+MG,F,3.0
+MG,'Sem diarreia',5.0
+MG,'Urbana',5.0
+MG,'Sem diabetes',4.0
+MG,'Não Gestante',5.0
+MG,'Sem febre',5.0
+MG,'Não veio a óbito por covid',5.0
+MG,M,2.0
+MG,'Com diabetes',1.0
+ES,'Sem febre',1.0

@@ -1,0 +1,702 @@
+/**
+ * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
+ */
+options
+{
+	DEBUG_PARSER = false;
+	DEBUG_TOKEN_MANAGER = false;
+}
+
+PARSER_BEGIN(NetworkCompiler)
+package parser;
+
+import java.util.*;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.charset.StandardCharsets;
+
+import settings.*;
+import intermediate.*;
+import commands.*;
+import elementars.*;
+import enumerations.*;
+import network.*;
+import exceptions.*;
+
+public class NetworkCompiler
+{
+  public static void main(String args []) throws ParseException
+  {
+    Network network = new Network();
+    try {
+        NetworkCompiler parser = new NetworkCompiler(new FileInputStream(Configuration.mapFile), "UTF-8");
+		NetworkCompiler.start(network);
+		NetworkParser.networkParserAll(network);
+    } catch(FileNotFoundException e) {
+		System.err.println("\nFile not found: " + Configuration.mapFile);
+	}
+    catch(Error err) {
+		System.err.println(err.getMessage());
+    }
+
+  }
+}
+
+PARSER_END(NetworkCompiler)
+
+SKIP : { " " | "\t" | "\r" | "\n" }
+
+SKIP : { "#" : comentarioGeral }
+<comentarioGeral> SKIP: { "\n" | "\n\r" | "\r\n" : DEFAULT | <~[]> }
+
+
+// RESERVED WORDS
+TOKEN [IGNORE_CASE] : {
+    < lit_SETTINGS: "Settings" > |
+    < lit_ALIAS_TABLE: "Alias Table" > |
+    < lit_DATA_FRAME: "Data Frame" > |
+    < lit_ROWS_DELETING: "Rows Deleting" > |
+    < lit_ADJACENCY_LIST: "Adjacency List" > |
+    < lit_BIPARTITE_PROJECTION: "Bipartite Projection" > |
+    < lit_VARIABLE_TYPE: "TEXT" | "NUMBER" | "DATE" | "BOOLEAN" >
+}
+
+TOKEN [IGNORE_CASE] :
+{
+    < cte_LOGIC_VALUE: "true" | "false" > |
+    < cte_CONCAT: "&" > |
+    < cte_AND: "AND" > |
+    < cte_OR: "OR" > |    
+    < cte_PLUS: "+" > |
+    < cte_MINUS: "-" > |
+    < lit_NOT: "NOT" >
+}
+
+/* SYMBOL TOKENS */
+TOKEN [IGNORE_CASE] : 
+{
+	< cte_PARENTHESIS_OPEN: "(" > |
+	< cte_PARENTHESIS_CLOSE: ")" > |	
+	< cte_BRACKET_OPEN: "[" > |
+	< cte_BRACKET_CLOSE: "]" > |
+	< cte_ELLIPSIS: "..." > |
+	< cte_SEMICOLON: ";" > |
+	< cte_COLON: ":" > |
+	< cte_EQUAL_ATTRIBUITION: "=" > |
+	< cte_QUOTATION_MARK: "\"" > |
+	< cte_DOUBLE_MAJOR: ">>" > |
+	< cte_MAJOR_EQUAL: ">="> |
+	< cte_MINOR_EQUAL: "<="> |
+	< cte_MAJOR: ">" > |
+	< cte_MINOR: "<" > |
+	< cte_EQUAL_COMPARE: "==" > |
+	< cte_DOLLAR_SIGN: "$"> |
+    < cte_COMMA: "," > |
+    < cte_AT_SIGN: "@" > |
+    < cte_POINT:"." >
+}
+
+/* Reserved words */
+TOKEN [IGNORE_CASE] : 
+{
+    < lit_CSV_HEADER: "CSV header"> |
+    < lit_COLUMN_SEPARATOR: "Column separator"> |
+    < lit_DATE_FORMAT: "Date format" > |
+    < lit_DIRECTED_NETWORK: "Directed network"> |
+    < lit_ATTRIBUTE_LABEL: "Attribute label"> |
+    < lit_NETWORK_FORMAT_OUTPUT: "Network format"> |
+    < lit_FILE_SUFIX: "File suffix"> |
+    < lit_ELIF: "elif"> |
+    < lit_IF: "if"> |
+    < lit_ELSE: "else"> |
+    < lit_RETURN: "return"> |
+    < cte_NETWORK_FORMAT: "NET" | "GDF">
+}
+
+
+
+// Utils:
+TOKEN [IGNORE_CASE] : {
+    < #var_VARIABLECHARACTER: ["A" - "z", "0" - "9", "_"] > | // TODO: separar em novos tokens
+  	< #var_LETTERCHARACTER: ["A" - "z"] > |
+    < var_CSV_COLUMN_HEADER: < cte_QUOTATION_MARK > (~["\""])* < cte_QUOTATION_MARK > > |
+    < var_ALIAS_TABLE_COLUMN_HEADER: (< var_LETTERCHARACTER >) (< var_VARIABLECHARACTER > )* > |
+    < var_DATA_FRAME_COLUMN_HEADER: < cte_DOLLAR_SIGN > <var_ALIAS_TABLE_COLUMN_HEADER> > |
+    < var_LOCAL_VARIABLE: < var_ALIAS_TABLE_COLUMN_HEADER > >
+}
+
+// Type definition tokens:
+TOKEN [IGNORE_CASE] : {
+    < var_TEXT: < cte_QUOTATION_MARK > (< var_VARIABLECHARACTER > )+ < cte_QUOTATION_MARK > > | 
+    < var_NUMBER: (["0"-"9"])+ ((<cte_COMMA> | <cte_POINT>)? ["0"-"9"])* | (["0"-"9"])* ((<cte_COMMA> | <cte_POINT>) ["0"-"9"])+ > |
+    < var_DATE: (["0"-"9"])?(["0"-"9"]) "/" (["0"-"9"])?(["0"-"9"]) "/" (["0"-"9"])(["0"-"9"])? (["0"-"9"])(["0"-"9"])? (["0"-"9"])(["0"-"9"])? (["0"-"9"])(["0"-"9"]) >
+}
+
+TOKEN [IGNORE_CASE] : {
+	//[X...Y] / [X...Y) / (X...Y] / (X...Y)
+	< cte_FORMATELLIPSIS1: ((" ")* < cte_BRACKET_OPEN > (" ")* < var_OPTION > (" ")* < cte_ELLIPSIS > (" ")* < var_OPTION > (" ")* <cte_BRACKET_CLOSE >) > |	
+	< cte_FORMATELLIPSIS2: ((" ")* < cte_BRACKET_OPEN > (" ")* < var_OPTION > (" ")*  < cte_ELLIPSIS > (" ")* < var_OPTION > (" ")* <cte_PARENTHESIS_CLOSE >) > | //[x ... y)
+	< cte_FORMATELLIPSIS3: ((" ")* < cte_PARENTHESIS_OPEN > (" ")* < var_OPTION > < cte_ELLIPSIS > (" ")* < var_OPTION > (" ")* <cte_BRACKET_CLOSE >) > |	//(x ... y]
+	< cte_FORMATELLIPSIS4: ((" ")* < cte_PARENTHESIS_OPEN > (" ")* < var_OPTION > < cte_ELLIPSIS > (" ")* < var_OPTION > (" ")* <cte_PARENTHESIS_CLOSE >) > |	//(x ... y)
+	// (...X) / (...X] / [X...) / (X...)
+	< cte_FORMATELLIPSIS5: ((" ")* < cte_PARENTHESIS_OPEN > (" ")* < cte_ELLIPSIS > (" ")*  < var_OPTION > (" ")* <cte_PARENTHESIS_CLOSE >) > |
+	< cte_FORMATELLIPSIS6: ((" ")* < cte_PARENTHESIS_OPEN > (" ")* < cte_ELLIPSIS > (" ")*  < var_OPTION > (" ")* <cte_BRACKET_CLOSE >) > |
+	< cte_FORMATELLIPSIS7: ((" ")* < cte_BRACKET_OPEN > (" ")* < var_OPTION >  (" ")* < cte_ELLIPSIS > (" ")*   <cte_PARENTHESIS_CLOSE >) > |
+	< cte_FORMATELLIPSIS8: ((" ")* < cte_PARENTHESIS_OPEN > (" ")* < var_OPTION > (" ")* < cte_ELLIPSIS > (" ")* <cte_PARENTHESIS_CLOSE >) > |
+	< var_OPTION: ((["0"-"9"])* ((<cte_COMMA> | <cte_POINT>) ["0"-"9"])+) | < var_LETTERCHARACTER > > 
+}
+
+void start(Network network):
+{ }
+{
+  settings(network)
+  aliasTable(network)
+  dataFrame(network)
+  rowsDeleting(network)
+  adjacencyList(network)
+  bipartiteProjection(network)
+}
+
+// ##################################################
+
+void settings(Network network):
+{ MapSettings settings; }
+{
+  (
+    < lit_SETTINGS > < cte_COLON >
+    { settings = new MapSettings(); }
+    ( variavelSettings(settings) )+
+    { network.setSettings(settings); }
+  )?
+}
+
+void variavelSettings(MapSettings settings):
+{ }
+{
+	csvDefinition(settings) |
+	columnSeparatorDefinition(settings) |
+	dateFormatDefinition(settings) |
+	directedNetworkDefinition(settings) |
+	attributeLabelDefinition(settings) |
+	networkFormatOutputDefinition(settings) |
+	fileSufixDefinition(settings)
+}
+
+void csvDefinition(MapSettings settings):
+{ Token csvHeader; }
+{
+	< lit_CSV_HEADER > < cte_EQUAL_ATTRIBUITION > csvHeader = < cte_LOGIC_VALUE >
+	{
+		settings.setCsvHeader(csvHeader.image); 
+	}
+}
+
+void columnSeparatorDefinition(MapSettings settings):
+{ Token columnSeparator; }
+{
+  < lit_COLUMN_SEPARATOR > < cte_EQUAL_ATTRIBUITION >
+  ( columnSeparator = < cte_COMMA > | columnSeparator = < cte_SEMICOLON > )
+  {
+    settings.setColumnSeparator(columnSeparator.image);
+  }
+}
+
+void dateFormatDefinition(MapSettings settings):
+{ Token date; }
+{
+  <  lit_DATE_FORMAT > < cte_EQUAL_ATTRIBUITION > date = < var_DATE >
+  {
+    settings.setDateFormat(date.image);
+  }
+}
+
+void directedNetworkDefinition(MapSettings settings):
+{ Token isDirectedNet; }
+{
+	<  lit_DIRECTED_NETWORK > < cte_EQUAL_ATTRIBUITION > isDirectedNet = < cte_LOGIC_VALUE >
+	{
+	  settings.setIsDirectedNetwork(isDirectedNet.image);
+	}
+}
+
+void attributeLabelDefinition(MapSettings settings):
+{ Token attributeLabel; }
+{
+	< lit_ATTRIBUTE_LABEL > < cte_EQUAL_ATTRIBUITION > attributeLabel = < var_ALIAS_TABLE_COLUMN_HEADER >
+	{
+	  settings.setAttributeLabel(attributeLabel.image);
+	}
+}
+
+void networkFormatOutputDefinition(MapSettings settings):
+{ Token networkFormat; }
+{
+	< lit_NETWORK_FORMAT_OUTPUT > < cte_EQUAL_ATTRIBUITION >
+	( networkFormat = < cte_NETWORK_FORMAT > )
+	{ settings.setNetworkFormat(networkFormat.image); }
+	(
+	  	< cte_COMMA > networkFormat = < cte_NETWORK_FORMAT >
+		{ settings.setNetworkFormat(networkFormat.image); }
+	)*
+}
+
+void fileSufixDefinition(MapSettings settings):
+{ Token fileSufix; }
+{
+	< lit_FILE_SUFIX > < cte_EQUAL_ATTRIBUITION > fileSufix = < var_CSV_COLUMN_HEADER >
+	{
+	  settings.setFileSufix(fileSufix.image);
+	}
+}
+
+// ##################################################
+
+void aliasTable(Network network):
+{ MapAliasTable aliasTable; }
+{
+	(
+		< lit_ALIAS_TABLE > < cte_COLON > { aliasTable = new MapAliasTable();}
+		(aliasTableBody(aliasTable))+
+		{ network.setAliasTable(aliasTable); }
+	)?	
+}
+
+void aliasTableBody(MapAliasTable aliasTable):
+{ Token variableType, aliasTableColumnHeader, csvColumnHeader; }
+{
+	< cte_DOUBLE_MAJOR > aliasTableColumnHeader = < var_ALIAS_TABLE_COLUMN_HEADER >
+	variableType = < lit_VARIABLE_TYPE >
+	< cte_EQUAL_ATTRIBUITION >
+	csvColumnHeader = < var_CSV_COLUMN_HEADER >
+
+	{ aliasTable.addColumnEntryToTable(aliasTableColumnHeader.image,
+	variableType.image, csvColumnHeader.image); }
+}
+
+// ##################################################
+
+void dataFrame(Network network):
+{ MapDataFrame dataFrame; }
+{
+	(
+	  	{ dataFrame = new MapDataFrame(); }
+		< lit_DATA_FRAME > < cte_COLON > dataFrameBody(dataFrame)
+		{ network.setDataFrame(dataFrame); }
+	)?
+}
+
+void dataFrameBody(MapDataFrame dataFrame):
+{
+  Token dataFrameColumnHeader, attributeValue;
+  DataFrameComponent dataFrameComponent;
+}
+{
+	(
+		< cte_DOUBLE_MAJOR > dataFrameColumnHeader = < var_DATA_FRAME_COLUMN_HEADER >
+		< cte_COMMA > attributeValue = < var_CSV_COLUMN_HEADER >
+		{ dataFrameComponent = new DataFrameComponent(dataFrameColumnHeader, attributeValue); }
+		(
+		  command(dataFrameComponent)
+		)+
+		{
+		  dataFrame.addDataFrameComponent(dataFrameComponent);
+		}
+	)+
+}
+
+void commandList(DataFrameComponent dataFrameComponent):
+{ }
+{
+	(
+	  command(dataFrameComponent)
+	)
+}
+
+void command(DataFrameComponent dataFrameComponent):
+{ }
+{
+  returnCommand(dataFrameComponent) | ifCommand(dataFrameComponent) | attribuitionCommand(dataFrameComponent)
+}
+
+void returnCommand(DataFrameComponent dataFrameComponent):
+{ Return returnCommand; Expression returnExpression; }
+{
+
+	< lit_RETURN > returnExpression = expression()
+	{
+	  returnCommand = new Return(returnExpression);
+	  dataFrameComponent.addDataFrameComponentCommand(returnCommand);
+	}
+}
+
+void attribuitionCommand(DataFrameComponent dataFrameComponent):
+{ Attribuition attribuitionCommand; Expression attribuitionExpression;
+  Symbol symbol; Token variable;
+}
+{
+  variable = < var_ALIAS_TABLE_COLUMN_HEADER > < cte_EQUAL_ATTRIBUITION >
+  attribuitionExpression = expression()
+  {
+    symbol = new Symbol(variable, TYPE_OPERAND.ALIASTABLECOLUMNHEADER);
+    attribuitionCommand = new Attribuition(symbol, attribuitionExpression, variable);
+    dataFrameComponent.addDataFrameComponentCommand(attribuitionCommand);
+  }
+}
+
+void ifCommand(DataFrameComponent dataFrameComponent):
+{
+	Conditional conditionalCommand; Expression conditionalExpression;
+	DataFrameComponent dataFrameComponentConditional;
+}
+{
+  {
+    dataFrameComponentConditional = new DataFrameComponent();
+    conditionalCommand = new Conditional();
+  }
+  < lit_IF > conditionalExpression = expression()
+  < cte_COLON > commandList(dataFrameComponentConditional)
+  {
+    conditionalCommand.addIfCommand(conditionalExpression, dataFrameComponentConditional.getCommandList());
+  }
+  (
+    { dataFrameComponentConditional = new DataFrameComponent(); }
+    < lit_ELIF > conditionalExpression = expression() < cte_COLON > commandList(dataFrameComponentConditional)
+  	{
+	    conditionalCommand.addElifCommand(conditionalExpression, dataFrameComponentConditional.getCommandList());
+  	}
+  )*
+  (
+    { dataFrameComponentConditional = new DataFrameComponent(); }
+    < lit_ELSE > < cte_COLON > commandList(dataFrameComponentConditional)
+  	{
+	    conditionalCommand.addElseCommand(dataFrameComponentConditional.getCommandList());
+  	}
+  )?
+  {
+    dataFrameComponent.addDataFrameComponentCommand(conditionalCommand);
+  }
+}
+
+Expression expression():
+{ Expression expression = new Expression(); }
+{
+  expression_1(expression)
+
+  { return expression; }
+}
+
+void expression_1(Expression expression):
+{ Token concat; Item item = null; }
+{
+  expression_2(expression)
+  (concat = < cte_CONCAT >
+  {
+	item = new Operator(concat, TYPE_OPERATOR.CONCAT);
+    expression.addItemToPreFixedExpression(item);
+  }
+  	expression_2(expression)
+  {
+    expression.addItemToPostFixedExpression(item);
+  }
+  )*
+}
+
+void expression_2(Expression expression):
+{ Token logicalOperator; Item item = null; TYPE_OPERATOR typeOperator; }
+{
+  expression_3(expression)
+  (
+    (      
+	    logicalOperator = < cte_AND > { typeOperator = TYPE_OPERATOR.AND; } |
+	    logicalOperator = < cte_OR > { typeOperator = TYPE_OPERATOR.OR; }
+  	)
+	{
+	  	item = new Operator(logicalOperator, typeOperator);
+  		expression.addItemToPreFixedExpression(item);
+	}
+    expression_3(expression)
+	{
+  		expression.addItemToPostFixedExpression(item);
+	}
+  )*
+}
+
+void expression_3(Expression expression):
+{ Token operator; Item item = null; TYPE_OPERATOR typeOperator; }
+{
+  expression_4(expression)
+  (
+    (
+      operator = < cte_EQUAL_COMPARE > { typeOperator = TYPE_OPERATOR.EQUAL; }|
+	  operator = < cte_MAJOR_EQUAL > { typeOperator = TYPE_OPERATOR.GREATER_EQUAL; } |
+      operator = < cte_MINOR_EQUAL > { typeOperator = TYPE_OPERATOR.LESS_EQUAL; } |
+      operator = < cte_MAJOR > { typeOperator = TYPE_OPERATOR.GREATER; } |
+      operator = < cte_MINOR > { typeOperator = TYPE_OPERATOR.LESS; }
+  	)
+	{
+	  	item = new Operator(operator, typeOperator);
+  		expression.addItemToPreFixedExpression(item);
+	}
+  	expression_4(expression)
+	{
+  		expression.addItemToPostFixedExpression(item);
+	}
+  )*
+}
+
+void expression_4(Expression expression):
+{ Token operator = null; Item item = null; TYPE_OPERATOR typeOperator; }
+{
+  	expression_5(expression)
+  	(
+  	  (    	operator = < cte_PLUS > { typeOperator = TYPE_OPERATOR.SUM; }
+       | operator = < cte_MINUS > { typeOperator = TYPE_OPERATOR.SUBTRACTION; }
+      )
+    	{
+    	    item = new Operator(operator, typeOperator);
+	  		expression.addItemToPreFixedExpression(item);
+		}
+    	expression_5(expression)
+    	{
+	  		expression.addItemToPostFixedExpression(item);
+		}
+	)*
+}
+
+void expression_5(Expression expression):
+{ Token not = null; Item item = null; }
+{
+	(
+    	not = < lit_NOT >
+    	{
+    	  item = new Operator(not, TYPE_OPERATOR.NOT);
+	  		expression.addItemToPreFixedExpression(item);
+		}
+  	)?
+  	expression_6(expression)
+	{
+		if(not != null) {
+		  expression.addItemToPostFixedExpression(item);
+		}
+	}  	
+}
+
+void expression_6(Expression expression):
+{
+  Token parenthesisOpen, parenthesisClose; Expression newExpression; Item item = null;
+}
+{
+    (  
+	  parenthesisOpen = < cte_PARENTHESIS_OPEN >
+	  {
+	    item = new Operator(parenthesisOpen, TYPE_OPERATOR.PARENTHESIS_OPEN);
+		expression.addItemToPreFixedExpression(item);
+		expression.addItemToPostFixedExpression(item);
+	  }
+	  expression_1(expression) // POSSO ESTAR FAZENDO CAGADA (expression - > expression_1)
+	  parenthesisClose = < cte_PARENTHESIS_CLOSE >
+	  {
+	    item = new Operator(parenthesisClose, TYPE_OPERATOR.PARENTHESIS_CLOSE);
+		expression.addItemToPreFixedExpression(item);
+	  }
+  ) |
+  operand(expression)
+}
+
+void operand(Expression expression):
+{ Token signalToken = null, operandToken = null; Item item = null; }
+{
+  	(
+  	  	(
+  	  	  operandToken = < var_NUMBER >
+		  {
+		    item =  new Operand(operandToken, TYPE_OPERAND.NUMBER);
+			expression.addItemToPreFixedExpression(item);
+			expression.addItemToPostFixedExpression(item);
+		  }
+  	  	) |	    (
+	      signalToken = < cte_MINUS > operandToken = < var_NUMBER >
+	      {
+		    item =  new Operand(operandToken, TYPE_OPERAND.NUMBER, SIGNAL.PLUS);
+			expression.addItemToPreFixedExpression(item);
+			expression.addItemToPostFixedExpression(item);
+	      }
+	    ) |
+	    (
+	      signalToken = < cte_PLUS > operandToken = < var_NUMBER >
+	      {
+		    item =  new Operand(operandToken, TYPE_OPERAND.NUMBER, SIGNAL.PLUS);
+			expression.addItemToPreFixedExpression(item);
+			expression.addItemToPostFixedExpression(item);
+	      }
+	    )
+	)
+  	|	
+		operandToken = < var_CSV_COLUMN_HEADER >
+  		{
+  		    item =  new Operand(operandToken, TYPE_OPERAND.TEXT);
+			expression.addItemToPreFixedExpression(item);
+			expression.addItemToPostFixedExpression(item); 			
+		}
+  	|
+  		operandToken = < var_DATE >
+  		{
+  		    item =  new Operand(operandToken, TYPE_OPERAND.DATE);
+			expression.addItemToPreFixedExpression(item);
+			expression.addItemToPostFixedExpression(item);  		      			
+		}
+  	|
+  		operandToken = < cte_LOGIC_VALUE >
+		{
+  		    item =  new Operand(operandToken, TYPE_OPERAND.BOOLEAN);
+			expression.addItemToPreFixedExpression(item);
+			expression.addItemToPostFixedExpression(item);		       			
+		}
+	|
+  		operandToken = < var_ALIAS_TABLE_COLUMN_HEADER >
+  		{
+  		    item =  new Operand(operandToken, TYPE_OPERAND.ALIASTABLECOLUMNHEADER);
+			expression.addItemToPreFixedExpression(item);
+			expression.addItemToPostFixedExpression(item);  		  
+  		}
+	|
+  		operandToken = < var_DATA_FRAME_COLUMN_HEADER >
+  		{
+  		    item =  new Operand(operandToken, TYPE_OPERAND.DATAFRAMECOLUMNHEADER);
+			expression.addItemToPreFixedExpression(item);
+			expression.addItemToPostFixedExpression(item);  		  
+  		}
+}
+
+// ##################################################
+
+void rowsDeleting(Network network):
+{ MapRowsDeleting mapRowsDeleting; }
+{
+	(
+		< lit_ROWS_DELETING > < cte_COLON >
+		{
+		  mapRowsDeleting = new MapRowsDeleting();
+		}
+		(rowsDeletingBody(mapRowsDeleting))+
+		{
+		  network.setRowsDeleting(mapRowsDeleting);
+		}
+	)?
+}
+
+void rowsDeletingBody(MapRowsDeleting mapRowsDeleting):
+{ Expression expression; }
+{
+  	{ expression = new Expression(); }
+	< cte_DOUBLE_MAJOR >
+	expression = expression()
+	{
+	  mapRowsDeleting.addExpressionToRowsDeleting(expression);
+	}
+}
+
+// ##################################################
+
+void adjacencyList(Network network):
+{ MapAdjacencyList adjacencyList; }
+{
+	(
+	  { adjacencyList = new MapAdjacencyList(); }
+	  < lit_ADJACENCY_LIST > < cte_COLON > (adjacencyBody(adjacencyList))+
+	)?
+}
+
+void adjacencyBody(MapAdjacencyList adjacencyList):
+{ Token adjacencyVariableToken; Symbol adjacencyVariableSymbol; TYPE_OPERAND typeOperand; }
+{
+	< cte_DOUBLE_MAJOR > adjacencyVariableToken = < var_DATA_FRAME_COLUMN_HEADER >
+	{
+	  typeOperand = TYPE_OPERAND.DATAFRAMECOLUMNHEADER;
+	  adjacencyVariableSymbol = new Symbol(adjacencyVariableToken, typeOperand);
+	  adjacencyList.addAdjacencyVariable(adjacencyVariableSymbol);
+	}
+}
+
+// ##################################################
+
+void bipartiteProjection(Network network):
+{ MapBipartiteProjection bipartiteProjection; }
+{
+	(
+	  { bipartiteProjection = new MapBipartiteProjection(); }
+	  < lit_BIPARTITE_PROJECTION > < cte_COLON > (bipartiteBody(bipartiteProjection))+
+	  { network.setBipartiteProjection(bipartiteProjection); }
+	)?
+}
+
+void bipartiteBody(MapBipartiteProjection bipartiteProjection):
+{ ArrayList<Symbol> beforeAt; ArrayList<Symbol> afterAt; }
+{
+  {
+    beforeAt = new ArrayList<Symbol>(); afterAt = new ArrayList<Symbol>();
+  }
+	< cte_DOUBLE_MAJOR > < cte_PARENTHESIS_OPEN >
+		beforeAt = dataFrameColumnHeaderNodesList(bipartiteProjection)
+	< cte_PARENTHESIS_CLOSE >
+	< cte_POINT >
+	< cte_PARENTHESIS_OPEN >
+		afterAt = dataFrameColumnHeaderLinksList(bipartiteProjection)
+	< cte_PARENTHESIS_CLOSE >
+	{
+	  //System.out.println(beforeAt);
+	  bipartiteProjection.addBipartiteProjection(beforeAt, afterAt);
+	}
+}
+
+ArrayList<Symbol> dataFrameColumnHeaderNodesList(MapBipartiteProjection bipartiteProjection):
+{
+  	Token dataFrameColumnHeader; Symbol dataFrameColumnHeaderSymbol; TYPE_OPERAND typeOperand;
+	ArrayList<Symbol> beforeAt;
+}
+{
+  	{ beforeAt = new ArrayList<Symbol>(); }
+	dataFrameColumnHeader = < var_DATA_FRAME_COLUMN_HEADER >
+	{
+	  typeOperand = TYPE_OPERAND.DATAFRAMECOLUMNHEADER;
+	  dataFrameColumnHeaderSymbol = new Symbol(dataFrameColumnHeader, typeOperand);
+	  beforeAt.add(dataFrameColumnHeaderSymbol);
+	}
+	(
+	  < cte_COMMA >  dataFrameColumnHeader = < var_DATA_FRAME_COLUMN_HEADER >
+		{
+		  typeOperand = TYPE_OPERAND.DATAFRAMECOLUMNHEADER;
+		  dataFrameColumnHeaderSymbol = new Symbol(dataFrameColumnHeader, typeOperand);
+		  beforeAt.add(dataFrameColumnHeaderSymbol);
+		}
+	)*
+	{
+	  return beforeAt;
+	}
+}
+
+ArrayList<Symbol> dataFrameColumnHeaderLinksList(MapBipartiteProjection bipartiteProjection):
+{
+  Token dataFrameColumnHeader; Symbol dataFrameColumnHeaderSymbol; TYPE_OPERAND typeOperand;
+	ArrayList<Symbol> afterAt;
+}
+{
+  	{ afterAt = new ArrayList<Symbol>(); }
+	dataFrameColumnHeader = < var_DATA_FRAME_COLUMN_HEADER >
+	{
+	  typeOperand = TYPE_OPERAND.DATAFRAMECOLUMNHEADER;
+	  dataFrameColumnHeaderSymbol = new Symbol(dataFrameColumnHeader, typeOperand);
+	  afterAt.add(dataFrameColumnHeaderSymbol);
+	}
+	(
+	  < cte_COMMA > dataFrameColumnHeader = < var_DATA_FRAME_COLUMN_HEADER >
+		{
+		  typeOperand = TYPE_OPERAND.DATAFRAMECOLUMNHEADER;
+		  dataFrameColumnHeaderSymbol = new Symbol(dataFrameColumnHeader, typeOperand);
+		  afterAt.add(dataFrameColumnHeaderSymbol);
+		}
+	)*
+	{
+	  return afterAt;
+	}
+}

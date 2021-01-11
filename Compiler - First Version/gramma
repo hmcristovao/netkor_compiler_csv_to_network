@@ -1,0 +1,63 @@
+Start -> (settings)? (alias_Table)? (data_Frame)? (rows_Deleting)? (adjacency_List)? (bipartite_Projection)?
+
+settings -> <SETTINGS_NAME> <COLON> 
+            (variavelSettings)
+
+variavelSettings -> <CSV_HEADER> <EQUAL> <LOGIC_VALUE> 
+            <COLUMN_SEPARATOR> <EQUAL> (<COMMA> | <SEMICOLON> | <TABULATOR> )
+            <DATE_FORMAT> <EQUAL> <DATE>
+            <DIRECTED_NETWORK> <EQUAL> <LOGIC_VALUE>
+            <ATTRIBUTE_LABEL> <EQUAL> <ALIAS_TABLE_COLUMN_HEADER>
+            <NETWORK_FORMAT_OUTPUT> <EQUAL> ( <NETWORK_FORMAT> ) ( <COMMA> <NETWORK_FORMAT> )*
+            <FILE_SUFIX> <EQUAL> stringDefinition
+
+
+alias_Table ->  <ALIAS_TABLE_NAME> <COLON>
+                (<MAJOR_SYMBOL> <VARIABLE> <VARIABLE_TYPE> <EQUAL> stringDefinition)+
+
+
+data_Frame ->   <DATA_FRAME_NAME> <COLON>
+                (<MAJOR_SYMBOL> < DATA_FRAME_COLUMN_HEADER> <COMMA> 
+< ATTRIBUTE_VALUE >)
+                commandList
+
+commandList -> (command)+
+
+command -> returnCommand | ifCommand | attribuitionCommand
+
+returnCommand -> <RETURN> expression
+
+attributionCommand -> <LOCAL_VARIABLE> <EQUAL> expression
+
+ifCommand -> <IF> expression <COLON> commandList
+             (<ELIF> expression <COLON> commandList)*
+             (<ELSE> <COLON> commandList)?
+
+numericExpression -> (relationalExpression) (<LOGICAL_OPERATOR> (relationalExpression))*
+
+relationalExpression -> (<NOT>)? (operand <RELATIONAL_OPERATOR> operand)
+
+numericOperand -> <NUMBER> | < ALIAS_TABLE_COLUMN_HEADER >
+
+stringExpression -> textOperand (<CONCAT> textOperand)*
+
+textOperand -> <TEXT> | <ALIAS_TABLE_COLUMN_HEADER>  
+             
+rowsDeleting -> <ROWS_DELETION_NAME> <COLON>
+                 (<MAJOR_SYMBOL> <DOLLAR_SYMBOL> <VARIABLE> <EQUAL> expression)+
+
+
+adjacency_List -> <ADJACENCY_LIST_NAME> <COLON> (adjacencyBody)+
+
+adjacencyBody -> <MAJOR_SYMBOL> ( <ALIAS_TABLE_COLUMN_HEADER> | <DATA_FRAME_COLUMN_HEADER> )
+                  
+
+
+bipartite_Projection -> <BIPARTITE_PROJECTION_NAME> <COLON>
+                        (bipartiteBody)+
+
+bipartiteBody -> <MAJOR_SYMBOL> <PARENTHESIS_OPEN> ( <ALIAS_TABLE_COLUMN_HEADER> | <DATA_FRAME_COLUMN_HEADER> ) (<COMMA> ( <ALIAS_TABLE_COLUMN_HEADER> | <DATA_FRAME_COLUMN_HEADER> ))* <PARENTHESIS_CLOSE> <AT_SIGN> <PARENTHESIS_OPEN> ( <ALIAS_TABLE_COLUMN_HEADER> | <DATA_FRAME_COLUMN_HEADER> ) (<COMMA> ( <ALIAS_TABLE_COLUMN_HEADER> | <DATA_FRAME_COLUMN_HEADER> ))* <PARENTHESIS_CLOSE>
+
+
+
+Se não definir nada no ALIAS poderá criar dataframe/alias automaticamente desde que não haja nenhuma coluna com espaço. Se tiver uma ou mais com espaços, não poderá.

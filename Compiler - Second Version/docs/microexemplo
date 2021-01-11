@@ -1,0 +1,112 @@
+Documento: “exemplo.CSV”
+
+ID,Column 1,Column 2,Column 3,Column 4
+A,10,03,01,10
+B,35,04,02,10
+C,45,05,01,10
+D,17,03,02,10
+E,16,03,02,10
+F,21,03,03,10
+
+Documento: “exemplo.MAP”
+
+Settings:
+CSV header = TRUE
+Column separator = ,
+Directed Network = TRUE
+Attribute label = projections # O que significa?
+Network format = NET
+File suffix = "network_"
+
+ED:
+
+HashMap [
+    <Chave, Atributo>
+]
+
+
+Anotações:
+
+- Atributo pode ser abstrato (Ser tanto String como booleano)? Como fazer a verificação posteriormente?
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+Alias Table:
+> ID TEXT = "ID"
+> colunaUm NUMBER = "Column 1"
+> colunaDois NUMBER = "Column 2"
+> colunaTres NUMBER = "Column 3"
+> colunaQuatro NUMBER = "Column 4"
+
+
+ED:
+
+HashMap [
+    <Chave, <Tipo, Valor>>
+]
+
+Anotações:
+
+- Valor só pode ser String?! Exemplo: 1 ou "1" ? e Coluna
+- Tipo é um ENUM
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+Data Frame:
+> $ID, "ID"
+return ID
+
+> $colunaUm, "atributo"
+
+ED:
+HashMap [
+    <Chave, <Atributo, <ArrayList>>>
+]
+
+Anotações:
+
+- ArrayList OU Pilha
+- Atributo só pode ser String?
+
+
+- Estrutura para guardar corpo
+    - Estrutura para guardar comandos (IF / Return / Atribuição)
+        - Estrutura para guardar variáveis (Tabela)
+        - Estrutura para guardar expressões
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+Rows Deleting:
+> $colunaUm = 16
+
+ED:
+
+HashMap [
+    <Chave, Valor>
+]
+
+Anotações:
+
+- Valor pode ser String ou Número (expressões entre string e número também)
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+Adjacency List:
+> $ID
+> $colunaUm
+
+
+Anotações:
+
+- Um ou mais arquivos, dependendo do programa.
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+Bipartite Projection:
+> ($ID) @ ($colunaUm)
+
+Anotações:
+
+- Um ou mais arquivos, dependendo do programa.
+

@@ -1,0 +1,15 @@
+# Section 1: general configurations
+Source format: CSV
+Target format: NET
+Header: TRUE
+Directed network: TRUE
+Bipartite projection: FALSE
+Layout: NO 
+
+Variables:
+#código da emenda (chave primaria)
+* codigo.emenda : codigo.emenda
+> nome.autor : nome.autor
+
+Network:
+nome.autor

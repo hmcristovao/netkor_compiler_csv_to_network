@@ -1,0 +1,89 @@
+# Section 1: general configurations
+Source format: CSV
+Target format: NET
+Header: TRUE
+Directed network: TRUE
+Bipartite projection: FALSE
+Layout: NO  
+ 
+# Section 2: determines the selected variables (column header) in the CSV file
+# type ‘*’ represents primary key variable; type ‘>’ represents normal variable
+# sintaxe: type head_name_in_csv : variable_name (optional) : description (optional)
+Variables:
+
+#código do paciente (chave primaria)
+* SAMPLEID : chave
+#idade do paciente (não sabe = 998; recusou = 999)
+> SC1: sc1.idade
+ 
+#sexo do paciente (homem = 1; mulhor = 2)
+> SC1_1 : sc1_1.sexo
+
+#relacionamento atual (casado = 1; separado = 2; divorciado = 3; viuvo = 4; nunca se casou = 5; não sabe = 8; recusou responder = 9)
+> SC3: sc3.relacionamento
+
+# relacionando e morando atualmente com alguém? (sim = 1; não = 5; não sabe = 8; recusou responder = 9)
+> SC3A: sc3a.morando
+
+#fuma atualmente (atualmente = 1; ex-fumante = 2; nunca fumou = 3; não sabe = 8; recusou responder = 9) 
+> SC7: sc7.fumante
+
+#estado da saúde física (excelente = 1; muito boa = 2; boa = 3; razoável = 4; ruim = 5; não sabe = 8; recusou responder = 9)
+> SC8_1: sc8_1.saude.fisica
+
+#estado da saúde mental (excelente = 1; muito boa = 2; boa = 3; razoável = 4; ruim = 5; não sabe = 8; recusou responder = 9)
+> SC8_2: sc8_2.saude.mental
+ 
+# já teve alguma vez na vida ataque de medo ou pânico, em que de repente se sentiu com medo intenso, muito ansioso(a) ou com muito mal-estar (sim = 1;  não = 5; não sabe = 8; recusou responder = 9)
+> SC20: sc20.medo.panico
+
+#já teve ataques de raiva em que de repente perdeu o controle e bateu ou tentou machucar alguém? (sim = 1;  não = 5; não sabe = 8; recusou responder = 9)
+> SC20_2: sc20_2.ataque.raiva
+
+#medo intenso de insetos, cobras, cachorros ou qualquer outro animal (sim = 1;  não = 5; não sabe = 8; recusou responder = 9)  
+> SC27A: sc27a.primeiro.medo
+
+#medo de água parada, como piscina ou lago, ou tempestades, trovões, ou raios (sim = 1;  não = 5; não sabe = 8; recusou responder = 9) 
+> SC27B: sc27b.segundo.medo 
+
+#medo de ir ao dentista ou médico, tomar injeção, ver sangue ou ferimentos, ou estar em um hospital ou consultório médico (sim = 1;  não = 5; não sabe = 8; recusou responder = 9) 
+> SC27C: sc27c.terceiro.medo
+
+#medo de espaços fechados, como cavernas, túneis, closets, ou elevadores (sim = 1;  não = 5; não sabe = 8; recusou responder = 9) 
+> SC27D: sc27d.quarto.medo
+
+# medo de lugares altos como telhados, sacadas, pontes, ou escadas (sim = 1;  não = 5; não sabe = 8; recusou responder = 9)  
+> SC27E: sc27e.quinto.medo 
+
+#medo intenso de voar ou viajar de avião (sim = 1;  não = 5; não sabe = 8; recusou responder = 9) 
+> SC27F: sc27f.sexto.medo
+
+#muito medo ou muita timidez em situações sociais, como conhecer novas pessoas, ir a festas, sair com um(a) pretendente, ou usar um banheiro público (sim = 1;  não = 5; não sabe = 8; recusou responder = 9) 
+> SC29: sc29.timidez
+
+# Section 3: network nodes and links (edges or arcs)
+# determines how the normal variables will be linked with the primary key variable
+# links occur only on the same line in the CSV file 
+# sintaxe: vertice_name : range_expression_with_variable_name  
+Network:
+"menor de idade" : sc1.idade = (...17] 
+"idade 18-34": sc1.idade =  [18...35)
+"idade 35-64": sc1.idade = [35...65) 
+"idade 65-": sc1.idade = [65...)
+"masculino": sc1_1.sexo = 1
+"feminino": sc1_1.sexo = 2
+"casado/junto": sc3.relacionamento = 1 OR sc3a.morando = 1 OR sc3a.morando = (3...4) 
+"separado/viuvo/solteiro": sc3.relacionamento = [2;3] OR sc3a.morando = 2  
+"fumante" : sc7.fumante = 1
+"ex-fumante": sc7.fumante = 2
+"nunca fumou": sc7.fumante = 3
+"sa�de f�sica boa": sc8_1.saude.fisica = [1...3]
+"sa�de f�sica ruim": sc8_1.saude.fisica = [4;5]
+"sa�de mental boa": sc8_2.saude.mental = [1...3]
+"sa�de mental ruim": sc8_2.saude.mental = [4;5]
+"medo p�nico": sc20.medo.panico = 1
+"ataque raiva": sc20_2.ataque.raiva = 1
+"fobias espec�ficas": sc27a.primeiro.medo =  1 OR sc27b.segundo.medo = 1 OR sc27c.terceiro.medo = 1 OR sc27d.quarto.medo = 1 OR sc27e.quinto.medo = 1 OR sc27f.sexto.medo = 1
+"timidez": sc29.timidez  = 1 
+"recusou responder": sc1.idade = 999 OR sc3.relacionamento = 9 OR sc3a.morando = 9 OR sc7.fumante = 9 OR sc8_1.saude.fisica = 9 OR sc8_2.saude.mental = 9 OR sc20.medo.panico = 9 OR sc20_2.ataque.raiva = 9 OR sc27a.primeiro.medo = 9 OR sc27b.segundo.medo = 9 OR sc27c.terceiro.medo = 9 OR  sc27d.quarto.medo = 9 OR sc27e.quinto.medo = 9 OR sc27f.sexto.medo = 9 OR sc29.timidez = 9
+

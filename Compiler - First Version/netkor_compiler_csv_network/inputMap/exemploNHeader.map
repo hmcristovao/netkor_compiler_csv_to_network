@@ -1,0 +1,24 @@
+# Section 1: general configurations
+Source format: CSV
+Target format: NET
+Header: FALSE
+Directed network: TRUE
+Bipartite projection: FALSE
+Layout: NO  
+ 
+# Section 2: determines the selected variables (column header) in the CSV file
+Variables:
+#código do paciente (chave primaria)
+* Col1 : chave
+#idade do paciente
+> Col2: v1.idade
+#sexo do paciente (masculino = 1; feminino = 2; outros = 3)
+> Col3 : v3.sexo
+
+# Section 3: network nodes and links (edges or arcs)
+Network:
+"menor de idade" : v1.idade = (...17] 
+"maior de idade": v1.idade =  [18...)
+"masculino": v3.sexo = 1
+"feminino": v3.sexo = 2 
+"outro sexo": v3.sexo = 3 

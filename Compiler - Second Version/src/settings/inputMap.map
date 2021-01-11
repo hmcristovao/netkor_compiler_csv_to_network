@@ -1,0 +1,63 @@
+Settings:
+CSV header= TRUE
+Column separator= ;
+Directed network= FALSE
+Network format= NET, GDF
+File suffix= "REDE_SRGA_2020_"
+
+Alias Table:
+>> vomito NUMBER = "vomito"
+>> sexo TEXT = "cs_sexo" 
+>> diarreira NUMBER  = "diarreia"
+>> zonaResidencia NUMBER  = "cs_zona"
+>> diabetes NUMBER = "diabetes"
+>> gestante NUMBER = "cs_gestant"
+>> uf TEXT = "sg_uf"
+>> febre NUMBER = "febre"
+>> obito TEXT = "obito_covi"
+
+Data Frame:
+>> $vomito, "vomito"
+  if vomito == 2 OR vomito == 9: return "Sem vomito"
+  else: return "Com vomito"
+>> $sexo, "sexo"
+  return sexo
+>> $diarreira, "diarreira"
+  if diarreira == 2 OR diarreira == 9: return "Sem diarreia"
+  else: return "Com diarreia"
+>> $zonaResidencia, "zonaResidencia"
+  if zonaResidencia == 1: return "Urbana"
+  else: return "Zona Rural"
+>> $diabetes, "diabetes"
+  if diabetes == 2 OR diabetes == 9: return "Sem diabetes"
+  else: return "Com diabetes"
+>> $gestante, "gestante"
+  if gestante == 1 OR gestante == 2 OR gestante == 3 OR gestante == 4: return "Gestante"
+  else: return "Não Gestante"
+>> $uf, "uf"
+  return uf
+>> $febre, "febre"
+  if febre == 2 OR febre == 9: return "Sem febre"
+  else: return "Com febre"
+>> $obito, "obito"
+  if obito == "Sim": return "Óbito por covid"
+  else: return "Não veio a óbito por covid"
+
+Rows Deleting:
+>> $vomito == ""
+>> $sexo == ""
+>> $diarreira == ""
+>> $zonaResidencia == ""
+>> $diabetes == ""
+>> $gestante == ""
+>> $uf == ""
+>> $febre == ""
+>> $obito == ""
+
+Adjacency List:
+>> $uf
+>> $sexo
+
+Bipartite Projection:
+>> ($uf).($obito)
+>> ($uf,$sexo).($obito)

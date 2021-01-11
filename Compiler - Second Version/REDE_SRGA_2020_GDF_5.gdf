@@ -1,0 +1,10 @@
+nodedef>name VARCHAR,label VARCHAR
+SP,'uf'
+PR,'uf'
+RJ,'uf'
+AC,'uf'
+AM,'uf'
+BA,'uf'
+ES,'uf'
+MG,'uf'
+edgedef>node1 VARCHAR,node2 VARCHAR, weight DOUBLE

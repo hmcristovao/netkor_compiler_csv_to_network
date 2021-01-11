@@ -1,0 +1,65 @@
+nodedef>name VARCHAR,label VARCHAR
+M,'sexo'
+'Sem vomito','vomito'
+'Sem diarreia','diarreira'
+'Urbana','zonaResidencia'
+'Com diabetes','diabetes'
+'Não Gestante','gestante'
+SP,'uf'
+'Sem febre','febre'
+'Não veio a óbito por covid','obito'
+F,'sexo'
+'Com diarreia','diarreira'
+'Com febre','febre'
+'Sem diabetes','diabetes'
+PR,'uf'
+'Zona Rural','zonaResidencia'
+RJ,'uf'
+AC,'uf'
+AM,'uf'
+BA,'uf'
+'Gestante','gestante'
+ES,'uf'
+'Com vomito','vomito'
+MG,'uf'
+edgedef>node1 VARCHAR,node2 VARCHAR, weight DOUBLE
+M,'Sem vomito',27.0
+M,'Sem diarreia',27.0
+M,'Urbana',25.0
+M,'Com diabetes',11.0
+M,'Não Gestante',28.0
+M,SP,8.0
+M,'Sem febre',8.0
+M,'Não veio a óbito por covid',28.0
+F,'Sem vomito',26.0
+F,'Com diarreia',4.0
+F,'Urbana',25.0
+F,'Com diabetes',5.0
+F,'Não Gestante',26.0
+F,SP,10.0
+F,'Com febre',19.0
+F,'Não veio a óbito por covid',27.0
+M,'Sem diabetes',17.0
+M,'Com febre',20.0
+F,'Sem diarreia',23.0
+F,'Sem diabetes',22.0
+M,PR,3.0
+M,'Zona Rural',3.0
+F,RJ,1.0
+F,'Sem febre',8.0
+M,AC,2.0
+M,RJ,5.0
+F,AM,4.0
+F,PR,3.0
+F,'Zona Rural',2.0
+M,AM,2.0
+M,BA,3.0
+F,BA,2.0
+F,'Gestante',1.0
+M,'Com diarreia',1.0
+M,ES,3.0
+F,ES,4.0
+F,'Com vomito',1.0
+F,MG,3.0
+M,MG,2.0
+M,'Com vomito',1.0

@@ -1,0 +1,93 @@
+Lista De Tokens:
+
+# Simbolos
+TOKEN [IGNORE_CASE] : {
+	< PARENTHESIS_OPEN: "(" > |
+	< PARENTHESIS_CLOSE: ")" > |	
+	< BRACKET_OPEN: "[" > |
+	< BRACKET_CLOSE: "]" > |
+	< ELLIPSIS: "..." > |
+	< SEMICOLON: ";" > |
+	< COLON: ":" > |
+	< EQUAL: "=" > |
+	< QUOTATION_MARK: "\"" > | 
+	< MAJOR: ">" > |
+	< MINOR: "<" > |
+	< DOLLAR_SIGN: "$"> |
+    < COMMA: "," > |
+    < AT_SIGN: "@" >
+}
+
+# Section Names:
+TOKEN [IGNORE_CASE] : {
+    < SETTINGS: "Settings: > |
+    < ALIAS_TABLE: "Alias Table" > |
+    < DATA_FRAME: "Data Frame" > |
+    < ROWS_DELETION: "Rows Deleting" > |
+    < ADJACENCY_LIST: "Adjacency List" > |
+    < BIPARTITE_PROJECTION: "Bipartite Projection" >
+}
+
+# Reserved words:
+TOKEN [IGNORE_CASE] : {
+    < CSV_HEADER: "CSV header"> |
+    < COLUMN_SEPARATOR: "Column separator" > |
+    < DATE_FORMAT: "Date format" > |
+    < DIRECTED_NETWORK: "Directed network"> |
+    < ATTRIBUTE_LABEL: "Attribute label"> |
+    < NETWORK_FORMAT_OUTPUT: "Network format" > |
+    < FILE_SUFIX: "File suffix" > |
+    < IF: "if" > |
+    < ELIF: "elif" > |
+    < ELSE: "else" > |
+    < RETURN: "return" > |
+    < NETWORK_FORMAT: "NET" | "GDF" > |
+    < VARIABLE_TYPE: < TEXT > | < NUMBER > >
+}
+
+TOKEN [IGNORE_CASE] : {
+	//[X...Y] / [X...Y) / (X...Y] / (X...Y)
+	< FORMATELLIPSIS1: ((" ")* < BRACKET_OPEN > (" ")* < OPTION > (" ")* < ELLIPSIS > (" ")* < OPTION > (" ")* <BRACKET_CLOSE >) > |	
+	< FORMATELLIPSIS2: ((" ")* < BRACKET_OPEN > (" ")* < OPTION > (" ")*  < ELLIPSIS > (" ")* < OPTION > (" ")* <PARENTHESIS_CLOSE >) > | //[x ... y)
+	< FORMATELLIPSIS3: ((" ")* < PARENTHESIS_OPEN > (" ")* < OPTION > < ELLIPSIS > (" ")* < OPTION > (" ")* <BRACKET_CLOSE >) > |	//(x ... y]
+	< FORMATELLIPSIS4: ((" ")* < PARENTHESIS_OPEN > (" ")* < OPTION > < ELLIPSIS > (" ")* < OPTION > (" ")* <PARENTHESIS_CLOSE >) > |	//(x ... y)
+	// (...X) / (...X] / [X...) / (X...)
+	< FORMATELLIPSIS5: ((" ")* < PARENTHESIS_OPEN > (" ")* < ELLIPSIS > (" ")*  < OPTION > (" ")* <PARENTHESIS_CLOSE >) > |
+	< FORMATELLIPSIS6: ((" ")* < PARENTHESIS_OPEN > (" ")* < ELLIPSIS > (" ")*  < OPTION > (" ")* <BRACKET_CLOSE >) > |
+	< FORMATELLIPSIS7: ((" ")* < BRACKET_OPEN > (" ")* < OPTION >  (" ")* < ELLIPSIS > (" ")*   <PARENTHESIS_CLOSE >) > |
+	< FORMATELLIPSIS8: ((" ")* < PARENTHESIS_OPEN > (" ")* < OPTION > (" ")* < ELLIPSIS > (" ")* <PARENTHESIS_CLOSE >) > |
+	< OPTION: < NUMBER_CHARACTER_WITH_COMMA > | < NUMBER_CHARACTER_WITH_POINT > |< LETTERCHARACTER  > > 
+}
+
+# Utils:
+TOKEN [IGNORE_CASE] : {
+    < #LETTERCHARACTER: ["a" - "\u00ff"] > |
+    < #VARIABLECHARACTER: ["a" - "\u00ff", "0" - "9", "_"] > |
+  	< #LETTERCHARACTER: ["a" - "\u00ff"] > |
+	< #NUMBER_CHARACTER_WITH_POINT: (["0"-"9"])* ((<COMMA>)? ["0"-"9"])+ > |
+	< #NUMBER_CHARACTER_WITH_COMMA: (["0"-"9"])* ((<PERIOD>)? ["0"-"9"])+ > |
+    < #PERIOD: "." > |
+}
+    
+# Operators and Operands:
+TOKEN [IGNORE_CASE] : {
+    < LOGIC_VALUE: "true" | "false" > |
+    < CONCAT: "&" > |
+    < LOGICAL_OPERATOR: "AND" | "OR" > |
+    < RELATIONAL_OPERATOR: ">=" | "<=" | ">" | "<" | "==" > |
+    < OPERATOR: "+" | "-" > |
+    < NOT: "NOT" > |
+    < NEGATIVE: "-" > |
+    < LOCAL_VARIABLE: < ALIAS_TABLE_COLUMN_HEADER > > |
+    < ALIAS_TABLE_COLUMN_HEADER: (< LETTERCHARACTER >) (< VARIABLECHARACTER > )* > |
+    < DATA_FRAME_COLUMN_HEADER: < DOLLAR_SIGN > <ALIAS_TABLE_COLUMN_HEADER> > |
+    < ATTRIBUTE_VALUE: <QUOTATION_MARK> (~["\""])* <QUOTATION_MARK> > |
+    < CSV_COLUMN_HEADER: <QUOTATION_MARK> (~["\""])* <QUOTATION_MARK> >
+}    
+
+# Type definition tokens:
+TOKEN [IGNORE_CASE] : {
+    < TEXT: "TEXT" > |
+    < NUMBER: "NUMBER" > |
+    < DATE: (["0"-"9"])?(["0"-"9"]) "/" (["0"-"9"])?(["0"-"9"]) "/" (["0"-"9"])(["0"-"9"])? (["0"-"9"])(["0"-"9"])? (["0"-"9"])(["0"-"9"])? (["0"-"9"])(["0"-"9"]) >
+}

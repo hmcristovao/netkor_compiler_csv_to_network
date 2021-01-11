@@ -1,0 +1,355 @@
+/**
+ * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
+ */
+options
+{
+	DEBUG_PARSER = false;
+	DEBUG_TOKEN_MANAGER = false;
+}
+
+PARSER_BEGIN(NetworkCompiler)
+package parser;
+
+public class NetworkCompiler
+{
+  public static void main(String args []) throws ParseException
+  {
+    NetworkCompiler parser = new NetworkCompiler(System.in);
+	NetworkCompiler.start();
+  }
+}
+
+PARSER_END(NetworkCompiler)
+
+SKIP : { " " | "\t" | "\r" | "\n" }
+
+SKIP : { "#" : comentarioGeral }
+<comentarioGeral> SKIP: { "\n" | "\n\r" | "\r\n" : DEFAULT | <~[]> }
+
+
+/* SYMBOL TOKENS */
+TOKEN [IGNORE_CASE] : 
+{
+	< PARENTHESIS_OPEN: "(" > |
+	< PARENTHESIS_CLOSE: ")" > |	
+	< BRACKET_OPEN: "[" > |
+	< BRACKET_CLOSE: "]" > |
+	< ELLIPSIS: "..." > |
+	< SEMICOLON: ";" > |
+	< COLON: ":" > |
+	< EQUAL: "=" > |
+	< QUOTATION_MARK: "\"" > |
+	< MAJOR: ">" > |
+	< MINOR: "<" > |
+	< DOLLAR_SIGN: "$"> |
+    < COMMA: "," > |
+    < AT_SIGN: "@" >
+}
+
+/* Reserved words - settings */
+TOKEN [IGNORE_CASE] : 
+{
+    < SETTINGS: "Settings" > |
+    < ALIAS_TABLE: "Alias Table" > |
+    < DATA_FRAME: "Data Frame" > |
+    < ROWS_DELETING: "Rows Deleting" > |
+    < ADJACENCY_LIST: "Adjacency List" > |
+    < BIPARTITE_PROJECTION: "Bipartite Projection" >
+}
+
+/* Reserved words */
+TOKEN [IGNORE_CASE] : 
+{
+    < CSV_HEADER: "CSV header"> |
+    < COLUMN_SEPARATOR: "Column separator"> |
+    < DATE_FORMAT: "Date format" > |
+    < DIRECTED_NETWORK: "Directed network"> |
+    < ATTRIBUTE_LABEL: "Attribute label"> |
+    < NETWORK_FORMAT_OUTPUT: "Network format"> |
+    < FILE_SUFIX: "File suffix"> |
+    < IF: "if"> |
+    < ELIF: "elif"> |
+    < ELSE: "else"> |
+    < RETURN: "return"> |
+    < NETWORK_FORMAT: "NET" | "GDF"> |
+    < VARIABLE_TYPE: < TEXT > | < NUMBER > >
+}
+
+// Utils:
+TOKEN [IGNORE_CASE] : {
+    < #VARIABLECHARACTER: ["a" - "\u00ff", "0" - "9", "_"] > |
+  	< #LETTERCHARACTER: ["a" - "\u00ff"] > |
+	< #NUMBER_CHARACTER_WITH_POINT: (["0"-"9"])* ((<COMMA>)? ["0"-"9"])+ > |
+	< #NUMBER_CHARACTER_WITH_COMMA: (["0"-"9"])* ((<PERIOD>)? ["0"-"9"])+ > |
+    < #PERIOD: "." > 
+}
+
+TOKEN [IGNORE_CASE] :
+{
+    < LOGIC_VALUE: "true" | "false" > |
+    < CONCAT: "&" > |
+    < LOGICAL_OPERATOR: "AND" | "OR"> |
+    < OPERATOR: "+" | "-" > |
+    < NEGATIVE: "-" > |
+    < NOT: "NOT" > |
+    < LOCAL_VARIABLE: < ALIAS_TABLE_COLUMN_HEADER > > |
+    < RELATIONAL_OPERATOR: ">=" | "<=" | ">" | "<" | "==" > |
+    < CSV_COLUMN_HEADER: < QUOTATION_MARK > (< LETTERCHARACTER >) (< VARIABLECHARACTER > )* < QUOTATION_MARK > > |
+    < ALIAS_TABLE_COLUMN_HEADER: (< LETTERCHARACTER >) (< VARIABLECHARACTER > )* > |
+    < DATA_FRAME_COLUMN_HEADER: < DOLLAR_SIGN > <ALIAS_TABLE_COLUMN_HEADER> > |
+    < ATTRIBUTE_VALUE: < CSV_COLUMN_HEADER > >
+}
+
+// Type definition tokens:
+TOKEN [IGNORE_CASE] : {
+    < TEXT: "TEXT" > |
+    < NUMBER: "NUMBER" > |
+    < DATE: (["0"-"9"])?(["0"-"9"]) "/" (["0"-"9"])?(["0"-"9"]) "/" (["0"-"9"])(["0"-"9"])? (["0"-"9"])(["0"-"9"])? (["0"-"9"])(["0"-"9"])? (["0"-"9"])(["0"-"9"]) >
+}
+
+TOKEN [IGNORE_CASE] : {
+	//[X...Y] / [X...Y) / (X...Y] / (X...Y)
+	< FORMATELLIPSIS1: ((" ")* < BRACKET_OPEN > (" ")* < OPTION > (" ")* < ELLIPSIS > (" ")* < OPTION > (" ")* <BRACKET_CLOSE >) > |	
+	< FORMATELLIPSIS2: ((" ")* < BRACKET_OPEN > (" ")* < OPTION > (" ")*  < ELLIPSIS > (" ")* < OPTION > (" ")* <PARENTHESIS_CLOSE >) > | //[x ... y)
+	< FORMATELLIPSIS3: ((" ")* < PARENTHESIS_OPEN > (" ")* < OPTION > < ELLIPSIS > (" ")* < OPTION > (" ")* <BRACKET_CLOSE >) > |	//(x ... y]
+	< FORMATELLIPSIS4: ((" ")* < PARENTHESIS_OPEN > (" ")* < OPTION > < ELLIPSIS > (" ")* < OPTION > (" ")* <PARENTHESIS_CLOSE >) > |	//(x ... y)
+	// (...X) / (...X] / [X...) / (X...)
+	< FORMATELLIPSIS5: ((" ")* < PARENTHESIS_OPEN > (" ")* < ELLIPSIS > (" ")*  < OPTION > (" ")* <PARENTHESIS_CLOSE >) > |
+	< FORMATELLIPSIS6: ((" ")* < PARENTHESIS_OPEN > (" ")* < ELLIPSIS > (" ")*  < OPTION > (" ")* <BRACKET_CLOSE >) > |
+	< FORMATELLIPSIS7: ((" ")* < BRACKET_OPEN > (" ")* < OPTION >  (" ")* < ELLIPSIS > (" ")*   <PARENTHESIS_CLOSE >) > |
+	< FORMATELLIPSIS8: ((" ")* < PARENTHESIS_OPEN > (" ")* < OPTION > (" ")* < ELLIPSIS > (" ")* <PARENTHESIS_CLOSE >) > |
+	< OPTION: < NUMBER_CHARACTER_WITH_COMMA > | < NUMBER_CHARACTER_WITH_POINT > |< LETTERCHARACTER  > > 
+}
+
+void start(): { }
+{
+  settings()
+  aliasTable()
+  dataFrame()
+  rowsDeleting()
+  adjacencyList()
+  bipartiteProjection()
+}
+
+// ##################################################
+
+void settings(): { }
+{
+  (
+    < SETTINGS > < COLON > (variavelSettings())*
+  )?
+}
+
+void variavelSettings(): { }
+{
+	csvDefinition() |
+	columnSeparatorDefinition() |
+	dateFormatDefinition() |
+	directedNetworkDefinition() |
+	attributeLabelDefinition() |
+	networkFormatOutputDefinition() |
+	fileSufixDefinition()
+}
+
+void csvDefinition(): { }
+{
+	< CSV_HEADER > < EQUAL > < LOGIC_VALUE >
+}
+
+void columnSeparatorDefinition(): { }
+{
+  < COLUMN_SEPARATOR > < EQUAL > ( < COMMA > | < SEMICOLON > )
+}
+
+void dateFormatDefinition(): { }
+{
+  <  DATE_FORMAT > < EQUAL > < DATE >
+}
+
+void directedNetworkDefinition(): { }
+{
+	<  DIRECTED_NETWORK > < EQUAL > < LOGIC_VALUE >
+}
+
+void attributeLabelDefinition(): { }
+{
+	< ATTRIBUTE_LABEL > < EQUAL > < ALIAS_TABLE_COLUMN_HEADER >
+}
+
+void networkFormatOutputDefinition(): { }
+{
+	< NETWORK_FORMAT_OUTPUT > < EQUAL > ( < NETWORK_FORMAT > ) ( < COMMA > < NETWORK_FORMAT > )*
+}
+
+void fileSufixDefinition(): { }
+{
+	< FILE_SUFIX > < EQUAL > < CSV_COLUMN_HEADER >
+}
+
+// ##################################################
+
+void aliasTable(): { }
+{
+	(
+		< ALIAS_TABLE > < COLON > (aliasTableBody())+
+	)?
+}
+
+void aliasTableBody(): { }
+{
+	< MAJOR > < ALIAS_TABLE_COLUMN_HEADER > < VARIABLE_TYPE > < EQUAL > < CSV_COLUMN_HEADER >
+}
+
+// ##################################################
+
+void dataFrame(): {}
+{
+	(
+		< DATA_FRAME > < COLON > (dataFrameBody())
+	)?
+}
+
+void dataFrameBody(): { }
+{
+	(
+		< MAJOR > < DATA_FRAME_COLUMN_HEADER > < COMMA > < ATTRIBUTE_VALUE >
+		(
+		  command()
+		)+
+	)+
+}
+
+void commandList(): { }
+{
+	(
+	  command()
+	)
+}
+
+void command(): { }
+{
+  returnCommand() | ifCommand() | attribuitionCommand()
+}
+
+void returnCommand(): { }
+{
+	< RETURN > expression()
+}
+
+void attribuitionCommand(): { }
+{
+  < LOCAL_VARIABLE > < EQUAL > expression()
+}
+
+void ifCommand(): { }
+{
+  < IF > expression() < COLON > commandList()
+  (
+    < ELIF > expression() < COLON > commandList()
+  )*
+  (
+    < ELSE > < COLON > commandList()
+  )?
+}
+
+void expression(): { }
+{
+  expression_1()
+}
+
+void expression_1(): { }
+{
+  expression_2() (< CONCAT > expression_2() )*
+}
+
+void expression_2(): { }
+{
+  expression_3() (< LOGICAL_OPERATOR > expression_3())*
+}
+
+void expression_3(): { }
+{
+  expression_4() (< RELATIONAL_OPERATOR > expression_4())*
+}
+
+void expression_4(): { }
+{
+  expression_5() (< OPERATOR > expression_5())*
+}
+
+void expression_5(): { }
+{
+  (< NOT >)? expression_6()
+}
+
+void expression_6(): { }
+{
+  operand() | < PARENTHESIS_OPEN > expression() < PARENTHESIS_CLOSE >
+}
+
+void operand(): { }
+{
+  ((< NEGATIVE >)? < NUMBER >) |
+  < TEXT > |
+  < ALIAS_TABLE_COLUMN_HEADER > |
+  < DATA_FRAME_COLUMN_HEADER >
+}
+
+// ##################################################
+
+void rowsDeleting(): {}
+{
+	(
+		< ROWS_DELETING > < COLON > (rowsDeletingBody())+
+	)?
+}
+
+void rowsDeletingBody(): { }
+{
+	< MAJOR > < DATA_FRAME_COLUMN_HEADER > < EQUAL >
+	expression()
+}
+
+// ##################################################
+
+void adjacencyList(): { }
+{
+	(
+	  < ADJACENCY_LIST > < COLON > (adjacencyBody())+
+	)?
+}
+
+void adjacencyBody(): { }
+{
+	< MAJOR > < DATA_FRAME_COLUMN_HEADER >
+}
+
+// ##################################################
+
+void bipartiteProjection(): {}
+{
+	(
+	  < BIPARTITE_PROJECTION > < COLON > (bipartiteBody())+
+	)?
+}
+
+void bipartiteBody(): {}
+{
+	< MAJOR > < PARENTHESIS_OPEN >
+		dataFrameColumnHeaderNodesList()
+	< PARENTHESIS_CLOSE >
+	< AT_SIGN >
+	< PARENTHESIS_OPEN >
+		dataFrameColumnHeaderLinksList()
+	< PARENTHESIS_CLOSE >
+}
+
+void dataFrameColumnHeaderNodesList(): { }
+{
+	< DATA_FRAME_COLUMN_HEADER > (< COMMA >  < DATA_FRAME_COLUMN_HEADER >)*
+}
+
+void dataFrameColumnHeaderLinksList(): {}
+{
+	< DATA_FRAME_COLUMN_HEADER > (< COMMA >  < DATA_FRAME_COLUMN_HEADER >)*
+}

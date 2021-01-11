@@ -1,0 +1,25 @@
+# Section 1: general configurations
+Source format CSV
+Target format NET
+Header TRUE
+Directed network FALSE
+Bipartite projection TRUE
+Column separator ,
+Layout NO
+
+# Section 2: determines the selected variables (column header) in the CSV file
+Variables:
+#código do paciente (chave primaria)
+* ID : chave
+> V1 : v1
+> V2 : v2
+> V3 : v3
+> nome : nome
+> teste : teste
+
+Network:
+nome
+"A" : v1 = 1
+"B" : v2 = 2
+"C" : v3 = 3
+teste
