@@ -1,6 +1,6 @@
 package settings;
 
 public class Configuration {
-	public static String csvFileInput = "src/settings/example.csv";	
-	public static String mapFile = "src/settings/inputMap.map";
+	public static String csvFileInput = "data.csv";	
+	public static String mapFile = "inputMap.map";
 }
