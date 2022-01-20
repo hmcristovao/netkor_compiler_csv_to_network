@@ -22,12 +22,21 @@ public class NetworkCompiler implements NetworkCompilerConstants {
         NetworkCompiler parser = new NetworkCompiler(new FileInputStream(Configuration.mapFile), "UTF-8");
                 NetworkCompiler.start(network);
                 NetworkParser.networkParserAll(network);
-    } catch(FileNotFoundException e) {
-                System.err.println("\u005cnFile not found: " + Configuration.mapFile);
-        }
-    catch(Error err) {
-                System.err.println(err.getMessage());
     }
+    catch(FileNotFoundException e) {
+                System.out.println("\u005cntsteFile not found: " + Configuration.mapFile);
+                e.printStackTrace();
+        }
+    catch(Error e) {
+                System.out.println(e.getMessage());
+                e.printStackTrace();
+    }
+
+        // acrescentado devido a erro no Linux: "Exception in thread "main" java.util.NoSuchElementException"
+    catch (NoSuchElementException e) {
+                System.out.println("Erro: NoSuchElementException");
+                e.printStackTrace();
+        }
 
   }
 
