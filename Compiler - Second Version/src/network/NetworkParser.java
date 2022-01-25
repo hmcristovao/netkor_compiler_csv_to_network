@@ -1,7 +1,8 @@
 package network;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+//import java.io.File;
+import java.io.*; // substituindo a linha de cima
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -29,7 +30,7 @@ public class NetworkParser {
 	private static final char DEFAULT_SEPARATOR = ';';
 	private static final char DEFAULT_QUOTE = '"';
 	
-	public static void networkParserAll(Network network) {
+	public static void networkParserAll(Network network) throws Exception {
 		NetworkParser.parserCsvToTable();
 		NetworkParser.parseHeaderToAliasTable(network.getAliasTable(), network.getDataFrame());
 		NetworkParser.parseDataFrame(network.getAliasTable(), network.getDataFrame());
@@ -196,7 +197,7 @@ public class NetworkParser {
     	}
     }
 
-	public static void parserCsvToTable() {
+	public static void parserCsvToTable() throws Exception {
 				
 		try {
 			Scanner scanner = new Scanner(new File(Configuration.csvFileInput));

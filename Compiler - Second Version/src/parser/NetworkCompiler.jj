@@ -25,7 +25,7 @@ import exceptions.*;
 
 public class NetworkCompiler
 {
-  public static void main(String args []) throws ParseException
+  public static void main(String args []) throws Exception
   {
     Network network = new Network();
     try {

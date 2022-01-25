@@ -3,19 +3,16 @@ package parser;
 
 import java.util.*;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.charset.StandardCharsets;
-
 import settings.*;
 import intermediate.*;
 import commands.*;
 import elementars.*;
 import enumerations.*;
 import network.*;
-import exceptions.*;
+
 
 public class NetworkCompiler implements NetworkCompilerConstants {
-  public static void main(String args []) throws ParseException
+  public static void main(String args []) throws Throwable 
   {
     Network network = new Network();
     try {
@@ -26,18 +23,13 @@ public class NetworkCompiler implements NetworkCompilerConstants {
     catch(FileNotFoundException e) {
                 System.out.println("\u005cntsteFile not found: " + Configuration.mapFile);
                 e.printStackTrace();
-        }
-    catch(Error e) {
-                System.out.println(e.getMessage());
-                e.printStackTrace();
     }
 
-        // acrescentado devido a erro no Linux: "Exception in thread "main" java.util.NoSuchElementException"
+    // acrescentado devido a erro no Linux: "Exception in thread "main" java.util.NoSuchElementException"
     catch (NoSuchElementException e) {
                 System.out.println("Erro: NoSuchElementException");
                 e.printStackTrace();
-        }
-
+    }
   }
 
   static final public void start(Network network) throws ParseException {
